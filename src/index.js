@@ -1,3 +1,3 @@
-export function configure(config){
-    config.globalResources('./google-maps');
+export function configure(aurelia) {
+    aurelia.globalResources('./google-maps');
 }
