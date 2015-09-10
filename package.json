@@ -24,10 +24,12 @@
     "aurelia-tools": "^0.1.3",
     "conventional-changelog": "0.0.11",
     "del": "^1.1.0",
+    "event-stream": "^3.3.1",
     "gulp": "^3.8.10",
     "gulp-babel": "^5.1.0",
     "gulp-bump": "^0.1.11",
     "gulp-jshint": "^1.9.0",
+    "gulp-minify-css": "^1.2.1",
     "gulp-yuidoc": "^0.1.2",
     "jasmine-core": "^2.1.3",
     "jshint-stylish": "^1.0.0",
@@ -44,11 +46,20 @@
     "yargs": "^2.1.1"
   },
   "jspm": {
-    "main": "index",
-    "format": "amd",
-    "directories": {
-      "lib": "dist/amd"
-    },
-    "dependencies": {}
+      "main": "index",
+      "format": "register",
+      "directories": {
+        "lib": "dist/system"
+      },
+      "devDependencies": {
+        "babel": "npm:babel-core@^5.6.4",
+        "babel-runtime": "npm:babel-runtime@^5.6.4",
+        "core-js": "npm:core-js@^0.9.4"
+      },
+      "overrides": {
+        "npm:core-js@0.9.18": {
+          "main": "client/shim.min"
+        }
+      }
   }
 }
