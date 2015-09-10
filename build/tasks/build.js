@@ -4,6 +4,8 @@ var to5 = require('gulp-babel');
 var paths = require('../paths');
 var compilerOptions = require('../babel-options');
 var assign = Object.assign || require('object.assign');
+var minifyCSS = require('gulp-minify-css');
+var es = require('event-stream');
 
 gulp.task('build-html-es6', function () {
   return gulp.src(paths.html)
@@ -48,10 +50,30 @@ gulp.task('build-system', ['build-html-system'], function () {
     .pipe(gulp.dest(paths.output + 'system'));
 });
 
+gulp.task('minifyCSS', function () {
+  var amdCSS = gulp.src(paths.style)
+          .pipe(minifyCSS({ keepBreaks: false }))
+          .pipe(gulp.dest(paths.output+"amd"));
+
+  var sysCSS = gulp.src(paths.style)
+          .pipe(minifyCSS({ keepBreaks: false }))
+          .pipe(gulp.dest(paths.output+"system"));
+
+  var commonCSS = gulp.src(paths.style)
+          .pipe(minifyCSS({ keepBreaks: false }))
+          .pipe(gulp.dest(paths.output+"commonjs"));
+
+  var es6CSS = gulp.src(paths.style)
+          .pipe(minifyCSS({ keepBreaks: false }))
+          .pipe(gulp.dest(paths.output+"es6"));
+
+  return es.concat(amdCSS,sysCSS,commonCSS,es6CSS);
+});
+
 gulp.task('build', function(callback) {
   return runSequence(
     'clean',
-    ['build-es6', 'build-commonjs', 'build-amd', 'build-system'],
+    ['build-es6', 'build-commonjs', 'build-amd', 'build-system', 'minifyCSS'],
     callback
   );
 });
