@@ -22,7 +22,9 @@ export class GoogleMaps {
             this.id = guid();
         }
 
-        this.element.addEventListener('dragstart', evt => {
+        let mapEl = document.getElementById(this.id);
+
+        mapEl.addEventListener('dragstart', evt => {
             evt.preventDefault();
         });
 
