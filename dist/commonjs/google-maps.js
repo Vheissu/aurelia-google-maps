@@ -21,6 +21,13 @@ var GoogleMaps = (function () {
     var _instanceInitializers = {};
 
     _createDecoratedClass(GoogleMaps, [{
+        key: 'address',
+        decorators: [_aureliaFramework.bindable],
+        initializer: function initializer() {
+            return null;
+        },
+        enumerable: true
+    }, {
         key: 'longitude',
         decorators: [_aureliaFramework.bindable],
         initializer: function initializer() {
@@ -59,6 +66,8 @@ var GoogleMaps = (function () {
 
     function GoogleMaps(element, ea, taskQueue, config) {
         _classCallCheck(this, _GoogleMaps);
+
+        _defineDecoratedPropertyDescriptor(this, 'address', _instanceInitializers);
 
         _defineDecoratedPropertyDescriptor(this, 'longitude', _instanceInitializers);
 
@@ -100,16 +109,35 @@ var GoogleMaps = (function () {
             });
 
             this.ea.subscribe('google.maps.ready', function () {
-                _this.map = new google.maps.Map(_this.element, {
+                var options = {
                     center: { lat: _this.latitude, lng: _this.longitude },
                     zoom: parseInt(_this.zoom, 10),
                     disableDefaultUI: _this.disableDefaultUI
-                });
+                };
+
+                _this.map = new google.maps.Map(_this.element, options);
             });
 
             window.myGoogleMapsCallback = function () {
                 classRef.ea.publish('google.maps.ready');
             };
+        }
+    }, {
+        key: 'geocodeAddress',
+        value: function geocodeAddress(address, geocoder) {
+            var _this2 = this;
+
+            geocoder.geocode({ 'address': address }, function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    console.log(results);
+                    _this2.setCenter(results[0].geometry.location);
+
+                    _this2.createMarker({
+                        map: _this2.map,
+                        position: results[0].geometry.location
+                    });
+                }
+            });
         }
     }, {
         key: 'getCurrentPosition',
@@ -129,12 +157,12 @@ var GoogleMaps = (function () {
     }, {
         key: 'loadApiScript',
         value: function loadApiScript() {
-            var _this2 = this;
+            var _this3 = this;
 
             return new Promise(function (resolve, reject) {
                 if (window.google === undefined || window.google.maps === undefined) {
                     var scriptEl = document.createElement('script');
-                    scriptEl.src = _this2.config.get('apiScript') + '?key=' + _this2.config.get('apiKey') + '&callback=myGoogleMapsCallback';
+                    scriptEl.src = _this3.config.get('apiScript') + '?key=' + _this3.config.get('apiKey') + '&callback=myGoogleMapsCallback';
                     document.body.appendChild(scriptEl);
 
                     scriptEl.onload = function () {
@@ -171,7 +199,7 @@ var GoogleMaps = (function () {
     }, {
         key: 'setCenter',
         value: function setCenter(latLong) {
-            if (!this.map) {
+            if (!this.map || !latLong) {
                 return;
             }
 
@@ -181,40 +209,52 @@ var GoogleMaps = (function () {
         key: 'updateCenter',
         value: function updateCenter() {
             this.setCenter({
-                lat: parseFloat(this.latitude),
-                lng: parseFloat(this.longitude)
+                lat: this.latitude,
+                lng: this.longitude
+            });
+        }
+    }, {
+        key: 'addressChanged',
+        value: function addressChanged(newValue) {
+            var _this4 = this;
+
+            var geocoder = new google.maps.Geocoder();
+            this.taskQueue.queueMicroTask(function () {
+                _this4.geocodeAddress(newValue, geocoder);
             });
         }
     }, {
         key: 'latitudeChanged',
         value: function latitudeChanged(newValue) {
-            var _this3 = this;
+            var _this5 = this;
 
             this.taskQueue.queueMicroTask(function () {
-                _this3.updateCenter();
+                _this5.latitude = parseFloat(newValue);
+                _this5.updateCenter();
             });
         }
     }, {
         key: 'longitudeChanged',
         value: function longitudeChanged(newValue) {
-            var _this4 = this;
+            var _this6 = this;
 
             this.taskQueue.queueMicroTask(function () {
-                _this4.updateCenter();
+                _this6.longitude = parseFloat(newValue);
+                _this6.updateCenter();
             });
         }
     }, {
         key: 'zoomChanged',
         value: function zoomChanged(newValue) {
-            var _this5 = this;
+            var _this7 = this;
 
             this.taskQueue.queueMicroTask(function () {
-                if (!_this5.map) {
+                if (!_this7.map) {
                     return;
                 }
 
                 var zoomValue = parseInt(newValue, 10);
-                _this5.map.setZoom(zoomValue);
+                _this7.map.setZoom(zoomValue);
             });
         }
     }, {

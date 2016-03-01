@@ -6,6 +6,7 @@ import {Configure} from './configure';
 @customElement('google-map')
 @inject(Element, EventAggregator, TaskQueue, Configure)
 export class GoogleMaps {
+    @bindable address = null;
     @bindable longitude = 0;
     @bindable latitude = 0;
     @bindable zoom = 8;
@@ -39,16 +40,32 @@ export class GoogleMaps {
         });
 
         this.ea.subscribe('google.maps.ready', () => {
-            this.map = new google.maps.Map(this.element, {
+            let options = {
                 center: {lat: this.latitude, lng: this.longitude},
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI
-            });
+            }
+
+            this.map = new google.maps.Map(this.element, options);
         });
 
         window.myGoogleMapsCallback = function() {
             classRef.ea.publish('google.maps.ready');
         };
+    }
+
+    geocodeAddress(address, geocoder) {
+        geocoder.geocode({'address': address}, (results, status) => {
+            if (status === google.maps.GeocoderStatus.OK) {
+                console.log(results);
+                this.setCenter(results[0].geometry.location);
+
+                this.createMarker({
+                    map: this.map,
+                    position: results[0].geometry.location
+                });
+            }
+        });
     }
 
     getCurrentPosition() {
@@ -98,7 +115,7 @@ export class GoogleMaps {
     }
 
     setCenter(latLong) {
-        if (!this.map) {
+        if (!this.map || !latLong) {
             return;
         }
 
@@ -107,19 +124,28 @@ export class GoogleMaps {
 
     updateCenter() {
         this.setCenter({
-            lat: parseFloat(this.latitude),
-            lng: parseFloat(this.longitude)
+            lat: this.latitude,
+            lng: this.longitude
+        });
+    }
+
+    addressChanged(newValue) {
+        let geocoder = new google.maps.Geocoder;
+        this.taskQueue.queueMicroTask(() => {
+            this.geocodeAddress(newValue, geocoder);
         });
     }
 
     latitudeChanged(newValue) {
         this.taskQueue.queueMicroTask(() => {
+            this.latitude = parseFloat(newValue);
             this.updateCenter();
         });
     }
 
     longitudeChanged(newValue) {
         this.taskQueue.queueMicroTask(() => {
+            this.longitude = parseFloat(newValue);
             this.updateCenter();
         });
     }
