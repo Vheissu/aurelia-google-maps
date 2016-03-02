@@ -39,13 +39,20 @@ export class GoogleMaps {
         });
         
         this._scriptPromise.then(() => {
+            let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            
             let options = {
-                center: {lat: this.latitude, lng: this.longitude},
+                center: latLng,
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI
             }
 
             this.map = new google.maps.Map(this.element, options); 
+            
+            this.createMarker({
+                map: this.map,
+                position: latLng
+            });
         });
     }
     
