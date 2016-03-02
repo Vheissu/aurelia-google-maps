@@ -38,14 +38,14 @@ These properties also support working with Aurelia's databinding, so you can bin
 
 - latitude: A latitude value for the map
 - longitude: A longitude value for the map
+- address: Provide an address that gets geocoded into latitude and longitude coordinates
 - zoom: A zoom value, default is 8
 - disableDefaultUI: A boolean of true or false. Default is false.
 
 ## Todo
 This element still is missing some features, but they are in development.
 
-- Ability to provide a full address via a `address` property which then gets geocoded into the right coordinates
-- Ability to add in markers to a map
+- Expand upon markers ability to allow markers supplied by plugin to add themselves
 - Add in more configuration options
 - Work on making the custom element easier to extend
 - Work on supporting click events and events inside of the map, with callbacks support
