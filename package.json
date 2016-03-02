@@ -53,16 +53,16 @@
         "lib": "dist/system"
       },
       "peerDependencies": {
-        "aurelia-binding": "^1.0.0-beta.1.2.1",
-        "aurelia-dependency-injection": "^1.0.0-beta.1.1.4",
-        "aurelia-task-queue": "^1.0.0-beta.1.1.1",
-        "aurelia-templating": "^1.0.0-beta.1.1.2"
+        "aurelia-binding": "npm:aurelia-binding@^1.0.0-beta.1.2.2",
+        "aurelia-dependency-injection": "npm:aurelia-dependency-injection@^1.0.0-beta.1.1.4",
+        "aurelia-task-queue": "npm:aurelia-task-queue@^1.0.0-beta.1.1.1",
+        "aurelia-templating": "npm:aurelia-templating@^1.0.0-beta.1.1.2"
       },
       "dependencies": {
-        "aurelia-binding": "^1.0.0-beta.1.2.1",
-        "aurelia-dependency-injection": "^1.0.0-beta.1.1.4",
-        "aurelia-task-queue": "^1.0.0-beta.1.1.1",
-        "aurelia-templating": "^1.0.0-beta.1.1.2"
+        "aurelia-binding": "npm:aurelia-binding@^1.0.0-beta.1.2.2",
+        "aurelia-dependency-injection": "npm:aurelia-dependency-injection@^1.0.0-beta.1.1.4",
+        "aurelia-task-queue": "npm:aurelia-task-queue@^1.0.0-beta.1.1.1",
+        "aurelia-templating": "npm:aurelia-templating@^1.0.0-beta.1.1.2"
       },
       "devDependencies": {
         "babel": "npm:babel-core@^5.6.4",
@@ -76,9 +76,9 @@
       }
   },
   "dependencies": {
-    "aurelia-binding": "^1.0.0-beta.1.2.1",
-    "aurelia-dependency-injection": "^1.0.0-beta.1.1.4",
-    "aurelia-task-queue": "^1.0.0-beta.1.1.1",
-    "aurelia-templating": "^1.0.0-beta.1.1.2"
+        "aurelia-binding": "npm:aurelia-binding@^1.0.0-beta.1.2.2",
+        "aurelia-dependency-injection": "npm:aurelia-dependency-injection@^1.0.0-beta.1.1.4",
+        "aurelia-task-queue": "npm:aurelia-task-queue@^1.0.0-beta.1.1.1",
+        "aurelia-templating": "npm:aurelia-templating@^1.0.0-beta.1.1.2"
   }
 }
