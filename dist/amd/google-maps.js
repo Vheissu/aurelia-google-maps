@@ -1,4 +1,4 @@
-define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (exports, _aureliaFramework, _aureliaEventAggregator, _configure) {
+define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', './configure'], function (exports, _aureliaDependencyInjection, _aureliaTemplating, _aureliaTaskQueue, _configure) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -17,49 +17,49 @@ define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure
 
         _createDecoratedClass(GoogleMaps, [{
             key: 'address',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return null;
             },
             enumerable: true
         }, {
             key: 'longitude',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return 0;
             },
             enumerable: true
         }, {
             key: 'latitude',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return 0;
             },
             enumerable: true
         }, {
             key: 'zoom',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return 8;
             },
             enumerable: true
         }, {
             key: 'disableDefaultUI',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return false;
             },
             enumerable: true
         }, {
             key: 'mapClick',
-            decorators: [_aureliaFramework.bindable],
+            decorators: [_aureliaTemplating.bindable],
             initializer: function initializer() {
                 return mapClickCallback;
             },
             enumerable: true
         }], null, _instanceInitializers);
 
-        function GoogleMaps(element, ea, taskQueue, config) {
+        function GoogleMaps(element, taskQueue, config) {
             _classCallCheck(this, _GoogleMaps);
 
             _defineDecoratedPropertyDescriptor(this, 'address', _instanceInitializers);
@@ -75,9 +75,9 @@ define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure
             _defineDecoratedPropertyDescriptor(this, 'mapClick', _instanceInitializers);
 
             this.map = null;
+            this._scriptPromise = null;
 
             this.element = element;
-            this.ea = ea;
             this.taskQueue = taskQueue;
             this.config = config;
 
@@ -97,76 +97,94 @@ define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure
             value: function attached() {
                 var _this = this;
 
-                var classRef = this;
-
                 this.element.addEventListener('dragstart', function (evt) {
                     evt.preventDefault();
                 });
 
-                this.ea.subscribe('google.maps.ready', function () {
+                this._scriptPromise.then(function () {
+                    var latLng = new google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
+
                     var options = {
-                        center: { lat: _this.latitude, lng: _this.longitude },
+                        center: latLng,
                         zoom: parseInt(_this.zoom, 10),
                         disableDefaultUI: _this.disableDefaultUI
                     };
 
                     _this.map = new google.maps.Map(_this.element, options);
-                });
 
-                window.myGoogleMapsCallback = function () {
-                    classRef.ea.publish('google.maps.ready');
-                };
+                    _this.createMarker({
+                        map: _this.map,
+                        position: latLng
+                    });
+                });
             }
         }, {
             key: 'geocodeAddress',
             value: function geocodeAddress(address, geocoder) {
                 var _this2 = this;
 
-                geocoder.geocode({ 'address': address }, function (results, status) {
-                    if (status === google.maps.GeocoderStatus.OK) {
-                        console.log(results);
-                        _this2.setCenter(results[0].geometry.location);
+                this._scriptPromise.then(function () {
+                    geocoder.geocode({ 'address': address }, function (results, status) {
+                        if (status === google.maps.GeocoderStatus.OK) {
+                            _this2.setCenter(results[0].geometry.location);
 
-                        _this2.createMarker({
-                            map: _this2.map,
-                            position: results[0].geometry.location
-                        });
-                    }
+                            _this2.createMarker({
+                                map: _this2.map,
+                                position: results[0].geometry.location
+                            });
+                        }
+                    });
                 });
             }
         }, {
             key: 'getCurrentPosition',
             value: function getCurrentPosition() {
-                return new Promise(function (resolve, reject) {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(function (position) {
-                            return resolve(position);
-                        }, function (evt) {
-                            return reject(evt);
-                        });
-                    } else {
-                        reject('Browser Geolocation not supported or found.');
-                    }
-                });
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        return Promise.resolve(position);
+                    }, function (evt) {
+                        return Promise.reject(evt);
+                    });
+                } else {
+                    return Promise.reject('Browser Geolocation not supported or found.');
+                }
             }
         }, {
             key: 'loadApiScript',
             value: function loadApiScript() {
                 var _this3 = this;
 
-                return new Promise(function (resolve, reject) {
-                    if (window.google === undefined || window.google.maps === undefined) {
-                        var scriptEl = document.createElement('script');
-                        scriptEl.src = _this3.config.get('apiScript') + '?key=' + _this3.config.get('apiKey') + '&callback=myGoogleMapsCallback';
-                        document.body.appendChild(scriptEl);
+                if (this._scriptPromise) {
+                    return this._scriptPromise;
+                }
 
-                        scriptEl.onload = function () {
-                            resolve();
+                if (window.google === undefined || window.google.maps === undefined) {
+                    var _ret = (function () {
+                        var script = document.createElement('script');
+
+                        script.type = 'text/javascript';
+                        script.async = true;
+                        script.defer = true;
+                        script.src = _this3.config.get('apiScript') + '?key=' + _this3.config.get('apiKey') + '&callback=myGoogleMapsCallback';
+                        document.body.appendChild(script);
+
+                        _this3._scriptPromise = new Promise(function (resolve, reject) {
+                            window.myGoogleMapsCallback = function () {
+                                resolve();
+                            };
+
+                            script.onerror = function (error) {
+                                reject(error);
+                            };
+                        });
+
+                        return {
+                            v: _this3._scriptPromise
                         };
-                    } else {
-                        resolve();
-                    }
-                });
+                    })();
+
+                    if (typeof _ret === 'object') return _ret.v;
+                }
             }
         }, {
             key: 'setOptions',
@@ -180,76 +198,83 @@ define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure
         }, {
             key: 'createMarker',
             value: function createMarker(options) {
-                return new google.maps.Marker(options);
+                this._scriptPromise.then(function () {
+                    return Promise.resolve(new google.maps.Marker(options));
+                });
             }
         }, {
             key: 'getCenter',
             value: function getCenter() {
-                if (!this.map) {
-                    return;
-                }
+                var _this4 = this;
 
-                return this.map.getCenter();
+                this._scriptPromise.then(function () {
+                    return Promise.resolve(_this4.map.getCenter());
+                });
             }
         }, {
             key: 'setCenter',
             value: function setCenter(latLong) {
-                if (!this.map || !latLong) {
-                    return;
-                }
+                var _this5 = this;
 
-                return this.map.setCenter(latLong);
+                this._scriptPromise.then(function () {
+                    _this5.map.setCenter(latLong);
+                });
             }
         }, {
             key: 'updateCenter',
             value: function updateCenter() {
-                this.setCenter({
-                    lat: this.latitude,
-                    lng: this.longitude
+                var _this6 = this;
+
+                this._scriptPromise.then(function () {
+                    var latLng = new google.maps.LatLng(parseFloat(_this6.latitude), parseFloat(_this6.longitude));
+                    _this6.setCenter(latLng);
                 });
             }
         }, {
             key: 'addressChanged',
             value: function addressChanged(newValue) {
-                var _this4 = this;
+                var _this7 = this;
 
-                var geocoder = new google.maps.Geocoder();
-                this.taskQueue.queueMicroTask(function () {
-                    _this4.geocodeAddress(newValue, geocoder);
+                this._scriptPromise.then(function () {
+                    var geocoder = new google.maps.Geocoder();
+
+                    _this7.taskQueue.queueMicroTask(function () {
+                        _this7.geocodeAddress(newValue, geocoder);
+                    });
                 });
             }
         }, {
             key: 'latitudeChanged',
             value: function latitudeChanged(newValue) {
-                var _this5 = this;
+                var _this8 = this;
 
-                this.taskQueue.queueMicroTask(function () {
-                    _this5.latitude = parseFloat(newValue);
-                    _this5.updateCenter();
+                this._scriptPromise.then(function () {
+                    _this8.taskQueue.queueMicroTask(function () {
+                        _this8.updateCenter();
+                    });
                 });
             }
         }, {
             key: 'longitudeChanged',
             value: function longitudeChanged(newValue) {
-                var _this6 = this;
+                var _this9 = this;
 
-                this.taskQueue.queueMicroTask(function () {
-                    _this6.longitude = parseFloat(newValue);
-                    _this6.updateCenter();
+                this._scriptPromise.then(function () {
+                    _this9.taskQueue.queueMicroTask(function () {
+                        _this9.updateCenter();
+                    });
                 });
             }
         }, {
             key: 'zoomChanged',
             value: function zoomChanged(newValue) {
-                var _this7 = this;
+                var _this10 = this;
 
-                this.taskQueue.queueMicroTask(function () {
-                    if (!_this7.map) {
-                        return;
-                    }
-
-                    var zoomValue = parseInt(newValue, 10);
-                    _this7.map.setZoom(zoomValue);
+                this._scriptPromise.then(function () {
+                    _this10.taskQueue.queueMicroTask(function () {
+                        var zoomValue = parseInt(newValue, 10);
+                        _this10.map.setZoom(zoomValue);
+                    });
                 });
             }
         }, {
@@ -260,8 +285,8 @@ define(['exports', 'aurelia-framework', 'aurelia-event-aggregator', './configure
         }], null, _instanceInitializers);
 
         var _GoogleMaps = GoogleMaps;
-        GoogleMaps = (0, _aureliaFramework.inject)(Element, _aureliaEventAggregator.EventAggregator, _aureliaFramework.TaskQueue, _configure.Configure)(GoogleMaps) || GoogleMaps;
-        GoogleMaps = (0, _aureliaFramework.customElement)('google-map')(GoogleMaps) || GoogleMaps;
+        GoogleMaps = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure)(GoogleMaps) || GoogleMaps;
+        GoogleMaps = (0, _aureliaTemplating.customElement)('google-map')(GoogleMaps) || GoogleMaps;
         return GoogleMaps;
     })();
 
