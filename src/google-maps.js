@@ -1,4 +1,6 @@
-import {bindable, inject, customElement, TaskQueue} from 'aurelia-framework';
+import {inject} from 'aurelia-dependency-injection';
+import {bindable, customElement} from 'aurelia-templating';
+import {TaskQueue} from 'aurelia-task-queue';
 
 import {Configure} from './configure';
 
