@@ -13,6 +13,7 @@ export class GoogleMaps {
     @bindable mapClick = mapClickCallback;
 
     map = null;
+    _scriptPromise = null;
 
     constructor(element, taskQueue, config) {
         this.element = element;
@@ -31,64 +32,96 @@ export class GoogleMaps {
     }
 
     attached() {
-        var classRef = this;
-
         this.element.addEventListener('dragstart', evt => {
             evt.preventDefault();
         });
-
-        this.ea.subscribe('google.maps.ready', () => {
+        
+        this._scriptPromise.then(() => {
             let options = {
                 center: {lat: this.latitude, lng: this.longitude},
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI
             }
 
-            this.map = new google.maps.Map(this.element, options);
+            this.map = new google.maps.Map(this.element, options); 
         });
-
-        window.myGoogleMapsCallback = function() {
-            classRef.ea.publish('google.maps.ready');
-        };
     }
-
+    
+    /**
+     * Geocode Address
+     * 
+     * Geocodes an address, once the Google Map script
+     * has been properly loaded and promise instantiated.
+     * 
+     * @param address string
+     * @param geocoder any
+     * 
+     */
     geocodeAddress(address, geocoder) {
-        geocoder.geocode({'address': address}, (results, status) => {
-            if (status === google.maps.GeocoderStatus.OK) {
-                this.setCenter(results[0].geometry.location);
+        this._scriptPromise.then(() => {
+            geocoder.geocode({'address': address}, (results, status) => {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    this.setCenter(results[0].geometry.location);
 
-                this.createMarker({
-                    map: this.map,
-                    position: results[0].geometry.location
-                });
-            }
+                    this.createMarker({
+                        map: this.map,
+                        position: results[0].geometry.location
+                    });
+                }
+            }); 
         });
     }
-
+    
+    /**
+     * Get Current Position
+     * 
+     * Get the users current coordinate info from their browser
+     * 
+     */
     getCurrentPosition() {
-        return new Promise((resolve, reject) => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => resolve(position), evt => reject(evt));
-            } else {
-                reject('Browser Geolocation not supported or found.')
-            }
-        });
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
+        } else {
+            return Promise.reject('Browser Geolocation not supported or found.')
+        }
     }
-
+    
+    /**
+     * Load API Script
+     * 
+     * Loads the Google Maps Javascript and then resolves a promise
+     * if loaded. If Google Maps is already loaded, we just return
+     * an immediately resolved promise.
+     * 
+     * @return Promise
+     * 
+     */
     loadApiScript() {
-        return new Promise((resolve, reject) => {
-            if (window.google === undefined || window.google.maps === undefined) {
-                let scriptEl = document.createElement('script');
-                scriptEl.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&callback=myGoogleMapsCallback`;
-                document.body.appendChild(scriptEl);
+        if (this._scriptPromise) {
+            return this._scriptPromise;
+        }
+        
+        if (window.google === undefined || window.google.maps === undefined) {
+            let script = document.createElement('script');
+            
+            script.type = 'text/javascript';
+            script.async = true;
+            script.defer = true;
+            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&callback=myGoogleMapsCallback`;
+            document.body.appendChild(script);
 
-                scriptEl.onload = () => {
+            this._scriptPromise = new Promise((resolve, reject) => {
+                window.myGoogleMapsCallback = () => {
                     resolve();
                 };
-            } else {
-                resolve();
-            }
-        });
+                
+                script.onerror = error => {
+                    reject(error);
+                };
+            });
+            
+            return this._scriptPromise;
+        }
     }
 
     setOptions(options) {
@@ -100,23 +133,21 @@ export class GoogleMaps {
     }
 
     createMarker(options) {
-        return new google.maps.Marker(options);
+        this._scriptPromise.then(() => {
+            return Promise.resolve(new google.maps.Marker(options));
+        });
     }
 
     getCenter() {
-        if (!this.map) {
-            return;
-        }
-
-        return this.map.getCenter();
+        this._scriptPromise.then(() => {
+            return Promise.resolve(this.map.getCenter());
+        });
     }
 
     setCenter(latLong) {
-        if (!this.map || !latLong) {
-            return;
-        }
-
-        return this.map.setCenter(latLong);
+        this._scriptPromise.then(() => {
+            this.map.setCenter(latLong)
+        });
     }
 
     updateCenter() {
@@ -127,34 +158,39 @@ export class GoogleMaps {
     }
 
     addressChanged(newValue) {
-        let geocoder = new google.maps.Geocoder;
-        this.taskQueue.queueMicroTask(() => {
-            this.geocodeAddress(newValue, geocoder);
+        this._scriptPromise.then(() => {
+            let geocoder = new google.maps.Geocoder;
+            
+            this.taskQueue.queueMicroTask(() => {
+                this.geocodeAddress(newValue, geocoder);
+            }); 
         });
     }
 
     latitudeChanged(newValue) {
-        this.taskQueue.queueMicroTask(() => {
-            this.latitude = parseFloat(newValue);
-            this.updateCenter();
+        this._scriptPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                this.latitude = parseFloat(newValue);
+                this.updateCenter();
+            }); 
         });
     }
 
     longitudeChanged(newValue) {
-        this.taskQueue.queueMicroTask(() => {
-            this.longitude = parseFloat(newValue);
-            this.updateCenter();
+        this._scriptPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                this.longitude = parseFloat(newValue);
+                this.updateCenter();
+            });
         });
     }
 
     zoomChanged(newValue) {
-        this.taskQueue.queueMicroTask(() => {
-            if (!this.map) {
-                return;
-            }
-
-            let zoomValue = parseInt(newValue, 10);
-            this.map.setZoom(zoomValue);
+        this._scriptPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                let zoomValue = parseInt(newValue, 10);
+                this.map.setZoom(zoomValue);
+            }); 
         });
     }
 
