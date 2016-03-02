@@ -26,6 +26,27 @@ export function configure(aurelia) {
 ## Using It
 Now you have Google Maps configure, to use it simply use the custom element `<google-map></google-map>` in your views.
 
+### Latitude/Longitude
+Provide standard latitude and longitude values.
+
+``` html
+<template>
+    <google-map latitude="37.323" longitude="-122.0527"></google-map>
+</template>
+```
+
+### Address
+Provide a string as an address which then gets geocoded and the map is centred on this particular address.
+
+``` html
+<template>
+    <google-map address="1600 Amphitheatre Parkway. Mountain View, CA 94043"></google-map>    
+</template>
+```
+
+### Zooming A Map
+Taking the first example, lets add a zoom attribute and supply a value of 15. By default this is 8 if you do not supply a zoom value.
+
 ``` html
 <template>
     <google-map latitude="37.323" longitude="-122.0527" zoom="15"></google-map>
