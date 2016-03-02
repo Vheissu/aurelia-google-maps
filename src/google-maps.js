@@ -1,10 +1,9 @@
 import {bindable, inject, customElement, TaskQueue} from 'aurelia-framework';
-import {EventAggregator} from 'aurelia-event-aggregator';
 
 import {Configure} from './configure';
 
 @customElement('google-map')
-@inject(Element, EventAggregator, TaskQueue, Configure)
+@inject(Element, TaskQueue, Configure)
 export class GoogleMaps {
     @bindable address = null;
     @bindable longitude = 0;
@@ -15,9 +14,8 @@ export class GoogleMaps {
 
     map = null;
 
-    constructor(element, ea, taskQueue, config) {
+    constructor(element, taskQueue, config) {
         this.element = element;
-        this.ea = ea;
         this.taskQueue = taskQueue;
         this.config = config;
 
