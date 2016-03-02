@@ -160,9 +160,9 @@ export class GoogleMaps {
     }
 
     updateCenter() {
-        this.setCenter({
-            lat: this.latitude,
-            lng: this.longitude
+        this._scriptPromise.then(() => {
+            let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            this.setCenter(latLng);
         });
     }
 
@@ -179,7 +179,6 @@ export class GoogleMaps {
     latitudeChanged(newValue) {
         this._scriptPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
-                this.latitude = parseFloat(newValue);
                 this.updateCenter();
             }); 
         });
@@ -188,7 +187,6 @@ export class GoogleMaps {
     longitudeChanged(newValue) {
         this._scriptPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
-                this.longitude = parseFloat(newValue);
                 this.updateCenter();
             });
         });
