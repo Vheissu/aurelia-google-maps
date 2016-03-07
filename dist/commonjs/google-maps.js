@@ -57,13 +57,6 @@ var GoogleMaps = (function () {
             return false;
         },
         enumerable: true
-    }, {
-        key: 'mapClick',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return mapClickCallback;
-        },
-        enumerable: true
     }], null, _instanceInitializers);
 
     function GoogleMaps(element, taskQueue, config) {
@@ -78,8 +71,6 @@ var GoogleMaps = (function () {
         _defineDecoratedPropertyDescriptor(this, 'zoom', _instanceInitializers);
 
         _defineDecoratedPropertyDescriptor(this, 'disableDefaultUI', _instanceInitializers);
-
-        _defineDecoratedPropertyDescriptor(this, 'mapClick', _instanceInitializers);
 
         this.map = null;
         this._scriptPromise = null;
@@ -118,6 +109,21 @@ var GoogleMaps = (function () {
                 };
 
                 _this.map = new google.maps.Map(_this.element, options);
+
+                _this.map.addListener('click', function (e) {
+                    var changeEvent;
+                    if (window.CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    } else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
+
+                    _this.element.dispatchEvent(changeEvent);
+                });
 
                 _this.createMarker({
                     map: _this.map,
@@ -298,5 +304,3 @@ var GoogleMaps = (function () {
 })();
 
 exports.GoogleMaps = GoogleMaps;
-
-function mapClickCallback() {}
