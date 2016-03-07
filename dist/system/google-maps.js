@@ -9,7 +9,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
     function _defineDecoratedPropertyDescriptor(target, key, descriptors) { var _descriptor = descriptors[key]; if (!_descriptor) return; var descriptor = {}; for (var _key in _descriptor) descriptor[_key] = _descriptor[_key]; descriptor.value = descriptor.initializer ? descriptor.initializer.call(target) : undefined; Object.defineProperty(target, key, descriptor); }
 
-    function mapClickCallback() {}
     return {
         setters: [function (_aureliaDependencyInjection) {
             inject = _aureliaDependencyInjection.inject;
@@ -61,13 +60,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         return false;
                     },
                     enumerable: true
-                }, {
-                    key: 'mapClick',
-                    decorators: [bindable],
-                    initializer: function initializer() {
-                        return mapClickCallback;
-                    },
-                    enumerable: true
                 }], null, _instanceInitializers);
 
                 function GoogleMaps(element, taskQueue, config) {
@@ -82,8 +74,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     _defineDecoratedPropertyDescriptor(this, 'zoom', _instanceInitializers);
 
                     _defineDecoratedPropertyDescriptor(this, 'disableDefaultUI', _instanceInitializers);
-
-                    _defineDecoratedPropertyDescriptor(this, 'mapClick', _instanceInitializers);
 
                     this.map = null;
                     this._scriptPromise = null;
@@ -122,6 +112,21 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             };
 
                             _this.map = new google.maps.Map(_this.element, options);
+
+                            _this.map.addListener('click', function (e) {
+                                var changeEvent;
+                                if (window.CustomEvent) {
+                                    changeEvent = new CustomEvent('map-click', {
+                                        detail: e,
+                                        bubbles: true
+                                    });
+                                } else {
+                                    changeEvent = document.createEvent('CustomEvent');
+                                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                                }
+
+                                _this.element.dispatchEvent(changeEvent);
+                            });
 
                             _this.createMarker({
                                 map: _this.map,

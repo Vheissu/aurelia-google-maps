@@ -12,7 +12,6 @@ export class GoogleMaps {
     @bindable latitude = 0;
     @bindable zoom = 8;
     @bindable disableDefaultUI = false;
-    @bindable mapClick = mapClickCallback;
 
     map = null;
     _scriptPromise = null;
@@ -45,9 +44,24 @@ export class GoogleMaps {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI
-            }
+            };
 
-            this.map = new google.maps.Map(this.element, options); 
+            this.map = new google.maps.Map(this.element, options);
+
+            this.map.addListener('click', (e) => {
+                var changeEvent;
+                if (window.CustomEvent) {
+                    changeEvent = new CustomEvent('map-click', {
+                        detail: e,
+                        bubbles: true
+                    });
+                } else {
+                    changeEvent = document.createEvent('CustomEvent');
+                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                }
+
+                this.element.dispatchEvent(changeEvent);
+            });
             
             this.createMarker({
                 map: this.map,
@@ -204,8 +218,4 @@ export class GoogleMaps {
     error() {
         console.log.apply(console, arguments);
     }
-}
-
-function mapClickCallback() {
-
 }
