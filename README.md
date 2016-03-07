@@ -55,6 +55,21 @@ Taking the first example, lets add a zoom attribute and supply a value of 15. By
 
 These properties also support working with Aurelia's databinding, so you can bind any of the above to variables in your viewmodel and the map updates when these values are changed.
 
+### Map Click Event
+It is possible to catch the map click events as specified by the [Google Maps documentation](https://developers.google.com/maps/documentation/javascript/events#ShapeEvents). The map click event is added as a CustomEvent to the `<google-map>` DOM element with the event data added to the `detail` key. Example:
+
+``` html
+<google-map map-click.delegate="myEventHandler($event)"></google-map>
+```
+
+``` javascript
+myEventHandler(event) {
+    var latLng = event.detail.latLng,
+        lat = latLng.lat(),
+        lng = latLng.lng();
+}
+```
+
 ## Supported Properties
 
 - latitude: A latitude value for the map
@@ -62,6 +77,10 @@ These properties also support working with Aurelia's databinding, so you can bin
 - address: Provide an address that gets geocoded into latitude and longitude coordinates
 - zoom: A zoom value, default is 8
 - disableDefaultUI: A boolean of true or false. Default is false.
+
+## Supported Events
+
+- map-click: Delegate a handler with `map-click.delegate="callback($event)"`
 
 ## Todo
 This element still is missing some features, but they are in development.
