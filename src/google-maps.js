@@ -1,25 +1,30 @@
 import {inject} from 'aurelia-dependency-injection';
 import {bindable, customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
+import {BindingEngine} from 'aurelia-framework';
 
 import {Configure} from './configure';
 
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure)
+@inject(Element, TaskQueue, Configure, BindingEngine)
 export class GoogleMaps {
     @bindable address = null;
     @bindable longitude = 0;
     @bindable latitude = 0;
     @bindable zoom = 8;
     @bindable disableDefaultUI = false;
+    @bindable markers = [];
 
     map = null;
+    _renderedMarkers = [];
     _scriptPromise = null;
+    _markersSubscription = null;
 
-    constructor(element, taskQueue, config) {
+    constructor(element, taskQueue, config, bindingEngine) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
+        this.bindingEngine = bindingEngine;
 
         if (!config.get('apiScript')) {
             console.error('No API script is defined.');
@@ -48,6 +53,7 @@ export class GoogleMaps {
 
             this.map = new google.maps.Map(this.element, options);
 
+            // Add event listener for click event
             this.map.addListener('click', (e) => {
                 let changeEvent;
                 if (window.CustomEvent) {
@@ -62,10 +68,27 @@ export class GoogleMaps {
 
                 this.element.dispatchEvent(changeEvent);
             });
+        });
+    }
 
+    /**
+     * Render a marker on the map and add it to collection of rendered markers
+     *
+     * @param latitude
+     * @param longitude
+     *
+     */
+    renderMarker(latitude, longitude) {
+        let markerLatLng = new google.maps.LatLng(parseFloat(latitude), parseFloat(longitude));
+
+        this._scriptPromise.then(() => {
+            // Create the marker
             this.createMarker({
                 map: this.map,
-                position: latLng
+                position: markerLatLng
+            }).then(marker => {
+                // Add it the array of rendered markers
+                this._renderedMarkers.push(marker);
             });
         });
     }
@@ -154,7 +177,7 @@ export class GoogleMaps {
     }
 
     createMarker(options) {
-        this._scriptPromise.then(() => {
+        return this._scriptPromise.then(() => {
             return Promise.resolve(new google.maps.Marker(options));
         });
     }
@@ -211,6 +234,84 @@ export class GoogleMaps {
                 this.map.setZoom(zoomValue);
             });
         });
+    }
+
+    /**
+     * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
+     * where we need to resubscribe Observers and delete all previously rendered markers.
+     *
+     * @param newValue
+     */
+    markersChanged(newValue) {
+        // If there was a previous subscription
+        if (null !== this._markersSubscription) {
+            // Dispose of the subscription
+            this._markersSubscription.dispose();
+
+            // Remove all the currently rendered markers
+            for (let marker of this._renderedMarkers) {
+                marker.setMap(null);
+            }
+
+            // And empty the renderMarkers collection
+            this._renderedMarkers = [];
+        }
+
+        // Add the subcription to markers
+        this._markersSubscription = this.bindingEngine
+            .collectionObserver(this.markers)
+            .subscribe((splices) => { this.markerCollectionChange(splices) })
+        ;
+
+        // Render all markers again
+        this._scriptPromise.then(() => {
+            for (let marker of newValue) {
+                this.renderMarker(marker.latitude, marker.longitude);
+            }
+        });
+    }
+
+    /**
+     * Handle the change to the marker collection. Collection observer returns an array of splices which contains
+     * information about the change to the collection.
+     *
+     * @param splices
+     */
+    markerCollectionChange(splices) {
+        for (let splice of splices) {
+            if (splice.removed.length) {
+
+                // Iterate over all the removed markers
+                for (let removedObj of splice.removed) {
+
+                    // Iterate over all the rendered markers to find the one to remove
+                    for (let markerIndex in this._renderedMarkers){
+                        if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
+                            var renderedMarker = this._renderedMarkers[markerIndex];
+
+                            // Check if the latitude/longitude matches
+                            if (renderedMarker.position.lat() == removedObj.latitude &&
+                                renderedMarker.position.lng() == removedObj.longitude) {
+
+                                // Set the map to null;
+                                renderedMarker.setMap(null);
+
+                                // Splice out this rendered marker as well
+                                this._renderedMarkers.splice(markerIndex, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add the new markers to the map
+            if (splice.addedCount) {
+                let addedMarker = this.markers[splice.index];
+
+                this.renderMarker(addedMarker.latitude, addedMarker.longitude);
+            }
+        }
     }
 
     error() {

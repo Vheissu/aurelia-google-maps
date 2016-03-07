@@ -2,6 +2,7 @@ declare module 'aurelia-google-maps' {
   import { inject }  from 'aurelia-dependency-injection';
   import { bindable, customElement }  from 'aurelia-templating';
   import { TaskQueue }  from 'aurelia-task-queue';
+  import { BindingEngine }  from 'aurelia-framework';
   export class Configure {
     constructor();
     options(obj: any): any;
@@ -14,9 +15,19 @@ declare module 'aurelia-google-maps' {
     latitude: any;
     zoom: any;
     disableDefaultUI: any;
+    markers: any;
     map: any;
-    constructor(element: any, taskQueue: any, config: any);
+    constructor(element: any, taskQueue: any, config: any, bindingEngine: any);
     attached(): any;
+    
+    /**
+         * Render a marker on the map and add it to collection of rendered markers
+         *
+         * @param latitude
+         * @param longitude
+         *
+         */
+    renderMarker(latitude: any, longitude: any): any;
     
     /**
          * Geocodes an address, once the Google Map script
@@ -56,6 +67,22 @@ declare module 'aurelia-google-maps' {
     latitudeChanged(newValue: any): any;
     longitudeChanged(newValue: any): any;
     zoomChanged(newValue: any): any;
+    
+    /**
+         * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
+         * where we need to resubscribe Observers and delete all previously rendered markers.
+         *
+         * @param newValue
+         */
+    markersChanged(newValue: any): any;
+    
+    /**
+         * Handle the change to the marker collection. Collection observer returns an array of splices which contains
+         * information about the change to the collection.
+         *
+         * @param splices
+         */
+    markerCollectionChange(splices: any): any;
     error(): any;
   }
 }
