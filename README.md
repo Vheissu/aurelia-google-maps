@@ -70,6 +70,28 @@ myEventHandler(event) {
 }
 ```
 
+### Render array of markers
+Markers can be bound to the element with the `markers` attribute like below:
+
+``` html
+<google-map markers.bind="myMarkers"></google-map>
+```
+
+This markers variable should be an array of objects with latitude and longitude key/value pairs:
+
+``` javascript
+var myMarkers = [
+	{
+        latitude: -27.451673,
+        longitude: 153.043981
+    },
+    {
+        latitude: 37.754582,
+        longitude: -122.446418
+    }
+];
+```
+
 ## Supported Properties
 
 - latitude: A latitude value for the map
@@ -77,6 +99,7 @@ myEventHandler(event) {
 - address: Provide an address that gets geocoded into latitude and longitude coordinates
 - zoom: A zoom value, default is 8
 - disableDefaultUI: A boolean of true or false. Default is false.
+- markers: An array of objects with `latitude` and `longitude` key/value pairs.
 
 ## Supported Events
 
@@ -89,3 +112,4 @@ This element still is missing some features, but they are in development.
 - Add in more configuration options
 - Work on making the custom element easier to extend
 - Work on supporting click events and events inside of the map, with callbacks support
+- Allow more marker options (color, label, etc.)
