@@ -1,3 +1,9 @@
+### 1.0.3 (2016-03-08)
+
+
+Mostly just linting and build process changes. Addressed serious issue of imports for globalResources and styles not being copied over with HTML files.
+
+
 ### 1.0.2 (2016-03-08)
 
 
@@ -52,4 +58,3 @@
 #### Features
 
 * **all:** initial commit of skeleton ([51a036d1](http://github.com/aurelia/skeleton-plugin/commit/51a036d146750a0bafd443dbc3def51ef7f89f6e))
-

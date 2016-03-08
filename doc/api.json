@@ -450,8 +450,7 @@
               "kindString": "Call signature",
               "flags": {},
               "comment": {
-                "shortText": "Geocode Address",
-                "text": "Geocodes an address, once the Google Map script\nhas been properly loaded and promise instantiated.\n"
+                "shortText": "Geocodes an address, once the Google Map script\nhas been properly loaded and promise instantiated."
               },
               "parameters": [
                 {
@@ -804,52 +803,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": 65,
-      "name": "configure",
-      "kind": 64,
-      "kindString": "Function",
-      "flags": {
-        "isExported": true
-      },
-      "signatures": [
-        {
-          "id": 66,
-          "name": "configure",
-          "kind": 4096,
-          "kindString": "Call signature",
-          "flags": {},
-          "parameters": [
-            {
-              "id": 67,
-              "name": "aurelia",
-              "kind": 32768,
-              "kindString": "Parameter",
-              "flags": {},
-              "type": {
-                "type": "instrinct",
-                "name": "any"
-              }
-            },
-            {
-              "id": 68,
-              "name": "configCallback",
-              "kind": 32768,
-              "kindString": "Parameter",
-              "flags": {},
-              "type": {
-                "type": "instrinct",
-                "name": "any"
-              }
-            }
-          ],
-          "type": {
-            "type": "instrinct",
-            "name": "any"
-          }
-        }
-      ]
     }
   ],
   "groups": [
@@ -859,13 +812,6 @@
       "children": [
         3,
         16
-      ]
-    },
-    {
-      "title": "Functions",
-      "kind": 64,
-      "children": [
-        65
       ]
     }
   ]

@@ -1,29 +1,9 @@
 import {inject} from 'aurelia-dependency-injection';
-import {bindable,customElement} from 'aurelia-templating';
+import {bindable, customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 
-export class Configure {
+import {Configure} from './configure';
 
-    constructor() {
-        this._config = {
-            apiScript: 'https://maps.googleapis.com/maps/api/js',
-            apiKey: ''
-        };
-    }
-
-    options(obj) {
-        Object.assign(this._config, obj);
-    }
-
-    get(key) {
-        return this._config[key];
-    }
-
-    set(key, val) {
-        this._config[key] = val;
-        return this._config[key];
-    }
-}
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure)
 export class GoogleMaps {
@@ -56,10 +36,10 @@ export class GoogleMaps {
         this.element.addEventListener('dragstart', evt => {
             evt.preventDefault();
         });
-        
+
         this._scriptPromise.then(() => {
             let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
-            
+
             let options = {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
@@ -69,7 +49,7 @@ export class GoogleMaps {
             this.map = new google.maps.Map(this.element, options);
 
             this.map.addListener('click', (e) => {
-                var changeEvent;
+                let changeEvent;
                 if (window.CustomEvent) {
                     changeEvent = new CustomEvent('map-click', {
                         detail: e,
@@ -82,23 +62,21 @@ export class GoogleMaps {
 
                 this.element.dispatchEvent(changeEvent);
             });
-            
+
             this.createMarker({
                 map: this.map,
                 position: latLng
             });
         });
     }
-    
+
     /**
-     * Geocode Address
-     * 
      * Geocodes an address, once the Google Map script
      * has been properly loaded and promise instantiated.
-     * 
+     *
      * @param address string
      * @param geocoder any
-     * 
+     *
      */
     geocodeAddress(address, geocoder) {
         this._scriptPromise.then(() => {
@@ -111,42 +89,42 @@ export class GoogleMaps {
                         position: results[0].geometry.location
                     });
                 }
-            }); 
+            });
         });
     }
-    
+
     /**
      * Get Current Position
-     * 
+     *
      * Get the users current coordinate info from their browser
-     * 
+     *
      */
     getCurrentPosition() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
         } else {
-            return Promise.reject('Browser Geolocation not supported or found.')
+            return Promise.reject('Browser Geolocation not supported or found.');
         }
     }
-    
+
     /**
      * Load API Script
-     * 
+     *
      * Loads the Google Maps Javascript and then resolves a promise
      * if loaded. If Google Maps is already loaded, we just return
      * an immediately resolved promise.
-     * 
+     *
      * @return Promise
-     * 
+     *
      */
     loadApiScript() {
         if (this._scriptPromise) {
             return this._scriptPromise;
         }
-        
+
         if (window.google === undefined || window.google.maps === undefined) {
             let script = document.createElement('script');
-            
+
             script.type = 'text/javascript';
             script.async = true;
             script.defer = true;
@@ -157,12 +135,12 @@ export class GoogleMaps {
                 window.myGoogleMapsCallback = () => {
                     resolve();
                 };
-                
+
                 script.onerror = error => {
                     reject(error);
                 };
             });
-            
+
             return this._scriptPromise;
         }
     }
@@ -189,7 +167,7 @@ export class GoogleMaps {
 
     setCenter(latLong) {
         this._scriptPromise.then(() => {
-            this.map.setCenter(latLong)
+            this.map.setCenter(latLong);
         });
     }
 
@@ -203,10 +181,10 @@ export class GoogleMaps {
     addressChanged(newValue) {
         this._scriptPromise.then(() => {
             let geocoder = new google.maps.Geocoder;
-            
+
             this.taskQueue.queueMicroTask(() => {
                 this.geocodeAddress(newValue, geocoder);
-            }); 
+            });
         });
     }
 
@@ -214,7 +192,7 @@ export class GoogleMaps {
         this._scriptPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
-            }); 
+            });
         });
     }
 
@@ -231,21 +209,11 @@ export class GoogleMaps {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);
-            }); 
+            });
         });
     }
 
     error() {
         console.log.apply(console, arguments);
     }
-}
-export function configure(aurelia, configCallback) {
-    var instance = aurelia.container.get(Configure);
-
-    // Do we have a callback function?
-    if (configCallback !== undefined && typeof(configCallback) === 'function') {
-        configCallback(instance);
-    }
-
-    aurelia.globalResources('./google-maps');
 }
