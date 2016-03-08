@@ -1,9 +1,29 @@
 import {inject} from 'aurelia-dependency-injection';
-import {bindable, customElement} from 'aurelia-templating';
+import {bindable,customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 
-import {Configure} from './configure';
+export class Configure {
 
+    constructor() {
+        this._config = {
+            apiScript: 'https://maps.googleapis.com/maps/api/js',
+            apiKey: ''
+        };
+    }
+
+    options(obj) {
+        Object.assign(this._config, obj);
+    }
+
+    get(key) {
+        return this._config[key];
+    }
+
+    set(key, val) {
+        this._config[key] = val;
+        return this._config[key];
+    }
+}
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure)
 export class GoogleMaps {
@@ -31,7 +51,6 @@ export class GoogleMaps {
 
         this.loadApiScript();
     }
-
 
     attached() {
         this.element.addEventListener('dragstart', evt => {
@@ -219,4 +238,14 @@ export class GoogleMaps {
     error() {
         console.log.apply(console, arguments);
     }
+}
+export function configure(aurelia, configCallback) {
+    var instance = aurelia.container.get(Configure);
+
+    // Do we have a callback function?
+    if (configCallback !== undefined && typeof(configCallback) === 'function') {
+        configCallback(instance);
+    }
+
+    aurelia.globalResources('./google-maps');
 }

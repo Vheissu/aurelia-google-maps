@@ -1,3 +1,11 @@
+### 1.0.2 (2016-03-08)
+
+
+#### Features
+
+* **click:** Added map click event to DOM ([c31dfd90](http://github.com/Vheissu/aurelia-google-maps/commit/c31dfd90b76d1ad122c35b1482b5c74c76fa3082))
+
+
 ### 1.0.1 (2016-03-03)
 
 
