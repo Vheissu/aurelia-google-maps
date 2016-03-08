@@ -1,4 +1,4 @@
-import {Configure} from './configure';
+import { Configure } from './configure'
 
 export function configure(aurelia, configCallback) {
     var instance = aurelia.container.get(Configure);

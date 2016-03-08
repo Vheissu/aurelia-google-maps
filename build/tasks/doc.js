@@ -10,7 +10,7 @@ gulp.task('doc-generate', function(){
       target: 'es6',
       includeDeclarations: true,
       json: paths.doc + '/api.json',
-      name: paths.packageName + '-docs', 
+      name: paths.packageName + '-docs',
       mode: 'modules',
       excludeExternals: true,
       ignoreCompilerErrors: false,
@@ -20,7 +20,7 @@ gulp.task('doc-generate', function(){
 
 gulp.task('doc-extract', function(){
   return gulp.src([paths.doc + '/api.json'])
-    .pipe(typedocExtractor(paths.packageName))
+    .pipe(typedocExtractor(paths.output + 'amd/' + paths.packageName))
     .pipe(gulp.dest(paths.doc));
 });
 

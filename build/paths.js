@@ -9,10 +9,13 @@ module.exports = {
   source: appRoot + '**/*.js',
   html: appRoot + '**/*.html',
   style: 'styles/**/*.css',
-  output: 'dist/',
-  doc:'./doc',
+  less: appRoot + 'styles/**/*.less',
   tests: 'test/**/*.js',
+  output: 'dist/',
+  sample: 'sample',
+  doc:'./doc',
   e2eSpecsSrc: 'test/e2e/src/*.js',
   e2eSpecsDist: 'test/e2e/dist/',
-  packageName: pkg.name
+  packageName: pkg.name,
+  styleFolder: './styles',
 };
