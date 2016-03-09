@@ -301,7 +301,7 @@ var GoogleMaps = (function () {
     GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
         var _this12 = this;
 
-        if (null !== this._markersSubscription) {
+        if (this._markersSubscription !== null) {
             this._markersSubscription.dispose();
 
             for (var _iterator = this._renderedMarkers, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
@@ -382,7 +382,7 @@ var GoogleMaps = (function () {
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                             var renderedMarker = this._renderedMarkers[markerIndex];
 
-                            if (renderedMarker.position.lat() == removedObj.latitude && renderedMarker.position.lng() == removedObj.longitude) {
+                            if (renderedMarker.position.lat() === removedObj.latitude && renderedMarker.position.lng() === removedObj.longitude) {
                                 renderedMarker.setMap(null);
 
                                 this._renderedMarkers.splice(markerIndex, 1);
