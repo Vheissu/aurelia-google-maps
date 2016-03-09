@@ -6,7 +6,7 @@ A highly configurable custom element for use in your Aurelia applications for in
 ## To Install
 
 ``` shell
-jspm install npm:aurelia-google-maps
+jspm install aurelia-google-maps
 ```
 
 ## Configuring For Use
