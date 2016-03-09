@@ -60,7 +60,7 @@
   "jspm": {
     "registry": "npm",
     "jspmPackage": true,
-    "main": "aurelia-google-maps",
+    "main": "google-maps",
     "format": "amd",
     "directories": {
       "dist": "dist/amd"
