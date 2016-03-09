@@ -244,7 +244,7 @@ export class GoogleMaps {
      */
     markersChanged(newValue) {
         // If there was a previous subscription
-        if (null !== this._markersSubscription) {
+        if (this._markersSubscription !== null) {
             // Dispose of the subscription
             this._markersSubscription.dispose();
 
@@ -260,8 +260,7 @@ export class GoogleMaps {
         // Add the subcription to markers
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
-            .subscribe((splices) => { this.markerCollectionChange(splices) })
-        ;
+            .subscribe((splices) => { this.markerCollectionChange(splices); });
 
         // Render all markers again
         this._scriptPromise.then(() => {
@@ -280,19 +279,16 @@ export class GoogleMaps {
     markerCollectionChange(splices) {
         for (let splice of splices) {
             if (splice.removed.length) {
-
                 // Iterate over all the removed markers
                 for (let removedObj of splice.removed) {
-
                     // Iterate over all the rendered markers to find the one to remove
-                    for (let markerIndex in this._renderedMarkers){
+                    for (let markerIndex in this._renderedMarkers) {
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
-                            var renderedMarker = this._renderedMarkers[markerIndex];
+                            let renderedMarker = this._renderedMarkers[markerIndex];
 
                             // Check if the latitude/longitude matches
-                            if (renderedMarker.position.lat() == removedObj.latitude &&
-                                renderedMarker.position.lng() == removedObj.longitude) {
-
+                            if (renderedMarker.position.lat() === removedObj.latitude &&
+                                renderedMarker.position.lng() === removedObj.longitude) {
                                 // Set the map to null;
                                 renderedMarker.setMap(null);
 
