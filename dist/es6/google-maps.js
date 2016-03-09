@@ -24,8 +24,10 @@ export class GoogleMaps {
 
     map = null;
     _renderedMarkers = [];
-    _scriptPromise = null;
     _markersSubscription = null;
+    _scriptPromise = null;
+    _mapPromise = null;
+    _mapResolve = null;
 
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.element = element;
@@ -43,6 +45,14 @@ export class GoogleMaps {
         }
 
         this.loadApiScript();
+
+        let self = this;
+        this._mapPromise = this._scriptPromise.then(() => {
+            return new Promise((resolve, reject) => {
+                // Register the the resolve method for _mapPromise
+                self._mapResolve = resolve;
+            });
+        });
     }
 
     attached() {
@@ -60,6 +70,7 @@ export class GoogleMaps {
             };
 
             this.map = new google.maps.Map(this.element, options);
+            this._mapResolve();
 
             // Add event listener for click event
             this.map.addListener('click', (e) => {
@@ -217,6 +228,7 @@ export class GoogleMaps {
         }
 
         if (window.google === undefined || window.google.maps === undefined) {
+            // google has not been defined yet
             let script = document.createElement('script');
 
             script.type = 'text/javascript';
@@ -234,6 +246,11 @@ export class GoogleMaps {
                     reject(error);
                 };
             });
+
+            return this._scriptPromise;
+        } else {
+            // google has been defined already, so return an immediately resolved Promise that has scope
+            this._scriptPromise = new Promise(resolve => { resolve(); });
 
             return this._scriptPromise;
         }
@@ -260,13 +277,13 @@ export class GoogleMaps {
     }
 
     setCenter(latLong) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.map.setCenter(latLong);
         });
     }
 
     updateCenter() {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
             this.setCenter(latLng);
         });
@@ -334,7 +351,7 @@ export class GoogleMaps {
             .subscribe((splices) => { this.markerCollectionChange(splices); });
 
         // Render all markers again
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             for (let marker of newValue) {
                 this.renderMarker(marker);
             }
