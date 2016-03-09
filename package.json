@@ -60,7 +60,7 @@
   "jspm": {
     "registry": "npm",
     "jspmPackage": true,
-    "main": "google-maps",
+    "main": "index",
     "format": "amd",
     "directories": {
       "dist": "dist/amd"
