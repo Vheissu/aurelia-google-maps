@@ -3,6 +3,7 @@ declare module 'aurelia-google-maps' {
   import { bindable, customElement }  from 'aurelia-templating';
   import { TaskQueue }  from 'aurelia-task-queue';
   import { BindingEngine }  from 'aurelia-framework';
+  import { EventAggregator }  from 'aurelia-event-aggregator';
   export class Configure {
     constructor();
     options(obj: any): any;
@@ -17,8 +18,9 @@ declare module 'aurelia-google-maps' {
     disableDefaultUI: any;
     markers: any;
     map: any;
-    constructor(element: any, taskQueue: any, config: any, bindingEngine: any);
+    constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
     attached(): any;
+    sendBoundsEvent(): any;
     
     /**
          * Render a marker on the map and add it to collection of rendered markers

@@ -2,6 +2,7 @@ import {inject} from 'aurelia-dependency-injection';
 import {bindable,customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from 'aurelia-framework';
+import {EventAggregator} from 'aurelia-event-aggregator';
 
 export class Configure {
 
@@ -26,8 +27,13 @@ export class Configure {
     }
 }
 
+// use constants to guard against typos
+const GM = 'googlemap';
+const BOUNDSCHANGED = `${GM}:bounds_changed`;
+const CLICK = `${GM}:click`;
+
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure, BindingEngine)
+@inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {
     @bindable address = null;
     @bindable longitude = 0;
@@ -41,11 +47,12 @@ export class GoogleMaps {
     _scriptPromise = null;
     _markersSubscription = null;
 
-    constructor(element, taskQueue, config, bindingEngine) {
+    constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
         this.bindingEngine = bindingEngine;
+        this.eventAggregator = eventAggregator;
 
         if (!config.get('apiScript')) {
             console.error('No API script is defined.');
@@ -88,8 +95,28 @@ export class GoogleMaps {
                 }
 
                 this.element.dispatchEvent(changeEvent);
+                this.eventAggregator.publish(CLICK, e);
+            });
+
+            // As a proxy for the very noisy bounds_changed event, we'll
+            // listen to these two instead:
+            //
+            // dragend
+            this.map.addListener('dragend', () => {
+                this.sendBoundsEvent();
+            });
+            // zoom_changed
+            this.map.addListener('zoom_changed', () => {
+                this.sendBoundsEvent();
             });
         });
+    }
+
+    sendBoundsEvent() {
+        let bounds = this.map.getBounds();
+        if (bounds) {
+            this.eventAggregator.publish(BOUNDSCHANGED, bounds);
+        }
     }
 
     /**
