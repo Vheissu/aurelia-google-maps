@@ -32,11 +32,10 @@ declare module 'aurelia-google-maps' {
     /**
          * Render a marker on the map and add it to collection of rendered markers
          *
-         * @param latitude
-         * @param longitude
+         * @param marker
          *
          */
-    renderMarker(latitude: any, longitude: any): any;
+    renderMarker(marker: any): any;
     
     /**
          * Geocodes an address, once the Google Map script

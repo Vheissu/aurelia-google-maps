@@ -23,6 +23,7 @@ var _configure = require('./configure');
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ':bounds_changed';
 var CLICK = GM + ':click';
+var MARKERCLICK = GM + ':marker:click';
 
 var GoogleMaps = (function () {
     var _instanceInitializers = {};
@@ -159,17 +160,35 @@ var GoogleMaps = (function () {
         }
     };
 
-    GoogleMaps.prototype.renderMarker = function renderMarker(latitude, longitude) {
+    GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
         var _this2 = this;
 
-        var markerLatLng = new google.maps.LatLng(parseFloat(latitude), parseFloat(longitude));
+        var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
         this._scriptPromise.then(function () {
             _this2.createMarker({
                 map: _this2.map,
                 position: markerLatLng
-            }).then(function (marker) {
-                _this2._renderedMarkers.push(marker);
+            }).then(function (createdMarker) {
+                createdMarker.addListener('click', function () {
+                    _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                });
+
+                if (marker.icon) {
+                    createdMarker.setIcon(marker.icon);
+                }
+                if (marker.label) {
+                    createdMarker.setLabel(marker.label);
+                }
+                if (marker.title) {
+                    createdMarker.setTitle(marker.title);
+                }
+
+                if (marker.custom) {
+                    createdMarker.custom = marker.custom;
+                }
+
+                _this2._renderedMarkers.push(createdMarker);
             });
         });
     };
@@ -366,7 +385,7 @@ var GoogleMaps = (function () {
 
                 var marker = _ref2;
 
-                _this12.renderMarker(marker.latitude, marker.longitude);
+                _this12.renderMarker(marker);
             }
         });
     };
@@ -419,7 +438,7 @@ var GoogleMaps = (function () {
             if (splice.addedCount) {
                 var addedMarker = this.markers[splice.index];
 
-                this.renderMarker(addedMarker.latitude, addedMarker.longitude);
+                this.renderMarker(addedMarker);
             }
         }
     };
