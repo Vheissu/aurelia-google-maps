@@ -1,4 +1,4 @@
-define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', './configure'], function (exports, _aureliaDependencyInjection, _aureliaTemplating, _aureliaTaskQueue, _aureliaFramework, _configure) {
+define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (exports, _aureliaDependencyInjection, _aureliaTemplating, _aureliaTaskQueue, _aureliaFramework, _aureliaEventAggregator, _configure) {
     'use strict';
 
     exports.__esModule = true;
@@ -8,6 +8,10 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
     function _defineDecoratedPropertyDescriptor(target, key, descriptors) { var _descriptor = descriptors[key]; if (!_descriptor) return; var descriptor = {}; for (var _key in _descriptor) descriptor[_key] = _descriptor[_key]; descriptor.value = descriptor.initializer ? descriptor.initializer.call(target) : undefined; Object.defineProperty(target, key, descriptor); }
+
+    var GM = 'googlemap';
+    var BOUNDSCHANGED = GM + ':bounds_changed';
+    var CLICK = GM + ':click';
 
     var GoogleMaps = (function () {
         var _instanceInitializers = {};
@@ -56,7 +60,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             enumerable: true
         }], null, _instanceInitializers);
 
-        function GoogleMaps(element, taskQueue, config, bindingEngine) {
+        function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
             _classCallCheck(this, _GoogleMaps);
 
             _defineDecoratedPropertyDescriptor(this, 'address', _instanceInitializers);
@@ -80,6 +84,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             this.taskQueue = taskQueue;
             this.config = config;
             this.bindingEngine = bindingEngine;
+            this.eventAggregator = eventAggregator;
 
             if (!config.get('apiScript')) {
                 console.error('No API script is defined.');
@@ -123,8 +128,24 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     }
 
                     _this.element.dispatchEvent(changeEvent);
+                    _this.eventAggregator.publish(CLICK, e);
+                });
+
+                _this.map.addListener('dragend', function () {
+                    _this.sendBoundsEvent();
+                });
+
+                _this.map.addListener('zoom_changed', function () {
+                    _this.sendBoundsEvent();
                 });
             });
+        };
+
+        GoogleMaps.prototype.sendBoundsEvent = function sendBoundsEvent() {
+            var bounds = this.map.getBounds();
+            if (bounds) {
+                this.eventAggregator.publish(BOUNDSCHANGED, bounds);
+            }
         };
 
         GoogleMaps.prototype.renderMarker = function renderMarker(latitude, longitude) {
@@ -397,7 +418,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         };
 
         var _GoogleMaps = GoogleMaps;
-        GoogleMaps = _aureliaDependencyInjection.inject(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine)(GoogleMaps) || GoogleMaps;
+        GoogleMaps = _aureliaDependencyInjection.inject(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator)(GoogleMaps) || GoogleMaps;
         GoogleMaps = _aureliaTemplating.customElement('google-map')(GoogleMaps) || GoogleMaps;
         return GoogleMaps;
     })();

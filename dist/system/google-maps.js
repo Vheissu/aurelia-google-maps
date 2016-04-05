@@ -1,7 +1,7 @@
-System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', './configure'], function (_export) {
+System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export) {
     'use strict';
 
-    var inject, bindable, customElement, TaskQueue, BindingEngine, Configure, GoogleMaps;
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, GM, BOUNDSCHANGED, CLICK, GoogleMaps;
 
     var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
@@ -19,10 +19,16 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             TaskQueue = _aureliaTaskQueue.TaskQueue;
         }, function (_aureliaFramework) {
             BindingEngine = _aureliaFramework.BindingEngine;
+        }, function (_aureliaEventAggregator) {
+            EventAggregator = _aureliaEventAggregator.EventAggregator;
         }, function (_configure) {
             Configure = _configure.Configure;
         }],
         execute: function () {
+            GM = 'googlemap';
+            BOUNDSCHANGED = GM + ':bounds_changed';
+            CLICK = GM + ':click';
+
             GoogleMaps = (function () {
                 var _instanceInitializers = {};
 
@@ -70,7 +76,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     enumerable: true
                 }], null, _instanceInitializers);
 
-                function GoogleMaps(element, taskQueue, config, bindingEngine) {
+                function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
                     _classCallCheck(this, _GoogleMaps);
 
                     _defineDecoratedPropertyDescriptor(this, 'address', _instanceInitializers);
@@ -94,6 +100,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     this.taskQueue = taskQueue;
                     this.config = config;
                     this.bindingEngine = bindingEngine;
+                    this.eventAggregator = eventAggregator;
 
                     if (!config.get('apiScript')) {
                         console.error('No API script is defined.');
@@ -137,8 +144,24 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             }
 
                             _this.element.dispatchEvent(changeEvent);
+                            _this.eventAggregator.publish(CLICK, e);
+                        });
+
+                        _this.map.addListener('dragend', function () {
+                            _this.sendBoundsEvent();
+                        });
+
+                        _this.map.addListener('zoom_changed', function () {
+                            _this.sendBoundsEvent();
                         });
                     });
+                };
+
+                GoogleMaps.prototype.sendBoundsEvent = function sendBoundsEvent() {
+                    var bounds = this.map.getBounds();
+                    if (bounds) {
+                        this.eventAggregator.publish(BOUNDSCHANGED, bounds);
+                    }
                 };
 
                 GoogleMaps.prototype.renderMarker = function renderMarker(latitude, longitude) {
@@ -411,7 +434,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 };
 
                 var _GoogleMaps = GoogleMaps;
-                GoogleMaps = inject(Element, TaskQueue, Configure, BindingEngine)(GoogleMaps) || GoogleMaps;
+                GoogleMaps = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)(GoogleMaps) || GoogleMaps;
                 GoogleMaps = customElement('google-map')(GoogleMaps) || GoogleMaps;
                 return GoogleMaps;
             })();
