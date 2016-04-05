@@ -20,6 +20,13 @@ declare module 'aurelia-google-maps' {
     map: any;
     constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
     attached(): any;
+    
+    /**
+         * Send the map bounds as an EA event
+         *
+         * The `bounds` object is an instance of `LatLngBounds`
+         * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
+         */
     sendBoundsEvent(): any;
     
     /**

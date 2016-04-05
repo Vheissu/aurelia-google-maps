@@ -98,20 +98,27 @@ export class GoogleMaps {
                 this.eventAggregator.publish(CLICK, e);
             });
 
-            // As a proxy for the very noisy bounds_changed event, we'll
-            // listen to these two instead:
-            //
-            // dragend
+            /**
+             * As a proxy for the very noisy bounds_changed event, we'll
+             * listen to these two instead:
+             *
+             * dragend */
             this.map.addListener('dragend', () => {
                 this.sendBoundsEvent();
             });
-            // zoom_changed
+            /* zoom_changed */
             this.map.addListener('zoom_changed', () => {
                 this.sendBoundsEvent();
             });
         });
     }
 
+    /**
+     * Send the map bounds as an EA event
+     *
+     * The `bounds` object is an instance of `LatLngBounds`
+     * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
+     */
     sendBoundsEvent() {
         let bounds = this.map.getBounds();
         if (bounds) {
