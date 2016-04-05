@@ -1,7 +1,7 @@
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export) {
     'use strict';
 
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, GM, BOUNDSCHANGED, CLICK, GoogleMaps;
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, GoogleMaps;
 
     var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
@@ -28,6 +28,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             GM = 'googlemap';
             BOUNDSCHANGED = GM + ':bounds_changed';
             CLICK = GM + ':click';
+            MARKERCLICK = GM + ':marker:click';
 
             GoogleMaps = (function () {
                 var _instanceInitializers = {};
@@ -164,17 +165,35 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
                 };
 
-                GoogleMaps.prototype.renderMarker = function renderMarker(latitude, longitude) {
+                GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
                     var _this2 = this;
 
-                    var markerLatLng = new google.maps.LatLng(parseFloat(latitude), parseFloat(longitude));
+                    var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
                     this._scriptPromise.then(function () {
                         _this2.createMarker({
                             map: _this2.map,
                             position: markerLatLng
-                        }).then(function (marker) {
-                            _this2._renderedMarkers.push(marker);
+                        }).then(function (createdMarker) {
+                            createdMarker.addListener('click', function () {
+                                _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                            });
+
+                            if (marker.icon) {
+                                createdMarker.setIcon(marker.icon);
+                            }
+                            if (marker.label) {
+                                createdMarker.setLabel(marker.label);
+                            }
+                            if (marker.title) {
+                                createdMarker.setTitle(marker.title);
+                            }
+
+                            if (marker.custom) {
+                                createdMarker.custom = marker.custom;
+                            }
+
+                            _this2._renderedMarkers.push(createdMarker);
                         });
                     });
                 };
@@ -371,7 +390,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             var marker = _ref2;
 
-                            _this12.renderMarker(marker.latitude, marker.longitude);
+                            _this12.renderMarker(marker);
                         }
                     });
                 };
@@ -424,7 +443,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         if (splice.addedCount) {
                             var addedMarker = this.markers[splice.index];
 
-                            this.renderMarker(addedMarker.latitude, addedMarker.longitude);
+                            this.renderMarker(addedMarker);
                         }
                     }
                 };

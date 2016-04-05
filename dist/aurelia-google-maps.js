@@ -31,6 +31,7 @@ export class Configure {
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
+const MARKERCLICK = `${GM}:marker:click`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -129,21 +130,39 @@ export class GoogleMaps {
     /**
      * Render a marker on the map and add it to collection of rendered markers
      *
-     * @param latitude
-     * @param longitude
+     * @param marker
      *
      */
-    renderMarker(latitude, longitude) {
-        let markerLatLng = new google.maps.LatLng(parseFloat(latitude), parseFloat(longitude));
+    renderMarker(marker) {
+        let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
         this._scriptPromise.then(() => {
             // Create the marker
             this.createMarker({
                 map: this.map,
                 position: markerLatLng
-            }).then(marker => {
+            }).then(createdMarker => {
+                /* add event listener for click on the marker,
+                 * the event payload is the marker itself */
+                createdMarker.addListener('click', () => {
+                    this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                });
+                // Set some optional marker properties if they exist
+                if (marker.icon) {
+                    createdMarker.setIcon(marker.icon);
+                }
+                if (marker.label) {
+                    createdMarker.setLabel(marker.label);
+                }
+                if (marker.title) {
+                    createdMarker.setTitle(marker.title);
+                }
+                // Allow arbitrary data to be stored on the marker
+                if (marker.custom) {
+                    createdMarker.custom = marker.custom;
+                }
                 // Add it the array of rendered markers
-                this._renderedMarkers.push(marker);
+                this._renderedMarkers.push(createdMarker);
             });
         });
     }
@@ -320,7 +339,7 @@ export class GoogleMaps {
         // Render all markers again
         this._scriptPromise.then(() => {
             for (let marker of newValue) {
-                this.renderMarker(marker.latitude, marker.longitude);
+                this.renderMarker(marker);
             }
         });
     }
@@ -360,7 +379,7 @@ export class GoogleMaps {
             if (splice.addedCount) {
                 let addedMarker = this.markers[splice.index];
 
-                this.renderMarker(addedMarker.latitude, addedMarker.longitude);
+                this.renderMarker(addedMarker);
             }
         }
     }
