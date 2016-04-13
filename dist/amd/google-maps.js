@@ -178,7 +178,10 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     }
                     if (marker.infoWindow) {
                         createdMarker.infoWindow = new google.maps.InfoWindow({
-                            content: marker.infoWindow.content
+                            content: marker.infoWindow.content,
+                            pixelOffset: marker.infoWindow.pixelOffset,
+                            postition: marker.infoWindow.position,
+                            maxWidth: marker.infoWindow.maxWidth
                         });
                     }
 
