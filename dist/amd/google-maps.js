@@ -160,7 +160,11 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     position: markerLatLng
                 }).then(function (createdMarker) {
                     createdMarker.addListener('click', function () {
-                        _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                        if (!createdMarker.infoWindow) {
+                            _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                        } else {
+                            createdMarker.infoWindow.open(_this2.map, createdMarker);
+                        }
                     });
 
                     if (marker.icon) {
@@ -171,6 +175,11 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     }
                     if (marker.title) {
                         createdMarker.setTitle(marker.title);
+                    }
+                    if (marker.infoWindow) {
+                        createdMarker.infoWindow = new google.maps.InfoWindow({
+                            content: marker.infoWindow.content
+                        });
                     }
 
                     if (marker.custom) {
