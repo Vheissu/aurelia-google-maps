@@ -20,7 +20,8 @@ export function configure(aurelia) {
     aurelia.use
         .plugin('aurelia-google-maps', config => {
             config.options({
-                apiKey: 'myapiKey'
+                apiKey: 'myapiKey',
+                apiLibraries: 'drawing,geometry' //get optional libraries like drawing, geometry, ... - comma seperated list
             });
         })
 }
