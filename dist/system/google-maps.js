@@ -94,8 +94,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                     this.map = null;
                     this._renderedMarkers = [];
-                    this._scriptPromise = null;
                     this._markersSubscription = null;
+                    this._scriptPromise = null;
+                    this._mapPromise = null;
+                    this._mapResolve = null;
 
                     this.element = element;
                     this.taskQueue = taskQueue;
@@ -112,6 +114,13 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
 
                     this.loadApiScript();
+
+                    var self = this;
+                    this._mapPromise = this._scriptPromise.then(function () {
+                        return new Promise(function (resolve, reject) {
+                            self._mapResolve = resolve;
+                        });
+                    });
                 }
 
                 GoogleMaps.prototype.attached = function attached() {
@@ -131,6 +140,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         };
 
                         _this.map = new google.maps.Map(_this.element, options);
+                        _this._mapResolve();
 
                         _this.map.addListener('click', function (e) {
                             var changeEvent = undefined;
@@ -275,6 +285,12 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         })();
 
                         if (typeof _ret === 'object') return _ret.v;
+                    } else {
+                        this._scriptPromise = new Promise(function (resolve) {
+                            resolve();
+                        });
+
+                        return this._scriptPromise;
                     }
                 };
 
@@ -303,7 +319,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.setCenter = function setCenter(latLong) {
                     var _this6 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         _this6.map.setCenter(latLong);
                     });
                 };
@@ -311,7 +327,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.updateCenter = function updateCenter() {
                     var _this7 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         var latLng = new google.maps.LatLng(parseFloat(_this7.latitude), parseFloat(_this7.longitude));
                         _this7.setCenter(latLng);
                     });
@@ -390,7 +406,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         _this12.markerCollectionChange(splices);
                     });
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         for (var _iterator2 = newValue, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
                             var _ref2;
 
