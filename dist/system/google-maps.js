@@ -176,7 +176,11 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             position: markerLatLng
                         }).then(function (createdMarker) {
                             createdMarker.addListener('click', function () {
-                                _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                                if (!createdMarker.infoWindow) {
+                                    _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
+                                } else {
+                                    createdMarker.infoWindow.open(_this2.map, createdMarker);
+                                }
                             });
 
                             if (marker.icon) {
@@ -187,6 +191,14 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             }
                             if (marker.title) {
                                 createdMarker.setTitle(marker.title);
+                            }
+                            if (marker.infoWindow) {
+                                createdMarker.infoWindow = new google.maps.InfoWindow({
+                                    content: marker.infoWindow.content,
+                                    pixelOffset: marker.infoWindow.pixelOffset,
+                                    position: marker.infoWindow.position,
+                                    maxWidth: marker.infoWindow.maxWidth
+                                });
                             }
 
                             if (marker.custom) {
@@ -241,7 +253,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             script.type = 'text/javascript';
                             script.async = true;
                             script.defer = true;
-                            script.src = _this4.config.get('apiScript') + '?key=' + _this4.config.get('apiKey') + '&callback=myGoogleMapsCallback';
+                            script.src = _this4.config.get('apiScript') + '?key=' + _this4.config.get('apiKey') + '&libraries=' + _this4.config.get('apiLibraries') + '&callback=myGoogleMapsCallback';
                             document.body.appendChild(script);
 
                             _this4._scriptPromise = new Promise(function (resolve, reject) {

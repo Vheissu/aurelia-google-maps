@@ -14,7 +14,8 @@ System.register([], function (_export) {
 
                     this._config = {
                         apiScript: 'https://maps.googleapis.com/maps/api/js',
-                        apiKey: ''
+                        apiKey: '',
+                        apiLibraries: ''
                     };
                 }
 

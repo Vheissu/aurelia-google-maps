@@ -11,7 +11,8 @@ define(['exports'], function (exports) {
 
             this._config = {
                 apiScript: 'https://maps.googleapis.com/maps/api/js',
-                apiKey: ''
+                apiKey: '',
+                apiLibraries: ''
             };
         }
 

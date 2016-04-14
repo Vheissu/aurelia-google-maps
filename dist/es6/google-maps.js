@@ -124,7 +124,12 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
-                    this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                    if(!createdMarker.infoWindow){
+                        this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                    } else {
+                        createdMarker.infoWindow.open(this.map, createdMarker)
+                    }
+
                 });
                 // Set some optional marker properties if they exist
                 if (marker.icon) {
@@ -136,7 +141,15 @@ export class GoogleMaps {
                 if (marker.title) {
                     createdMarker.setTitle(marker.title);
                 }
-                // Allow arbitrary data to be stored on the marker
+                if(marker.infoWindow){
+                    createdMarker.infoWindow = new google.maps.InfoWindow({
+                        content: marker.infoWindow.content,
+                        pixelOffset: marker.infoWindow.pixelOffset,
+                        position: marker.infoWindow.position,
+                        maxWidth: marker.infoWindow.maxWidth
+                    })
+                }
+                // Allows arbitrary data to be stored on the marker
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
@@ -204,7 +217,7 @@ export class GoogleMaps {
             script.type = 'text/javascript';
             script.async = true;
             script.defer = true;
-            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&callback=myGoogleMapsCallback`;
+            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&libraries=${this.config.get('apiLibraries')}&callback=myGoogleMapsCallback`;
             document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {
