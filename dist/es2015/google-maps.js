@@ -278,6 +278,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     setCenter(latLong) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
+            this.sendBoundsEvent();
         });
     }
 

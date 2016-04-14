@@ -316,6 +316,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
         this._mapPromise.then(function () {
             _this6.map.setCenter(latLong);
+            _this6.sendBoundsEvent();
         });
     };
 

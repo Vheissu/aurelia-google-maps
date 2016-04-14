@@ -313,6 +313,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
 
             this._mapPromise.then(function () {
                 _this6.map.setCenter(latLong);
+                _this6.sendBoundsEvent();
             });
         };
 

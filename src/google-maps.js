@@ -279,6 +279,7 @@ export class GoogleMaps {
     setCenter(latLong) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
+            this.sendBoundsEvent();
         });
     }
 
