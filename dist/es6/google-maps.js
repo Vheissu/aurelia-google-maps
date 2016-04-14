@@ -124,35 +124,40 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
-                    if(!createdMarker.infoWindow){
+                    if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     } else {
-                        createdMarker.infoWindow.open(this.map, createdMarker)
+                        createdMarker.infoWindow.open(this.map, createdMarker);
                     }
-
                 });
+
                 // Set some optional marker properties if they exist
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
+
                 if (marker.label) {
                     createdMarker.setLabel(marker.label);
                 }
+
                 if (marker.title) {
                     createdMarker.setTitle(marker.title);
                 }
-                if(marker.infoWindow){
+
+                if (marker.infoWindow) {
                     createdMarker.infoWindow = new google.maps.InfoWindow({
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
                         maxWidth: marker.infoWindow.maxWidth
-                    })
+                    });
                 }
+
                 // Allows arbitrary data to be stored on the marker
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
+
                 // Add it the array of rendered markers
                 this._renderedMarkers.push(createdMarker);
             });

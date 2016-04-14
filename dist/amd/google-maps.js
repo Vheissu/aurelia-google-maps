@@ -170,12 +170,15 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     if (marker.icon) {
                         createdMarker.setIcon(marker.icon);
                     }
+
                     if (marker.label) {
                         createdMarker.setLabel(marker.label);
                     }
+
                     if (marker.title) {
                         createdMarker.setTitle(marker.title);
                     }
+
                     if (marker.infoWindow) {
                         createdMarker.infoWindow = new google.maps.InfoWindow({
                             content: marker.infoWindow.content,
