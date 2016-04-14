@@ -1,4 +1,4 @@
-export class Configure {
+export let Configure = class Configure {
 
     constructor() {
         this._config = {
@@ -20,4 +20,4 @@ export class Configure {
         this._config[key] = val;
         return this._config[key];
     }
-}
+};

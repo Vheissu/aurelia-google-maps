@@ -1,12 +1,13 @@
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.GoogleMaps = undefined;
 
-var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _defineDecoratedPropertyDescriptor(target, key, descriptors) { var _descriptor = descriptors[key]; if (!_descriptor) return; var descriptor = {}; for (var _key in _descriptor) descriptor[_key] = _descriptor[_key]; descriptor.value = descriptor.initializer ? descriptor.initializer.call(target) : undefined; Object.defineProperty(target, key, descriptor); }
+var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6;
 
 var _aureliaDependencyInjection = require('aurelia-dependency-injection');
 
@@ -20,72 +21,71 @@ var _aureliaEventAggregator = require('aurelia-event-aggregator');
 
 var _configure = require('./configure');
 
+function _initDefineProp(target, property, descriptor, context) {
+    if (!descriptor) return;
+    Object.defineProperty(target, property, {
+        enumerable: descriptor.enumerable,
+        configurable: descriptor.configurable,
+        writable: descriptor.writable,
+        value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
+    });
+}
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
+    var desc = {};
+    Object['ke' + 'ys'](descriptor).forEach(function (key) {
+        desc[key] = descriptor[key];
+    });
+    desc.enumerable = !!desc.enumerable;
+    desc.configurable = !!desc.configurable;
+
+    if ('value' in desc || desc.initializer) {
+        desc.writable = true;
+    }
+
+    desc = decorators.slice().reverse().reduce(function (desc, decorator) {
+        return decorator(target, property, desc) || desc;
+    }, desc);
+
+    if (context && desc.initializer !== void 0) {
+        desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
+        desc.initializer = undefined;
+    }
+
+    if (desc.initializer === void 0) {
+        Object['define' + 'Property'](target, property, desc);
+        desc = null;
+    }
+
+    return desc;
+}
+
+function _initializerWarningHelper(descriptor, context) {
+    throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
+}
+
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ':bounds_changed';
 var CLICK = GM + ':click';
 var MARKERCLICK = GM + ':marker:click';
 
-var GoogleMaps = (function () {
-    var _instanceInitializers = {};
-
-    _createDecoratedClass(GoogleMaps, [{
-        key: 'address',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return null;
-        },
-        enumerable: true
-    }, {
-        key: 'longitude',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return 0;
-        },
-        enumerable: true
-    }, {
-        key: 'latitude',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return 0;
-        },
-        enumerable: true
-    }, {
-        key: 'zoom',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return 8;
-        },
-        enumerable: true
-    }, {
-        key: 'disableDefaultUI',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return false;
-        },
-        enumerable: true
-    }, {
-        key: 'markers',
-        decorators: [_aureliaTemplating.bindable],
-        initializer: function initializer() {
-            return [];
-        },
-        enumerable: true
-    }], null, _instanceInitializers);
-
+var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customElement)('google-map'), _dec2 = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
-        _classCallCheck(this, _GoogleMaps);
+        _classCallCheck(this, GoogleMaps);
 
-        _defineDecoratedPropertyDescriptor(this, 'address', _instanceInitializers);
+        _initDefineProp(this, 'address', _descriptor, this);
 
-        _defineDecoratedPropertyDescriptor(this, 'longitude', _instanceInitializers);
+        _initDefineProp(this, 'longitude', _descriptor2, this);
 
-        _defineDecoratedPropertyDescriptor(this, 'latitude', _instanceInitializers);
+        _initDefineProp(this, 'latitude', _descriptor3, this);
 
-        _defineDecoratedPropertyDescriptor(this, 'zoom', _instanceInitializers);
+        _initDefineProp(this, 'zoom', _descriptor4, this);
 
-        _defineDecoratedPropertyDescriptor(this, 'disableDefaultUI', _instanceInitializers);
+        _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
 
-        _defineDecoratedPropertyDescriptor(this, 'markers', _instanceInitializers);
+        _initDefineProp(this, 'markers', _descriptor6, this);
 
         this.map = null;
         this._renderedMarkers = [];
@@ -138,7 +138,7 @@ var GoogleMaps = (function () {
             _this._mapResolve();
 
             _this.map.addListener('click', function (e) {
-                var changeEvent = undefined;
+                var changeEvent = void 0;
                 if (window.CustomEvent) {
                     changeEvent = new CustomEvent('map-click', {
                         detail: e,
@@ -255,7 +255,7 @@ var GoogleMaps = (function () {
         }
 
         if (window.google === undefined || window.google.maps === undefined) {
-            var _ret = (function () {
+            var _ret = function () {
                 var script = document.createElement('script');
 
                 script.type = 'text/javascript';
@@ -277,9 +277,9 @@ var GoogleMaps = (function () {
                 return {
                     v: _this4._scriptPromise
                 };
-            })();
+            }();
 
-            if (typeof _ret === 'object') return _ret.v;
+            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
         } else {
             this._scriptPromise = new Promise(function (resolve) {
                 resolve();
@@ -414,9 +414,9 @@ var GoogleMaps = (function () {
                     _ref2 = _i2.value;
                 }
 
-                var marker = _ref2;
+                var _marker = _ref2;
 
-                _this12.renderMarker(marker);
+                _this12.renderMarker(_marker);
             }
         });
     };
@@ -478,10 +478,35 @@ var GoogleMaps = (function () {
         console.log.apply(console, arguments);
     };
 
-    var _GoogleMaps = GoogleMaps;
-    GoogleMaps = _aureliaDependencyInjection.inject(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator)(GoogleMaps) || GoogleMaps;
-    GoogleMaps = _aureliaTemplating.customElement('google-map')(GoogleMaps) || GoogleMaps;
     return GoogleMaps;
-})();
-
-exports.GoogleMaps = GoogleMaps;
+}(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'address', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return null;
+    }
+}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'longitude', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return 0;
+    }
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'latitude', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return 0;
+    }
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'zoom', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return 8;
+    }
+}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'disableDefaultUI', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return false;
+    }
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'markers', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return [];
+    }
+})), _class2)) || _class) || _class);

@@ -1,10 +1,12 @@
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Configure = (function () {
+var Configure = exports.Configure = function () {
     function Configure() {
         _classCallCheck(this, Configure);
 
@@ -29,6 +31,4 @@ var Configure = (function () {
     };
 
     return Configure;
-})();
-
-exports.Configure = Configure;
+}();

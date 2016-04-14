@@ -1,9 +1,20 @@
 declare module 'aurelia-google-maps' {
-  import { inject }  from 'aurelia-dependency-injection';
-  import { bindable, customElement }  from 'aurelia-templating';
-  import { TaskQueue }  from 'aurelia-task-queue';
-  import { BindingEngine }  from 'aurelia-framework';
-  import { EventAggregator }  from 'aurelia-event-aggregator';
+  import {
+    inject
+  } from 'aurelia-dependency-injection';
+  import {
+    bindable,
+    customElement
+  } from 'aurelia-templating';
+  import {
+    TaskQueue
+  } from 'aurelia-task-queue';
+  import {
+    BindingEngine
+  } from 'aurelia-framework';
+  import {
+    EventAggregator
+  } from 'aurelia-event-aggregator';
   export class Configure {
     constructor();
     options(obj: any): any;
@@ -18,6 +29,11 @@ declare module 'aurelia-google-maps' {
     disableDefaultUI: any;
     markers: any;
     map: any;
+    _renderedMarkers: any;
+    _markersSubscription: any;
+    _scriptPromise: any;
+    _mapPromise: any;
+    _mapResolve: any;
     constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
     attached(): any;
     
@@ -93,4 +109,5 @@ declare module 'aurelia-google-maps' {
     markerCollectionChange(splices: any): any;
     error(): any;
   }
+  export function configure(aurelia: any, configCallback: any): any;
 }

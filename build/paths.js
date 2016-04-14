@@ -10,7 +10,6 @@ module.exports = {
   html: appRoot + '**/*.html',
   style: 'styles/**/*.css',
   less: appRoot + 'styles/**/*.less',
-  tests: 'test/**/*.js',
   output: 'dist/',
   sample: 'sample',
   doc:'./doc',

@@ -1,6 +1,5 @@
 var gulp = require('gulp');
 var runSequence = require('run-sequence');
-var changed = require('gulp-changed');
 var to5 = require('gulp-babel');
 var paths = require('../paths');
 var compilerOptions = require('../babel-options');
@@ -13,21 +12,26 @@ var concat = require('gulp-concat');
 var insert = require('gulp-insert');
 var rename = require('gulp-rename');
 var tools = require('aurelia-tools');
-var del = require('del');
-var vinylPaths = require('vinyl-paths');
+var gulpIgnore = require('gulp-ignore');
 
 var jsName = paths.packageName + '.js';
 
+function removeDTSPlugin(options) {
+  var found = options.plugins.find(function(x){
+    return x instanceof Array;
+  });
+
+  var index = options.plugins.indexOf(found);
+  options.plugins.splice(index, 1);
+  return options;
+}
+
 gulp.task('build-index', function(){
   var importsToAdd = [];
-  var files = [
-    'configure.js',
-    'google-maps.js'
-    ].map(function(file){
-      return paths.root + file;
-    });
 
-  return gulp.src(files)
+  return gulp.src(paths.source)
+    .pipe(tools.sortFiles())
+    .pipe(gulpIgnore.exclude('aurelia-i18n.js'))
     .pipe(through2.obj(function(file, enc, callback) {
       file.contents = new Buffer(tools.extractImports(file.contents.toString("utf8"), importsToAdd));
       this.push(file);
@@ -40,38 +44,27 @@ gulp.task('build-index', function(){
     .pipe(gulp.dest(paths.output));
 });
 
-gulp.task('build-html-es6', function () {
-  return gulp.src(paths.html)
-    .pipe(gulp.dest(paths.output + 'es6'));
+gulp.task('build-es2015-temp', function () {
+    return gulp.src(paths.output + jsName)
+      .pipe(to5(assign({}, compilerOptions.commonjs())))
+      .pipe(gulp.dest(paths.output + 'temp'));
 });
 
-gulp.task('build-es6-temp', function () {
-  return gulp.src(paths.output + jsName)
-    .pipe(to5(assign({}, compilerOptions, {modules:'common'})))
-    .pipe(gulp.dest(paths.output + 'temp'));
-});
-
-gulp.task('build-es6', ['build-html-es6'], function () {
+gulp.task('build-es2015', ['build-html-es2015'], function () {
   return gulp.src(paths.source)
-    .pipe(gulp.dest(paths.output + 'es6'));
+    .pipe(to5(assign({}, removeDTSPlugin(compilerOptions.es2015()))))
+    .pipe(gulp.dest(paths.output + 'es2015'));
+});
+
+gulp.task('build-html-es2015', function () {
+  return gulp.src(paths.html)
+    .pipe(gulp.dest(paths.output + 'es2015'));
 });
 
 gulp.task('build-commonjs', ['build-html-commonjs'], function () {
   return gulp.src(paths.source)
-    .pipe(to5(assign({}, compilerOptions, {modules:'common', plugins: []})))
+    .pipe(to5(assign({}, removeDTSPlugin(compilerOptions.commonjs()))))
     .pipe(gulp.dest(paths.output + 'commonjs'));
-});
-
-gulp.task('build-amd', ['build-html-amd'], function () {
-  return gulp.src(paths.source)
-    .pipe(to5(assign({}, compilerOptions, {modules:'amd', plugins: []})))
-    .pipe(gulp.dest(paths.output + 'amd'));
-});
-
-gulp.task('build-system', ['build-html-system'], function () {
-  return gulp.src(paths.source)
-    .pipe(to5(assign({}, compilerOptions, {modules:'system', plugins: []})))
-    .pipe(gulp.dest(paths.output + 'system'));
 });
 
 gulp.task('build-html-commonjs', function () {
@@ -79,9 +72,21 @@ gulp.task('build-html-commonjs', function () {
     .pipe(gulp.dest(paths.output + 'commonjs'));
 });
 
+gulp.task('build-amd', ['build-html-amd'], function () {
+  return gulp.src(paths.source)
+    .pipe(to5(assign({}, removeDTSPlugin(compilerOptions.amd()))))
+    .pipe(gulp.dest(paths.output + 'amd'));
+});
+
 gulp.task('build-html-amd', function () {
   return gulp.src(paths.html)
     .pipe(gulp.dest(paths.output + 'amd'));
+});
+
+gulp.task('build-system', ['build-html-system'], function () {
+  return gulp.src(paths.source)
+    .pipe(to5(assign({}, removeDTSPlugin(compilerOptions.system()))))
+    .pipe(gulp.dest(paths.output + 'system'));
 });
 
 gulp.task('build-html-system', function () {
@@ -91,11 +96,11 @@ gulp.task('build-html-system', function () {
 
 gulp.task('build-dts', function(){
   return gulp.src(paths.output + paths.packageName + '.d.ts')
-    .pipe(rename(paths.packageName + '.d.ts'))
-    .pipe(gulp.dest(paths.output + 'es6'))
-    .pipe(gulp.dest(paths.output + 'commonjs'))
-    .pipe(gulp.dest(paths.output + 'amd'))
-    .pipe(gulp.dest(paths.output + 'system'));
+      .pipe(rename(paths.packageName + '.d.ts'))
+      .pipe(gulp.dest(paths.output + 'es2015'))
+      .pipe(gulp.dest(paths.output + 'commonjs'))
+      .pipe(gulp.dest(paths.output + 'amd'))
+      .pipe(gulp.dest(paths.output + 'system'));
 });
 
 gulp.task('build-css', function () {
@@ -107,6 +112,14 @@ gulp.task('build-css', function () {
 });
 
 gulp.task('minifyCSS', function () {
+  var es2015CSS = gulp.src(paths.style)
+   .pipe(minifyCSS({ keepBreaks: false }))
+   .pipe(gulp.dest(paths.output+"es2015"));
+
+   var commonCSS = gulp.src(paths.style)
+    .pipe(minifyCSS({ keepBreaks: false }))
+    .pipe(gulp.dest(paths.output+"commonjs"));
+
     var amdCSS = gulp.src(paths.style)
      .pipe(minifyCSS({ keepBreaks: false }))
      .pipe(gulp.dest(paths.output+"amd"));
@@ -115,22 +128,14 @@ gulp.task('minifyCSS', function () {
      .pipe(minifyCSS({ keepBreaks: false }))
      .pipe(gulp.dest(paths.output+"system"));
 
-    var commonCSS = gulp.src(paths.style)
-     .pipe(minifyCSS({ keepBreaks: false }))
-     .pipe(gulp.dest(paths.output+"commonjs"));
-
-     var es6CSS = gulp.src(paths.style)
-     .pipe(minifyCSS({ keepBreaks: false }))
-     .pipe(gulp.dest(paths.output+"es6"));
-
-    return es.concat(amdCSS,sysCSS,commonCSS,es6CSS);
+    return es.concat(es2015CSS, commonCSS, amdCSS, sysCSS);
 });
 
 gulp.task('build', function(callback) {
   return runSequence(
     'clean',
     'build-index',
-    ['build-es6-temp', 'build-commonjs', 'build-amd', 'build-system', 'build-es6', 'build-css'],
+    ['build-es2015-temp', 'build-es2015', 'build-commonjs', 'build-amd', 'build-system', 'build-css'],
     'minifyCSS',
     'build-dts',
     callback
