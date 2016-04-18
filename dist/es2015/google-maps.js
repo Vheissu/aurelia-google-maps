@@ -55,6 +55,8 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${ GM }:bounds_changed`;
 const CLICK = `${ GM }:click`;
 const MARKERCLICK = `${ GM }:marker:click`;
+const MARKERMOUSEOVER = `${ GM }:marker:mouse_over`;
+const MARKERMOUSEOUT = `${ GM }:marker:mouse_out`;
 
 export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = class GoogleMaps {
 
@@ -166,6 +168,14 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
                     } else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
+                });
+
+                createdMarker.addListener('mouseover', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                });
+
+                createdMarker.addListener('mouseout', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
                 });
 
                 if (marker.icon) {
@@ -320,6 +330,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);
+                this.sendZoomEvent();
             });
         });
     }

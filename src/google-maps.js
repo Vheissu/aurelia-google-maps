@@ -11,6 +11,8 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const MARKERCLICK = `${GM}:marker:click`;
+const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
+const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -117,6 +119,8 @@ export class GoogleMaps {
         }
     }
 
+    
+
     /**
      * Render a marker on the map and add it to collection of rendered markers
      *
@@ -141,6 +145,16 @@ export class GoogleMaps {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
                 });
+                
+                /*add event listener for hover over the marker,
+                 *the event payload is the marker itself*/
+                createdMarker.addListener('mouseover', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                });
+                
+                createdMarker.addListener('mouseout', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                })
 
                 // Set some optional marker properties if they exist
                 if (marker.icon) {
@@ -321,6 +335,7 @@ export class GoogleMaps {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);
+                this.sendZoomEvent();
             });
         });
     }
