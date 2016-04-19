@@ -35,6 +35,7 @@ const CLICK = `${GM}:click`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const APILOADED = `${GM}:api:loaded`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -141,7 +142,13 @@ export class GoogleMaps {
         }
     }
 
+	/**
+     * Send after the api is loaded
+     */
     
+    sendApiLoadedEvent(){
+        this.eventAggregator.publish(APILOADED, this._scriptPromise);
+    }
 
     /**
      * Render a marker on the map and add it to collection of rendered markers
@@ -275,6 +282,7 @@ export class GoogleMaps {
 
             this._scriptPromise = new Promise((resolve, reject) => {
                 window.myGoogleMapsCallback = () => {
+                    this.sendApiLoadedEvent();
                     resolve();
                 };
 
@@ -357,7 +365,6 @@ export class GoogleMaps {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);
-                this.sendZoomEvent();
             });
         });
     }

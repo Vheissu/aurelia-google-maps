@@ -57,6 +57,7 @@ const CLICK = `${ GM }:click`;
 const MARKERCLICK = `${ GM }:marker:click`;
 const MARKERMOUSEOVER = `${ GM }:marker:mouse_over`;
 const MARKERMOUSEOUT = `${ GM }:marker:mouse_out`;
+const APILOADED = `${ GM }:api:loaded`;
 
 export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = class GoogleMaps {
 
@@ -154,6 +155,10 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
         }
     }
 
+    sendApiLoadedEvent() {
+        this.eventAggregator.publish(APILOADED, this._scriptPromise);
+    }
+
     renderMarker(marker) {
         let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
@@ -247,6 +252,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
             this._scriptPromise = new Promise((resolve, reject) => {
                 window.myGoogleMapsCallback = () => {
+                    this.sendApiLoadedEvent();
                     resolve();
                 };
 
@@ -330,7 +336,6 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);
-                this.sendZoomEvent();
             });
         });
     }

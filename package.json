@@ -1,6 +1,6 @@
 {
-  "name": "aurelia-google-maps",
-  "version": "1.0.7",
+  "name": "ITPRO-aurelia-google-maps",
+  "version": "0.0.0",
   "registry": "github",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
@@ -10,16 +10,16 @@
     "maps",
     "map"
   ],
-  "homepage": "https://github.com/Vheissu/aurelia-google-maps",
+  "homepage": "https://github.com/Tseberechts/aurelia-google-maps",
   "bugs": {
-    "url": "https://github.com/Vheissu/aurelia-google-maps/issues"
+    "url": "https://github.com/Tseberechts/aurelia-google-maps/issues"
   },
   "license": "MIT",
   "author": "Dwayne Charrington <dwaynecharrington@gmail.com>",
   "main": "dist/amd/index.js",
   "repository": {
     "type": "git",
-    "url": "http://github.com/Vheissu/aurelia-google-maps"
+    "url": "http://github.com/Tseberechts/aurelia-google-maps"
   },
   "devDependencies": {
     "aurelia-pal": "^1.0.0-beta.1.2.0",

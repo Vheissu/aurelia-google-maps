@@ -72,6 +72,7 @@ var CLICK = GM + ':click';
 var MARKERCLICK = GM + ':marker:click';
 var MARKERMOUSEOVER = GM + ':marker:mouse_over';
 var MARKERMOUSEOUT = GM + ':marker:mouse_out';
+var APILOADED = GM + ':api:loaded';
 
 var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customElement)('google-map'), _dec2 = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -170,6 +171,10 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
         if (bounds) {
             this.eventAggregator.publish(BOUNDSCHANGED, bounds);
         }
+    };
+
+    GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
+        this.eventAggregator.publish(APILOADED, this._scriptPromise);
     };
 
     GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
@@ -276,6 +281,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
                 _this4._scriptPromise = new Promise(function (resolve, reject) {
                     window.myGoogleMapsCallback = function () {
+                        _this4.sendApiLoadedEvent();
                         resolve();
                     };
 
@@ -378,7 +384,6 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
             _this11.taskQueue.queueMicroTask(function () {
                 var zoomValue = parseInt(newValue, 10);
                 _this11.map.setZoom(zoomValue);
-                _this11.sendZoomEvent();
             });
         });
     };

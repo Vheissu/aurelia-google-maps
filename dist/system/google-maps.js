@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, GoogleMaps;
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
         if (!descriptor) return;
@@ -79,6 +79,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             MARKERCLICK = GM + ':marker:click';
             MARKERMOUSEOVER = GM + ':marker:mouse_over';
             MARKERMOUSEOUT = GM + ':marker:mouse_out';
+            APILOADED = GM + ':api:loaded';
 
             _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -177,6 +178,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     if (bounds) {
                         this.eventAggregator.publish(BOUNDSCHANGED, bounds);
                     }
+                };
+
+                GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
+                    this.eventAggregator.publish(APILOADED, this._scriptPromise);
                 };
 
                 GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
@@ -283,6 +288,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             _this4._scriptPromise = new Promise(function (resolve, reject) {
                                 window.myGoogleMapsCallback = function () {
+                                    _this4.sendApiLoadedEvent();
                                     resolve();
                                 };
 
@@ -385,7 +391,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         _this11.taskQueue.queueMicroTask(function () {
                             var zoomValue = parseInt(newValue, 10);
                             _this11.map.setZoom(zoomValue);
-                            _this11.sendZoomEvent();
                         });
                     });
                 };
