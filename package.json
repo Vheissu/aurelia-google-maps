@@ -1,6 +1,6 @@
 {
   "name": "ITPRO-aurelia-google-maps",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "registry": "github",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
