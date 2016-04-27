@@ -175,7 +175,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
         var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this2.createMarker({
                 map: _this2.map,
                 position: markerLatLng
@@ -221,7 +221,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.geocodeAddress = function geocodeAddress(address, geocoder) {
         var _this3 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status === google.maps.GeocoderStatus.OK) {
                     _this3.setCenter(results[0].geometry.location);
@@ -306,7 +306,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.getCenter = function getCenter() {
         var _this5 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             return Promise.resolve(_this5.map.getCenter());
         });
     };
@@ -331,7 +331,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.addressChanged = function addressChanged(newValue) {
         var _this8 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             var geocoder = new google.maps.Geocoder();
 
             _this8.taskQueue.queueMicroTask(function () {
@@ -343,7 +343,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.latitudeChanged = function latitudeChanged(newValue) {
         var _this9 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this9.taskQueue.queueMicroTask(function () {
                 _this9.updateCenter();
             });
@@ -353,7 +353,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.longitudeChanged = function longitudeChanged(newValue) {
         var _this10 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this10.taskQueue.queueMicroTask(function () {
                 _this10.updateCenter();
             });
@@ -363,7 +363,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.zoomChanged = function zoomChanged(newValue) {
         var _this11 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this11.taskQueue.queueMicroTask(function () {
                 var zoomValue = parseInt(newValue, 10);
                 _this11.map.setZoom(zoomValue);
