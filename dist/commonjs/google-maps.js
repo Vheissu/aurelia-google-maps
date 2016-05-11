@@ -70,6 +70,7 @@ var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ':bounds_changed';
 var CLICK = GM + ':click';
 var MARKERCLICK = GM + ':marker:click';
+var MARKERDOUBLECLICK = GM + ':marker:dblclick';
 var MARKERMOUSEOVER = GM + ':marker:mouse_over';
 var MARKERMOUSEOUT = GM + ':marker:mouse_out';
 var APILOADED = GM + ':api:loaded';
@@ -118,6 +119,22 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
             return new Promise(function (resolve, reject) {
                 self._mapResolve = resolve;
             });
+        });
+
+        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
+            var mrkr = self._renderedMarkers[data.index];
+            mrkr.setIcon(mrkr.custom.altIcon);
+            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+        });
+
+        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
+            var mrkr = self._renderedMarkers[data.index];
+            mrkr.setIcon(mrkr.custom.defaultIcon);
+        });
+
+        this.eventAggregator.subscribe('panToMarker', function (data) {
+            self.map.panTo(self._renderedMarkers[data.index].position);
+            self.map.setZoom(17);
         });
     }
 
@@ -197,10 +214,16 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
                 createdMarker.addListener('mouseover', function () {
                     _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                 });
 
                 createdMarker.addListener('mouseout', function () {
                     _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                });
+
+                createdMarker.addListener('dblclick', function () {
+                    _this2.map.setZoom(17);
+                    _this2.map.panTo(createdMarker.position);
                 });
 
                 if (marker.icon) {
