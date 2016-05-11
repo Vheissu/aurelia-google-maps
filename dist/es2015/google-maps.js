@@ -155,7 +155,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     renderMarker(marker) {
         let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.createMarker({
                 map: this.map,
                 position: markerLatLng
@@ -199,7 +199,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     geocodeAddress(address, geocoder) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             geocoder.geocode({ 'address': address }, (results, status) => {
                 if (status === google.maps.GeocoderStatus.OK) {
                     this.setCenter(results[0].geometry.location);
@@ -270,7 +270,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     getCenter() {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             return Promise.resolve(this.map.getCenter());
         });
     }
@@ -289,7 +289,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     addressChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             let geocoder = new google.maps.Geocoder();
 
             this.taskQueue.queueMicroTask(() => {
@@ -299,7 +299,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     latitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -307,7 +307,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     longitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -315,7 +315,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     zoomChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);

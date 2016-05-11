@@ -126,7 +126,7 @@ export class GoogleMaps {
     renderMarker(marker) {
         let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             // Create the marker
             this.createMarker({
                 map: this.map,
@@ -184,7 +184,7 @@ export class GoogleMaps {
      *
      */
     geocodeAddress(address, geocoder) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             geocoder.geocode({'address': address}, (results, status) => {
                 if (status === google.maps.GeocoderStatus.OK) {
                     this.setCenter(results[0].geometry.location);
@@ -271,7 +271,7 @@ export class GoogleMaps {
     }
 
     getCenter() {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             return Promise.resolve(this.map.getCenter());
         });
     }
@@ -290,7 +290,7 @@ export class GoogleMaps {
     }
 
     addressChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             let geocoder = new google.maps.Geocoder;
 
             this.taskQueue.queueMicroTask(() => {
@@ -300,7 +300,7 @@ export class GoogleMaps {
     }
 
     latitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -308,7 +308,7 @@ export class GoogleMaps {
     }
 
     longitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -316,12 +316,12 @@ export class GoogleMaps {
     }
 
     zoomChanged(newValue) {
-        this._scriptPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                let zoomValue = parseInt(newValue, 10);
-                this.map.setZoom(zoomValue);
+        this._mapPromise.then(() => {
+                this.taskQueue.queueMicroTask(() => {
+                    let zoomValue = parseInt(newValue, 10);
+                    this.map.setZoom(zoomValue);
+                });
             });
-        });
     }
 
     /**
