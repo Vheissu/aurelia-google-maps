@@ -70,10 +70,6 @@ var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ':bounds_changed';
 var CLICK = GM + ':click';
 var MARKERCLICK = GM + ':marker:click';
-var MARKERDOUBLECLICK = GM + ':marker:dblclick';
-var MARKERMOUSEOVER = GM + ':marker:mouse_over';
-var MARKERMOUSEOUT = GM + ':marker:mouse_out';
-var APILOADED = GM + ':api:loaded';
 
 var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customElement)('google-map'), _dec2 = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -119,22 +115,6 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
             return new Promise(function (resolve, reject) {
                 self._mapResolve = resolve;
             });
-        });
-
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
-            var mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-        });
-
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
-            var mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.defaultIcon);
-        });
-
-        this.eventAggregator.subscribe('panToMarker', function (data) {
-            self.map.panTo(self._renderedMarkers[data.index].position);
-            self.map.setZoom(17);
         });
     }
 
@@ -190,16 +170,12 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
         }
     };
 
-    GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
-        this.eventAggregator.publish(APILOADED, this._scriptPromise);
-    };
-
     GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
         var _this2 = this;
 
         var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this2.createMarker({
                 map: _this2.map,
                 position: markerLatLng
@@ -210,20 +186,6 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
                     } else {
                         createdMarker.infoWindow.open(_this2.map, createdMarker);
                     }
-                });
-
-                createdMarker.addListener('mouseover', function () {
-                    _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                });
-
-                createdMarker.addListener('mouseout', function () {
-                    _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
-                });
-
-                createdMarker.addListener('dblclick', function () {
-                    _this2.map.setZoom(17);
-                    _this2.map.panTo(createdMarker.position);
                 });
 
                 if (marker.icon) {
@@ -259,7 +221,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.geocodeAddress = function geocodeAddress(address, geocoder) {
         var _this3 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status === google.maps.GeocoderStatus.OK) {
                     _this3.setCenter(results[0].geometry.location);
@@ -304,7 +266,6 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
                 _this4._scriptPromise = new Promise(function (resolve, reject) {
                     window.myGoogleMapsCallback = function () {
-                        _this4.sendApiLoadedEvent();
                         resolve();
                     };
 
@@ -345,7 +306,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.getCenter = function getCenter() {
         var _this5 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             return Promise.resolve(_this5.map.getCenter());
         });
     };
@@ -355,7 +316,6 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
         this._mapPromise.then(function () {
             _this6.map.setCenter(latLong);
-            _this6.sendBoundsEvent();
         });
     };
 
@@ -371,7 +331,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.addressChanged = function addressChanged(newValue) {
         var _this8 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             var geocoder = new google.maps.Geocoder();
 
             _this8.taskQueue.queueMicroTask(function () {
@@ -383,7 +343,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.latitudeChanged = function latitudeChanged(newValue) {
         var _this9 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this9.taskQueue.queueMicroTask(function () {
                 _this9.updateCenter();
             });
@@ -393,7 +353,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.longitudeChanged = function longitudeChanged(newValue) {
         var _this10 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this10.taskQueue.queueMicroTask(function () {
                 _this10.updateCenter();
             });
@@ -403,7 +363,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     GoogleMaps.prototype.zoomChanged = function zoomChanged(newValue) {
         var _this11 = this;
 
-        this._scriptPromise.then(function () {
+        this._mapPromise.then(function () {
             _this11.taskQueue.queueMicroTask(function () {
                 var zoomValue = parseInt(newValue, 10);
                 _this11.map.setZoom(zoomValue);

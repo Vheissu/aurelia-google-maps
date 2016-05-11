@@ -125,7 +125,7 @@ var myMarkers = [
     {
         latitude: 37.754582,
         longitude: -122.446418,
-        icon: '/images/bullseye.png', 
+        icon: '/images/bullseye.png',
         title: 'My Big Target',
         custom: {id: 123456},
         infoWindow: {content: `

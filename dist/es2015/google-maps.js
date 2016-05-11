@@ -55,10 +55,6 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${ GM }:bounds_changed`;
 const CLICK = `${ GM }:click`;
 const MARKERCLICK = `${ GM }:marker:click`;
-const MARKERDOUBLECLICK = `${ GM }:marker:dblclick`;
-const MARKERMOUSEOVER = `${ GM }:marker:mouse_over`;
-const MARKERMOUSEOUT = `${ GM }:marker:mouse_out`;
-const APILOADED = `${ GM }:api:loaded`;
 
 export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = class GoogleMaps {
 
@@ -103,22 +99,6 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
             return new Promise((resolve, reject) => {
                 self._mapResolve = resolve;
             });
-        });
-
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
-            let mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-        });
-
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
-            let mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.defaultIcon);
-        });
-
-        this.eventAggregator.subscribe('panToMarker', function (data) {
-            self.map.panTo(self._renderedMarkers[data.index].position);
-            self.map.setZoom(17);
         });
     }
 
@@ -172,14 +152,10 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
         }
     }
 
-    sendApiLoadedEvent() {
-        this.eventAggregator.publish(APILOADED, this._scriptPromise);
-    }
-
     renderMarker(marker) {
         let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.createMarker({
                 map: this.map,
                 position: markerLatLng
@@ -190,20 +166,6 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
                     } else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
-                });
-
-                createdMarker.addListener('mouseover', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                });
-
-                createdMarker.addListener('mouseout', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
-                });
-
-                createdMarker.addListener('dblclick', () => {
-                    this.map.setZoom(17);
-                    this.map.panTo(createdMarker.position);
                 });
 
                 if (marker.icon) {
@@ -237,7 +199,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     geocodeAddress(address, geocoder) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             geocoder.geocode({ 'address': address }, (results, status) => {
                 if (status === google.maps.GeocoderStatus.OK) {
                     this.setCenter(results[0].geometry.location);
@@ -275,7 +237,6 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
             this._scriptPromise = new Promise((resolve, reject) => {
                 window.myGoogleMapsCallback = () => {
-                    this.sendApiLoadedEvent();
                     resolve();
                 };
 
@@ -309,7 +270,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     getCenter() {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             return Promise.resolve(this.map.getCenter());
         });
     }
@@ -317,7 +278,6 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     setCenter(latLong) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
-            this.sendBoundsEvent();
         });
     }
 
@@ -329,7 +289,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     addressChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             let geocoder = new google.maps.Geocoder();
 
             this.taskQueue.queueMicroTask(() => {
@@ -339,7 +299,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     latitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -347,7 +307,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     longitudeChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
             });
@@ -355,7 +315,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     zoomChanged(newValue) {
-        this._scriptPromise.then(() => {
+        this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
                 this.map.setZoom(zoomValue);

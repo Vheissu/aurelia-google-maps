@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERDOUBLECLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
         if (!descriptor) return;
@@ -77,10 +77,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             BOUNDSCHANGED = GM + ':bounds_changed';
             CLICK = GM + ':click';
             MARKERCLICK = GM + ':marker:click';
-            MARKERDOUBLECLICK = GM + ':marker:dblclick';
-            MARKERMOUSEOVER = GM + ':marker:mouse_over';
-            MARKERMOUSEOUT = GM + ':marker:mouse_out';
-            APILOADED = GM + ':api:loaded';
 
             _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -126,22 +122,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         return new Promise(function (resolve, reject) {
                             self._mapResolve = resolve;
                         });
-                    });
-
-                    this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
-                        var mrkr = self._renderedMarkers[data.index];
-                        mrkr.setIcon(mrkr.custom.altIcon);
-                        mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                    });
-
-                    this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
-                        var mrkr = self._renderedMarkers[data.index];
-                        mrkr.setIcon(mrkr.custom.defaultIcon);
-                    });
-
-                    this.eventAggregator.subscribe('panToMarker', function (data) {
-                        self.map.panTo(self._renderedMarkers[data.index].position);
-                        self.map.setZoom(17);
                     });
                 }
 
@@ -197,16 +177,12 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
                 };
 
-                GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
-                    this.eventAggregator.publish(APILOADED, this._scriptPromise);
-                };
-
                 GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
                     var _this2 = this;
 
                     var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         _this2.createMarker({
                             map: _this2.map,
                             position: markerLatLng
@@ -217,20 +193,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                                 } else {
                                     createdMarker.infoWindow.open(_this2.map, createdMarker);
                                 }
-                            });
-
-                            createdMarker.addListener('mouseover', function () {
-                                _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                                createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                            });
-
-                            createdMarker.addListener('mouseout', function () {
-                                _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
-                            });
-
-                            createdMarker.addListener('dblclick', function () {
-                                _this2.map.setZoom(17);
-                                _this2.map.panTo(createdMarker.position);
                             });
 
                             if (marker.icon) {
@@ -266,7 +228,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.geocodeAddress = function geocodeAddress(address, geocoder) {
                     var _this3 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         geocoder.geocode({ 'address': address }, function (results, status) {
                             if (status === google.maps.GeocoderStatus.OK) {
                                 _this3.setCenter(results[0].geometry.location);
@@ -311,7 +273,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             _this4._scriptPromise = new Promise(function (resolve, reject) {
                                 window.myGoogleMapsCallback = function () {
-                                    _this4.sendApiLoadedEvent();
                                     resolve();
                                 };
 
@@ -352,7 +313,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.getCenter = function getCenter() {
                     var _this5 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         return Promise.resolve(_this5.map.getCenter());
                     });
                 };
@@ -362,7 +323,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                     this._mapPromise.then(function () {
                         _this6.map.setCenter(latLong);
-                        _this6.sendBoundsEvent();
                     });
                 };
 
@@ -378,7 +338,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.addressChanged = function addressChanged(newValue) {
                     var _this8 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         var geocoder = new google.maps.Geocoder();
 
                         _this8.taskQueue.queueMicroTask(function () {
@@ -390,7 +350,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.latitudeChanged = function latitudeChanged(newValue) {
                     var _this9 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         _this9.taskQueue.queueMicroTask(function () {
                             _this9.updateCenter();
                         });
@@ -400,7 +360,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.longitudeChanged = function longitudeChanged(newValue) {
                     var _this10 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         _this10.taskQueue.queueMicroTask(function () {
                             _this10.updateCenter();
                         });
@@ -410,7 +370,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 GoogleMaps.prototype.zoomChanged = function zoomChanged(newValue) {
                     var _this11 = this;
 
-                    this._scriptPromise.then(function () {
+                    this._mapPromise.then(function () {
                         _this11.taskQueue.queueMicroTask(function () {
                             var zoomValue = parseInt(newValue, 10);
                             _this11.map.setZoom(zoomValue);

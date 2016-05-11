@@ -1,20 +1,38 @@
 import {inject} from 'aurelia-dependency-injection';
-import {bindable, customElement} from 'aurelia-templating';
+import {bindable,customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from 'aurelia-framework';
 import {EventAggregator} from 'aurelia-event-aggregator';
 
-import {Configure} from './configure';
+export class Configure {
+
+    constructor() {
+        this._config = {
+            apiScript: 'https://maps.googleapis.com/maps/api/js',
+            apiKey: '',
+            apiLibraries: ''
+        };
+    }
+
+    options(obj) {
+        Object.assign(this._config, obj);
+    }
+
+    get(key) {
+        return this._config[key];
+    }
+
+    set(key, val) {
+        this._config[key] = val;
+        return this._config[key];
+    }
+}
 
 // use constants to guard against typos
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const MARKERCLICK = `${GM}:marker:click`;
-const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
-const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
-const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
-const APILOADED = `${GM}:api:loaded`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -57,25 +75,7 @@ export class GoogleMaps {
                 self._mapResolve = resolve;
             });
         });
-
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
-            let mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-        });
-
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
-            let mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon( mrkr.custom.defaultIcon);
-        });
-
-        this.eventAggregator.subscribe('panToMarker', function (data) {
-            self.map.panTo(self._renderedMarkers[data.index].position);
-            self.map.setZoom(17);
-        });
-
     }
-
 
     attached() {
         this.element.addEventListener('dragstart', evt => {
@@ -140,13 +140,6 @@ export class GoogleMaps {
     }
 
     /**
-     * Send after the api is loaded
-     * */
-    sendApiLoadedEvent() {
-        this.eventAggregator.publish(APILOADED, this._scriptPromise);
-    }
-
-    /**
      * Render a marker on the map and add it to collection of rendered markers
      *
      * @param marker
@@ -169,22 +162,6 @@ export class GoogleMaps {
                     } else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
-                });
-
-                /*add event listener for hover over the marker,
-                 *the event payload is the marker itself*/
-                createdMarker.addListener('mouseover', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                });
-
-                createdMarker.addListener('mouseout', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
-                });
-
-                createdMarker.addListener('dblclick', () => {
-                    this.map.setZoom(15);
-                    this.map.panTo(createdMarker.position);
                 });
 
                 // Set some optional marker properties if they exist
@@ -284,7 +261,6 @@ export class GoogleMaps {
 
             this._scriptPromise = new Promise((resolve, reject) => {
                 window.myGoogleMapsCallback = () => {
-                    this.sendApiLoadedEvent();
                     resolve();
                 };
 
@@ -325,7 +301,6 @@ export class GoogleMaps {
     setCenter(latLong) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
-            this.sendBoundsEvent();
         });
     }
 
@@ -448,4 +423,15 @@ export class GoogleMaps {
     error() {
         console.log.apply(console, arguments);
     }
+}
+
+export function configure(aurelia, configCallback) {
+    let instance = aurelia.container.get(Configure);
+
+    // Do we have a callback function?
+    if (configCallback !== undefined && typeof(configCallback) === 'function') {
+        configCallback(instance);
+    }
+
+    aurelia.globalResources('./google-maps');
 }
