@@ -102,6 +102,10 @@ payload is the new map bounds as a `LatLngBounds` object.
 *   `googlemap:marker:click` - emitted when a map marker is clicked, payload
 is the `Marker` object for the clicked marker
 
+*   `googlemap:marker:mouse_over`- emitted when the mouse enters the marker, payload is the `Marker`object for the entered marker
+
+*   `googlemap:marker:mouse_out` - emitted when the mouse exits the marker, payload is the `Marker` object for the exited marker
+
 ### Render array of markers
 
 Markers can be bound to the element with the `markers` attribute like below:
