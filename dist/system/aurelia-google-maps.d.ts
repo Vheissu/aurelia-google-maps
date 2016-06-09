@@ -28,6 +28,7 @@ declare module 'aurelia-google-maps' {
     zoom: any;
     disableDefaultUI: any;
     markers: any;
+    autoUpdateBounds: any;
     map: any;
     _renderedMarkers: any;
     _markersSubscription: any;
@@ -44,6 +45,11 @@ declare module 'aurelia-google-maps' {
          * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
          */
     sendBoundsEvent(): any;
+    
+    /**
+         * Send after the api is loaded
+         * */
+    sendApiLoadedEvent(): any;
     
     /**
          * Render a marker on the map and add it to collection of rendered markers
@@ -91,6 +97,7 @@ declare module 'aurelia-google-maps' {
     latitudeChanged(newValue: any): any;
     longitudeChanged(newValue: any): any;
     zoomChanged(newValue: any): any;
+    autoUpdateBoundsChanged(newValue: any): any;
     
     /**
          * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
@@ -107,6 +114,7 @@ declare module 'aurelia-google-maps' {
          * @param splices
          */
     markerCollectionChange(splices: any): any;
+    zoomToMarkerBounds(splices: any): any;
     error(): any;
   }
   export function configure(aurelia: any, configCallback: any): any;

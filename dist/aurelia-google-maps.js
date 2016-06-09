@@ -33,6 +33,10 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const MARKERCLICK = `${GM}:marker:click`;
+const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
+const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
+const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const APILOADED = `${GM}:api:loaded`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -43,6 +47,7 @@ export class GoogleMaps {
     @bindable zoom = 8;
     @bindable disableDefaultUI = false;
     @bindable markers = [];
+    @bindable autoUpdateBounds = false;
 
     map = null;
     _renderedMarkers = [];
@@ -75,7 +80,25 @@ export class GoogleMaps {
                 self._mapResolve = resolve;
             });
         });
+
+        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
+            let mrkr = self._renderedMarkers[data.index];
+            mrkr.setIcon(mrkr.custom.altIcon);
+            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+        });
+
+        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
+            let mrkr = self._renderedMarkers[data.index];
+            mrkr.setIcon( mrkr.custom.defaultIcon);
+        });
+
+        this.eventAggregator.subscribe('panToMarker', function (data) {
+            self.map.panTo(self._renderedMarkers[data.index].position);
+            self.map.setZoom(17);
+        });
+
     }
+
 
     attached() {
         this.element.addEventListener('dragstart', evt => {
@@ -140,6 +163,13 @@ export class GoogleMaps {
     }
 
     /**
+     * Send after the api is loaded
+     * */
+    sendApiLoadedEvent() {
+        this.eventAggregator.publish(APILOADED, this._scriptPromise);
+    }
+
+    /**
      * Render a marker on the map and add it to collection of rendered markers
      *
      * @param marker
@@ -162,6 +192,22 @@ export class GoogleMaps {
                     } else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
+                });
+
+                /*add event listener for hover over the marker,
+                 *the event payload is the marker itself*/
+                createdMarker.addListener('mouseover', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                });
+
+                createdMarker.addListener('mouseout', () => {
+                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                });
+
+                createdMarker.addListener('dblclick', () => {
+                    this.map.setZoom(15);
+                    this.map.panTo(createdMarker.position);
                 });
 
                 // Set some optional marker properties if they exist
@@ -261,6 +307,7 @@ export class GoogleMaps {
 
             this._scriptPromise = new Promise((resolve, reject) => {
                 window.myGoogleMapsCallback = () => {
+                    this.sendApiLoadedEvent();
                     resolve();
                 };
 
@@ -301,6 +348,7 @@ export class GoogleMaps {
     setCenter(latLong) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
+            this.sendBoundsEvent();
         });
     }
 
@@ -346,6 +394,14 @@ export class GoogleMaps {
             });
     }
 
+    autoUpdateBoundsChanged(newValue) {
+        this._mapPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                this.zoomToMarkerBounds(this.markers);
+            });
+        });
+    }
+
     /**
      * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
      * where we need to resubscribe Observers and delete all previously rendered markers.
@@ -378,6 +434,8 @@ export class GoogleMaps {
                 this.renderMarker(marker);
             }
         });
+
+        this.zoomToMarkerBounds(newValue);
     }
 
     /**
@@ -418,7 +476,23 @@ export class GoogleMaps {
                 this.renderMarker(addedMarker);
             }
         }
+
+        zoomToMarkerBounds(splices);
     }
+
+    zoomToMarkerBounds(splices) {
+        if (this.zoomToMarkerBounds) {
+            this._mapPromise.then(() => {
+                var bounds = new google.maps.LatLngBounds();
+                for (let splice of splices) {
+                    // extend the bounds to include each marker's position
+                    let markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    bounds.extend(markerLatLng);
+                }
+                this.map.fitBounds(bounds);
+            });
+        }
+    }   
 
     error() {
         console.log.apply(console, arguments);

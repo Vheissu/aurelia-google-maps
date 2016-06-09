@@ -1,7 +1,9 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, GoogleMaps;
+    "use strict";
+
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERDOUBLECLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
         if (!descriptor) return;
@@ -77,6 +79,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             BOUNDSCHANGED = GM + ':bounds_changed';
             CLICK = GM + ':click';
             MARKERCLICK = GM + ':marker:click';
+            MARKERDOUBLECLICK = GM + ':marker:dblclick';
+            MARKERMOUSEOVER = GM + ':marker:mouse_over';
+            MARKERMOUSEOUT = GM + ':marker:mouse_out';
+            APILOADED = GM + ':api:loaded';
 
             _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -93,6 +99,8 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
 
                     _initDefineProp(this, 'markers', _descriptor6, this);
+
+                    _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
 
                     this.map = null;
                     this._renderedMarkers = [];
@@ -122,6 +130,22 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         return new Promise(function (resolve, reject) {
                             self._mapResolve = resolve;
                         });
+                    });
+
+                    this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
+                        var mrkr = self._renderedMarkers[data.index];
+                        mrkr.setIcon(mrkr.custom.altIcon);
+                        mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    });
+
+                    this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
+                        var mrkr = self._renderedMarkers[data.index];
+                        mrkr.setIcon(mrkr.custom.defaultIcon);
+                    });
+
+                    this.eventAggregator.subscribe('panToMarker', function (data) {
+                        self.map.panTo(self._renderedMarkers[data.index].position);
+                        self.map.setZoom(17);
                     });
                 }
 
@@ -177,6 +201,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
                 };
 
+                GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
+                    this.eventAggregator.publish(APILOADED, this._scriptPromise);
+                };
+
                 GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
                     var _this2 = this;
 
@@ -193,6 +221,20 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                                 } else {
                                     createdMarker.infoWindow.open(_this2.map, createdMarker);
                                 }
+                            });
+
+                            createdMarker.addListener('mouseover', function () {
+                                _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                                createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                            });
+
+                            createdMarker.addListener('mouseout', function () {
+                                _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                            });
+
+                            createdMarker.addListener('dblclick', function () {
+                                _this2.map.setZoom(15);
+                                _this2.map.panTo(createdMarker.position);
                             });
 
                             if (marker.icon) {
@@ -273,6 +315,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             _this4._scriptPromise = new Promise(function (resolve, reject) {
                                 window.myGoogleMapsCallback = function () {
+                                    _this4.sendApiLoadedEvent();
                                     resolve();
                                 };
 
@@ -323,6 +366,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                     this._mapPromise.then(function () {
                         _this6.map.setCenter(latLong);
+                        _this6.sendBoundsEvent();
                     });
                 };
 
@@ -378,8 +422,18 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     });
                 };
 
-                GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+                GoogleMaps.prototype.autoUpdateBoundsChanged = function autoUpdateBoundsChanged(newValue) {
                     var _this12 = this;
+
+                    this._mapPromise.then(function () {
+                        _this12.taskQueue.queueMicroTask(function () {
+                            _this12.zoomToMarkerBounds(_this12.markers);
+                        });
+                    });
+                };
+
+                GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+                    var _this13 = this;
 
                     if (this._markersSubscription !== null) {
                         this._markersSubscription.dispose();
@@ -405,7 +459,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
 
                     this._markersSubscription = this.bindingEngine.collectionObserver(this.markers).subscribe(function (splices) {
-                        _this12.markerCollectionChange(splices);
+                        _this13.markerCollectionChange(splices);
                     });
 
                     this._mapPromise.then(function () {
@@ -423,9 +477,11 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             var _marker = _ref2;
 
-                            _this12.renderMarker(_marker);
+                            _this13.renderMarker(_marker);
                         }
                     });
+
+                    this.zoomToMarkerBounds(newValue);
                 };
 
                 GoogleMaps.prototype.markerCollectionChange = function markerCollectionChange(splices) {
@@ -479,6 +535,36 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             this.renderMarker(addedMarker);
                         }
                     }
+
+                    zoomToMarkerBounds(splices);
+                };
+
+                GoogleMaps.prototype.zoomToMarkerBounds = function zoomToMarkerBounds(splices) {
+                    var _this14 = this;
+
+                    if (this.zoomToMarkerBounds) {
+                        this._mapPromise.then(function () {
+                            var bounds = new google.maps.LatLngBounds();
+                            for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+                                var _ref5;
+
+                                if (_isArray5) {
+                                    if (_i5 >= _iterator5.length) break;
+                                    _ref5 = _iterator5[_i5++];
+                                } else {
+                                    _i5 = _iterator5.next();
+                                    if (_i5.done) break;
+                                    _ref5 = _i5.value;
+                                }
+
+                                var splice = _ref5;
+
+                                var markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                                bounds.extend(markerLatLng);
+                            }
+                            _this14.map.fitBounds(bounds);
+                        });
+                    }
                 };
 
                 GoogleMaps.prototype.error = function error() {
@@ -515,6 +601,11 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 enumerable: true,
                 initializer: function initializer() {
                     return [];
+                }
+            }), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'autoUpdateBounds', [bindable], {
+                enumerable: true,
+                initializer: function initializer() {
+                    return false;
                 }
             })), _class2)) || _class) || _class));
 
