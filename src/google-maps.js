@@ -459,7 +459,7 @@ export class GoogleMaps {
     }
 
     zoomToMarkerBounds(splices) {
-        if (this.zoomToMarkerBounds) {
+        if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
                 var bounds = new google.maps.LatLngBounds();
                 for (let splice of splices) {

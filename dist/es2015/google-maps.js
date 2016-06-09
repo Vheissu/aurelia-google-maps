@@ -427,7 +427,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     zoomToMarkerBounds(splices) {
-        if (this.zoomToMarkerBounds) {
+        if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
                 var bounds = new google.maps.LatLngBounds();
                 for (let splice of splices) {

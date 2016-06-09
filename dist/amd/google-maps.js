@@ -530,7 +530,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         GoogleMaps.prototype.zoomToMarkerBounds = function zoomToMarkerBounds(splices) {
             var _this14 = this;
 
-            if (this.zoomToMarkerBounds) {
+            if (this.autoUpdateBounds) {
                 this._mapPromise.then(function () {
                     var bounds = new google.maps.LatLngBounds();
                     for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
