@@ -64,6 +64,16 @@ By default this is 8 if you do not supply a zoom value.
 </template>
 ```
 
+### Automatically update bounds from markers
+
+Automatically adjust the bounds of the map by using the provided markers
+
+``` html
+<template>
+    <google-map markers.bind="myMarkers" auto-update-bounds="true"></google-map>
+</template>
+```
+
 These properties also support working with Aurelia's databinding, so you can
 bind any of the above to variables in your viewmodel and the map updates
 when these values are changed.
