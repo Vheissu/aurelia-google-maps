@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, GoogleMaps;
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERDOUBLECLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
         if (!descriptor) return;
@@ -77,6 +77,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             BOUNDSCHANGED = GM + ':bounds_changed';
             CLICK = GM + ':click';
             MARKERCLICK = GM + ':marker:click';
+            MARKERDOUBLECLICK = GM + ':marker:dblclick';
+            MARKERMOUSEOVER = GM + ':marker:mouse_over';
+            MARKERMOUSEOUT = GM + ':marker:mouse_out';
+            APILOADED = GM + ':api:loaded';
 
             _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -122,6 +126,22 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         return new Promise(function (resolve, reject) {
                             self._mapResolve = resolve;
                         });
+                    });
+
+                    this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
+                        var mrkr = self._renderedMarkers[data.index];
+                        mrkr.setIcon(mrkr.custom.altIcon);
+                        mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    });
+
+                    this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
+                        var mrkr = self._renderedMarkers[data.index];
+                        mrkr.setIcon(mrkr.custom.defaultIcon);
+                    });
+
+                    this.eventAggregator.subscribe('panToMarker', function (data) {
+                        self.map.panTo(self._renderedMarkers[data.index].position);
+                        self.map.setZoom(17);
                     });
                 }
 
@@ -177,6 +197,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     }
                 };
 
+                GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
+                    this.eventAggregator.publish(APILOADED, this._scriptPromise);
+                };
+
                 GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
                     var _this2 = this;
 
@@ -193,6 +217,20 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                                 } else {
                                     createdMarker.infoWindow.open(_this2.map, createdMarker);
                                 }
+                            });
+
+                            createdMarker.addListener('mouseover', function () {
+                                _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                                createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                            });
+
+                            createdMarker.addListener('mouseout', function () {
+                                _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                            });
+
+                            createdMarker.addListener('dblclick', function () {
+                                _this2.map.setZoom(15);
+                                _this2.map.panTo(createdMarker.position);
                             });
 
                             if (marker.icon) {
@@ -273,6 +311,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                             _this4._scriptPromise = new Promise(function (resolve, reject) {
                                 window.myGoogleMapsCallback = function () {
+                                    _this4.sendApiLoadedEvent();
                                     resolve();
                                 };
 
@@ -323,6 +362,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                     this._mapPromise.then(function () {
                         _this6.map.setCenter(latLong);
+                        _this6.sendBoundsEvent();
                     });
                 };
 

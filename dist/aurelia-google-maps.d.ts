@@ -46,6 +46,11 @@ declare module 'aurelia-google-maps' {
     sendBoundsEvent(): any;
     
     /**
+         * Send after the api is loaded
+         * */
+    sendApiLoadedEvent(): any;
+    
+    /**
          * Render a marker on the map and add it to collection of rendered markers
          *
          * @param marker

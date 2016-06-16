@@ -1,6 +1,6 @@
 {
   "name": "aurelia-google-maps",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "registry": "github",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
