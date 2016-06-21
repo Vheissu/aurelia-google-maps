@@ -1,25 +1,6 @@
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.GoogleMaps = undefined;
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6;
-
-var _aureliaDependencyInjection = require('aurelia-dependency-injection');
-
-var _aureliaTemplating = require('aurelia-templating');
-
-var _aureliaTaskQueue = require('aurelia-task-queue');
-
-var _aureliaFramework = require('aurelia-framework');
-
-var _aureliaEventAggregator = require('aurelia-event-aggregator');
-
-var _configure = require('./configure');
 
 function _initDefineProp(target, property, descriptor, context) {
     if (!descriptor) return;
@@ -66,6 +47,14 @@ function _initializerWarningHelper(descriptor, context) {
     throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
 }
 
+import { inject } from 'aurelia-dependency-injection';
+import { bindable, customElement } from 'aurelia-templating';
+import { TaskQueue } from 'aurelia-task-queue';
+import { BindingEngine } from 'aurelia-framework';
+import { EventAggregator } from 'aurelia-event-aggregator';
+
+import { Configure } from './configure';
+
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ':bounds_changed';
 var CLICK = GM + ':click';
@@ -75,7 +64,7 @@ var MARKERMOUSEOVER = GM + ':marker:mouse_over';
 var MARKERMOUSEOUT = GM + ':marker:mouse_out';
 var APILOADED = GM + ':api:loaded';
 
-var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customElement)('google-map'), _dec2 = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
+export var GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
         
 
@@ -523,32 +512,32 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     };
 
     return GoogleMaps;
-}(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'address', [_aureliaTemplating.bindable], {
+}(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'address', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return null;
     }
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'longitude', [_aureliaTemplating.bindable], {
+}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'longitude', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return 0;
     }
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'latitude', [_aureliaTemplating.bindable], {
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'latitude', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return 0;
     }
-}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'zoom', [_aureliaTemplating.bindable], {
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'zoom', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return 8;
     }
-}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'disableDefaultUI', [_aureliaTemplating.bindable], {
+}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'disableDefaultUI', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return false;
     }
-}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'markers', [_aureliaTemplating.bindable], {
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'markers', [bindable], {
     enumerable: true,
     initializer: function initializer() {
         return [];

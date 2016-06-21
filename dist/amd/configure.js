@@ -5,15 +5,11 @@ define(['exports'], function (exports) {
         value: true
     });
 
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
+    
 
     var Configure = exports.Configure = function () {
         function Configure() {
-            _classCallCheck(this, Configure);
+            
 
             this._config = {
                 apiScript: 'https://maps.googleapis.com/maps/api/js',

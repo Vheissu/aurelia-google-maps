@@ -1,12 +1,6 @@
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
 
 
-
-var Configure = exports.Configure = function () {
+export var Configure = function () {
     function Configure() {
         
 

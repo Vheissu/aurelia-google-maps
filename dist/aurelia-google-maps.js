@@ -33,7 +33,7 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const MARKERCLICK = `${GM}:marker:click`;
-const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
+//const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
@@ -80,22 +80,21 @@ export class GoogleMaps {
             });
         });
 
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
+        this.eventAggregator.subscribe('startMarkerHighlight', function(data) {
             let mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
             mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
         });
 
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
+        this.eventAggregator.subscribe('stopMarkerHighLight', function(data) {
             let mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon( mrkr.custom.defaultIcon);
         });
 
-        this.eventAggregator.subscribe('panToMarker', function (data) {
+        this.eventAggregator.subscribe('panToMarker', function(data) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
         });
-
     }
 
 
@@ -273,10 +272,10 @@ export class GoogleMaps {
      */
     getCurrentPosition() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
-        } else {
-            return Promise.reject('Browser Geolocation not supported or found.');
+            return navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
         }
+
+        return Promise.reject('Browser Geolocation not supported or found.');
     }
 
     /**
@@ -316,12 +315,16 @@ export class GoogleMaps {
             });
 
             return this._scriptPromise;
-        } else {
+        }
+
+        if (window.google && window.google.maps) {
             // google has been defined already, so return an immediately resolved Promise that has scope
             this._scriptPromise = new Promise(resolve => { resolve(); });
 
             return this._scriptPromise;
         }
+
+        return false;
     }
 
     setOptions(options) {
@@ -386,11 +389,11 @@ export class GoogleMaps {
 
     zoomChanged(newValue) {
         this._mapPromise.then(() => {
-                this.taskQueue.queueMicroTask(() => {
-                    let zoomValue = parseInt(newValue, 10);
-                    this.map.setZoom(zoomValue);
-                });
+            this.taskQueue.queueMicroTask(() => {
+                let zoomValue = parseInt(newValue, 10);
+                this.map.setZoom(zoomValue);
             });
+        });
     }
 
     /**
@@ -468,7 +471,7 @@ export class GoogleMaps {
     }
 
     error() {
-        console.log.apply(console, arguments);
+        console.error.apply(console, arguments);
     }
 }
 

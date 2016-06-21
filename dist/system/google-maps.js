@@ -1,7 +1,9 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERDOUBLECLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
+    "use strict";
+
+    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
         if (!descriptor) return;
@@ -13,11 +15,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
         });
     }
 
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
+    
 
     function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
         var desc = {};
@@ -77,14 +75,13 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             BOUNDSCHANGED = GM + ':bounds_changed';
             CLICK = GM + ':click';
             MARKERCLICK = GM + ':marker:click';
-            MARKERDOUBLECLICK = GM + ':marker:dblclick';
             MARKERMOUSEOVER = GM + ':marker:mouse_over';
             MARKERMOUSEOUT = GM + ':marker:mouse_out';
             APILOADED = GM + ':api:loaded';
 
             _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
-                    _classCallCheck(this, GoogleMaps);
+                    
 
                     _initDefineProp(this, 'address', _descriptor, this);
 
@@ -282,14 +279,14 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
 
                 GoogleMaps.prototype.getCurrentPosition = function getCurrentPosition() {
                     if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(function (position) {
+                        return navigator.geolocation.getCurrentPosition(function (position) {
                             return Promise.resolve(position);
                         }, function (evt) {
                             return Promise.reject(evt);
                         });
-                    } else {
-                        return Promise.reject('Browser Geolocation not supported or found.');
                     }
+
+                    return Promise.reject('Browser Geolocation not supported or found.');
                 };
 
                 GoogleMaps.prototype.loadApiScript = function loadApiScript() {
@@ -326,13 +323,17 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         }();
 
                         if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-                    } else {
+                    }
+
+                    if (window.google && window.google.maps) {
                         this._scriptPromise = new Promise(function (resolve) {
                             resolve();
                         });
 
                         return this._scriptPromise;
                     }
+
+                    return false;
                 };
 
                 GoogleMaps.prototype.setOptions = function setOptions(options) {
@@ -522,7 +523,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 };
 
                 GoogleMaps.prototype.error = function error() {
-                    console.log.apply(console, arguments);
+                    console.error.apply(console, arguments);
                 };
 
                 return GoogleMaps;

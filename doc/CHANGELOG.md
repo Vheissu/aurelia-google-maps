@@ -1,3 +1,8 @@
+<a name="1.0.10"></a>
+## [1.0.10](https://github.com/Vheissu/aurelia-google-maps/compare/1.0.9...v1.0.10) (2016-06-21)
+
+
+
 ### 1.0.7 (2016-04-14)
 
 
