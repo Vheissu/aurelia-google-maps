@@ -393,7 +393,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                             let renderedMarker = this._renderedMarkers[markerIndex];
 
-                            if (renderedMarker.position.lat() === removedObj.latitude && renderedMarker.position.lng() === removedObj.longitude) {
+                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) && renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                 renderedMarker.setMap(null);
 
                                 this._renderedMarkers.splice(markerIndex, 1);

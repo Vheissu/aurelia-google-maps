@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
+    "use strict";
+
     var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERDOUBLECLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
 
     function _initDefineProp(target, property, descriptor, context) {
@@ -502,7 +504,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                                     if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                                         var renderedMarker = this._renderedMarkers[markerIndex];
 
-                                        if (renderedMarker.position.lat() === removedObj.latitude && renderedMarker.position.lng() === removedObj.longitude) {
+                                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) && renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                             renderedMarker.setMap(null);
 
                                             this._renderedMarkers.splice(markerIndex, 1);

@@ -421,9 +421,9 @@ export class GoogleMaps {
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                             let renderedMarker = this._renderedMarkers[markerIndex];
 
-                            // Check if the latitude/longitude matches
-                            if (renderedMarker.position.lat() === removedObj.latitude &&
-                                renderedMarker.position.lng() === removedObj.longitude) {
+                            // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
+                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
+                                renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                 // Set the map to null;
                                 renderedMarker.setMap(null);
 

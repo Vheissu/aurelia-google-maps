@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['./configure'], function (_export, _context) {
+    "use strict";
+
     var Configure;
     return {
         setters: [function (_configure) {
