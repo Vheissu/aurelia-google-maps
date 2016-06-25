@@ -22,11 +22,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         });
     }
 
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
+    
 
     function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
         var desc = {};
@@ -67,14 +63,14 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
     var BOUNDSCHANGED = GM + ':bounds_changed';
     var CLICK = GM + ':click';
     var MARKERCLICK = GM + ':marker:click';
-    var MARKERDOUBLECLICK = GM + ':marker:dblclick';
+
     var MARKERMOUSEOVER = GM + ':marker:mouse_over';
     var MARKERMOUSEOUT = GM + ':marker:mouse_out';
     var APILOADED = GM + ':api:loaded';
 
     var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customElement)('google-map'), _dec2 = (0, _aureliaDependencyInjection.inject)(Element, _aureliaTaskQueue.TaskQueue, _configure.Configure, _aureliaFramework.BindingEngine, _aureliaEventAggregator.EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
         function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
-            _classCallCheck(this, GoogleMaps);
+            
 
             _initDefineProp(this, 'address', _descriptor, this);
 
@@ -274,14 +270,14 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
 
         GoogleMaps.prototype.getCurrentPosition = function getCurrentPosition() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
+                return navigator.geolocation.getCurrentPosition(function (position) {
                     return Promise.resolve(position);
                 }, function (evt) {
                     return Promise.reject(evt);
                 });
-            } else {
-                return Promise.reject('Browser Geolocation not supported or found.');
             }
+
+            return Promise.reject('Browser Geolocation not supported or found.');
         };
 
         GoogleMaps.prototype.loadApiScript = function loadApiScript() {
@@ -318,13 +314,17 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                 }();
 
                 if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-            } else {
+            }
+
+            if (window.google && window.google.maps) {
                 this._scriptPromise = new Promise(function (resolve) {
                     resolve();
                 });
 
                 return this._scriptPromise;
             }
+
+            return false;
         };
 
         GoogleMaps.prototype.setOptions = function setOptions(options) {
@@ -556,7 +556,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         };
 
         GoogleMaps.prototype.error = function error() {
-            console.log.apply(console, arguments);
+            console.error.apply(console, arguments);
         };
 
         return GoogleMaps;

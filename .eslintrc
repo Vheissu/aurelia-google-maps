@@ -1,6 +1,9 @@
 {
-  "extends": "./node_modules/aurelia-tools/.eslintrc",
+  "extends": "./node_modules/aurelia-tools/.eslintrc.json",
   "rules": {
-    "no-console": 0
+    "no-multi-str": 0,
+    "indent": [2, 4],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-trailing-spaces": ["error", { "skipBlankLines": true }]
   }
 }

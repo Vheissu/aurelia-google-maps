@@ -55,7 +55,7 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${ GM }:bounds_changed`;
 const CLICK = `${ GM }:click`;
 const MARKERCLICK = `${ GM }:marker:click`;
-const MARKERDOUBLECLICK = `${ GM }:marker:dblclick`;
+
 const MARKERMOUSEOVER = `${ GM }:marker:mouse_over`;
 const MARKERMOUSEOUT = `${ GM }:marker:mouse_out`;
 const APILOADED = `${ GM }:api:loaded`;
@@ -255,10 +255,10 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
     getCurrentPosition() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
-        } else {
-            return Promise.reject('Browser Geolocation not supported or found.');
+            return navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
         }
+
+        return Promise.reject('Browser Geolocation not supported or found.');
     }
 
     loadApiScript() {
@@ -287,13 +287,17 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
             });
 
             return this._scriptPromise;
-        } else {
+        }
+
+        if (window.google && window.google.maps) {
             this._scriptPromise = new Promise(resolve => {
                 resolve();
             });
 
             return this._scriptPromise;
         }
+
+        return false;
     }
 
     setOptions(options) {
@@ -440,7 +444,7 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     }
 
     error() {
-        console.log.apply(console, arguments);
+        console.error.apply(console, arguments);
     }
 }, (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'address', [bindable], {
     enumerable: true,

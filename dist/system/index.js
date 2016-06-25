@@ -1,25 +1,18 @@
 'use strict';
 
-System.register(['./configure'], function (_export, _context) {
-    "use strict";
+System.register(['./aurelia-google-maps'], function (_export, _context) {
+  "use strict";
 
-    var Configure;
-    return {
-        setters: [function (_configure) {
-            Configure = _configure.Configure;
-        }],
-        execute: function () {
-            function configure(aurelia, configCallback) {
-                var instance = aurelia.container.get(Configure);
+  return {
+    setters: [function (_aureliaGoogleMaps) {
+      var _exportObj = {};
 
-                if (configCallback !== undefined && typeof configCallback === 'function') {
-                    configCallback(instance);
-                }
+      for (var _key in _aureliaGoogleMaps) {
+        if (_key !== "default") _exportObj[_key] = _aureliaGoogleMaps[_key];
+      }
 
-                aurelia.globalResources('./google-maps');
-            }
-
-            _export('configure', configure);
-        }
-    };
+      _export(_exportObj);
+    }],
+    execute: function () {}
+  };
 });
