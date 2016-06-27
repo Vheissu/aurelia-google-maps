@@ -25,6 +25,7 @@ export class GoogleMaps {
     @bindable zoom = 8;
     @bindable disableDefaultUI = false;
     @bindable markers = [];
+    @bindable autoUpdateBounds = false;
 
     map = null;
     _renderedMarkers = [];
@@ -374,6 +375,14 @@ export class GoogleMaps {
         });
     }
 
+    autoUpdateBoundsChanged(newValue) {
+        this._mapPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                this.zoomToMarkerBounds(this.markers);
+            });
+        });
+    }
+
     /**
      * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
      * where we need to resubscribe Observers and delete all previously rendered markers.
@@ -406,6 +415,8 @@ export class GoogleMaps {
                 this.renderMarker(marker);
             }
         });
+
+        this.zoomToMarkerBounds(newValue);
     }
 
     /**
@@ -446,7 +457,23 @@ export class GoogleMaps {
                 this.renderMarker(addedMarker);
             }
         }
+
+        zoomToMarkerBounds(splices);
     }
+
+    zoomToMarkerBounds(splices) {
+        if (this.autoUpdateBounds) {
+            this._mapPromise.then(() => {
+                var bounds = new google.maps.LatLngBounds();
+                for (let splice of splices) {
+                    // extend the bounds to include each marker's position
+                    let markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    bounds.extend(markerLatLng);
+                }
+                this.map.fitBounds(bounds);
+            });
+        }
+    }   
 
     error() {
         console.error.apply(console, arguments);

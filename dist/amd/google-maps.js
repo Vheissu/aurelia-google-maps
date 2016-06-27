@@ -57,7 +57,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
     }
 
-    var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6;
+    var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
 
     var GM = 'googlemap';
     var BOUNDSCHANGED = GM + ':bounds_changed';
@@ -83,6 +83,8 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
 
             _initDefineProp(this, 'markers', _descriptor6, this);
+
+            _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
 
             this.map = null;
             this._renderedMarkers = [];
@@ -408,8 +410,18 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             });
         };
 
-        GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+        GoogleMaps.prototype.autoUpdateBoundsChanged = function autoUpdateBoundsChanged(newValue) {
             var _this12 = this;
+
+            this._mapPromise.then(function () {
+                _this12.taskQueue.queueMicroTask(function () {
+                    _this12.zoomToMarkerBounds(_this12.markers);
+                });
+            });
+        };
+
+        GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+            var _this13 = this;
 
             if (this._markersSubscription !== null) {
                 this._markersSubscription.dispose();
@@ -435,7 +447,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             }
 
             this._markersSubscription = this.bindingEngine.collectionObserver(this.markers).subscribe(function (splices) {
-                _this12.markerCollectionChange(splices);
+                _this13.markerCollectionChange(splices);
             });
 
             this._mapPromise.then(function () {
@@ -453,9 +465,11 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
 
                     var _marker = _ref2;
 
-                    _this12.renderMarker(_marker);
+                    _this13.renderMarker(_marker);
                 }
             });
+
+            this.zoomToMarkerBounds(newValue);
         };
 
         GoogleMaps.prototype.markerCollectionChange = function markerCollectionChange(splices) {
@@ -509,6 +523,36 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                     this.renderMarker(addedMarker);
                 }
             }
+
+            zoomToMarkerBounds(splices);
+        };
+
+        GoogleMaps.prototype.zoomToMarkerBounds = function zoomToMarkerBounds(splices) {
+            var _this14 = this;
+
+            if (this.autoUpdateBounds) {
+                this._mapPromise.then(function () {
+                    var bounds = new google.maps.LatLngBounds();
+                    for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+                        var _ref5;
+
+                        if (_isArray5) {
+                            if (_i5 >= _iterator5.length) break;
+                            _ref5 = _iterator5[_i5++];
+                        } else {
+                            _i5 = _iterator5.next();
+                            if (_i5.done) break;
+                            _ref5 = _i5.value;
+                        }
+
+                        var splice = _ref5;
+
+                        var markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                        bounds.extend(markerLatLng);
+                    }
+                    _this14.map.fitBounds(bounds);
+                });
+            }
         };
 
         GoogleMaps.prototype.error = function error() {
@@ -545,6 +589,11 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         enumerable: true,
         initializer: function initializer() {
             return [];
+        }
+    }), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'autoUpdateBounds', [_aureliaTemplating.bindable], {
+        enumerable: true,
+        initializer: function initializer() {
+            return false;
         }
     })), _class2)) || _class) || _class);
 });

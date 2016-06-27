@@ -7,7 +7,7 @@ exports.GoogleMaps = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6;
+var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
 
 var _aureliaDependencyInjection = require('aurelia-dependency-injection');
 
@@ -90,6 +90,8 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
         _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
 
         _initDefineProp(this, 'markers', _descriptor6, this);
+
+        _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
 
         this.map = null;
         this._renderedMarkers = [];
@@ -415,8 +417,18 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
         });
     };
 
-    GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+    GoogleMaps.prototype.autoUpdateBoundsChanged = function autoUpdateBoundsChanged(newValue) {
         var _this12 = this;
+
+        this._mapPromise.then(function () {
+            _this12.taskQueue.queueMicroTask(function () {
+                _this12.zoomToMarkerBounds(_this12.markers);
+            });
+        });
+    };
+
+    GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
+        var _this13 = this;
 
         if (this._markersSubscription !== null) {
             this._markersSubscription.dispose();
@@ -442,7 +454,7 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
         }
 
         this._markersSubscription = this.bindingEngine.collectionObserver(this.markers).subscribe(function (splices) {
-            _this12.markerCollectionChange(splices);
+            _this13.markerCollectionChange(splices);
         });
 
         this._mapPromise.then(function () {
@@ -460,9 +472,11 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
 
                 var _marker = _ref2;
 
-                _this12.renderMarker(_marker);
+                _this13.renderMarker(_marker);
             }
         });
+
+        this.zoomToMarkerBounds(newValue);
     };
 
     GoogleMaps.prototype.markerCollectionChange = function markerCollectionChange(splices) {
@@ -516,6 +530,36 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
                 this.renderMarker(addedMarker);
             }
         }
+
+        zoomToMarkerBounds(splices);
+    };
+
+    GoogleMaps.prototype.zoomToMarkerBounds = function zoomToMarkerBounds(splices) {
+        var _this14 = this;
+
+        if (this.autoUpdateBounds) {
+            this._mapPromise.then(function () {
+                var bounds = new google.maps.LatLngBounds();
+                for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+                    var _ref5;
+
+                    if (_isArray5) {
+                        if (_i5 >= _iterator5.length) break;
+                        _ref5 = _iterator5[_i5++];
+                    } else {
+                        _i5 = _iterator5.next();
+                        if (_i5.done) break;
+                        _ref5 = _i5.value;
+                    }
+
+                    var splice = _ref5;
+
+                    var markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    bounds.extend(markerLatLng);
+                }
+                _this14.map.fitBounds(bounds);
+            });
+        }
     };
 
     GoogleMaps.prototype.error = function error() {
@@ -552,5 +596,10 @@ var GoogleMaps = exports.GoogleMaps = (_dec = (0, _aureliaTemplating.customEleme
     enumerable: true,
     initializer: function initializer() {
         return [];
+    }
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'autoUpdateBounds', [_aureliaTemplating.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+        return false;
     }
 })), _class2)) || _class) || _class);

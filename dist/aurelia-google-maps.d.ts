@@ -27,6 +27,7 @@ export declare class GoogleMaps {
   zoom: any;
   disableDefaultUI: any;
   markers: any;
+  autoUpdateBounds: any;
   map: any;
   _renderedMarkers: any;
   _markersSubscription: any;
@@ -95,6 +96,7 @@ export declare class GoogleMaps {
   latitudeChanged(newValue?: any): any;
   longitudeChanged(newValue?: any): any;
   zoomChanged(newValue?: any): any;
+  autoUpdateBoundsChanged(newValue?: any): any;
   
   /**
        * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
@@ -111,6 +113,7 @@ export declare class GoogleMaps {
        * @param splices
        */
   markerCollectionChange(splices?: any): any;
+  zoomToMarkerBounds(splices?: any): any;
   error(): any;
 }
 export declare function configure(aurelia?: any, configCallback?: any): any;

@@ -1,4 +1,4 @@
-var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6;
+var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
 
 function _initDefineProp(target, property, descriptor, context) {
     if (!descriptor) return;
@@ -74,6 +74,8 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
         _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
 
         _initDefineProp(this, 'markers', _descriptor6, this);
+
+        _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
 
         this.map = null;
         this._renderedMarkers = [];
@@ -367,6 +369,14 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
         });
     }
 
+    autoUpdateBoundsChanged(newValue) {
+        this._mapPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                this.zoomToMarkerBounds(this.markers);
+            });
+        });
+    }
+
     markersChanged(newValue) {
         if (this._markersSubscription !== null) {
             this._markersSubscription.dispose();
@@ -387,6 +397,8 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
                 this.renderMarker(marker);
             }
         });
+
+        this.zoomToMarkerBounds(newValue);
     }
 
     markerCollectionChange(splices) {
@@ -413,6 +425,21 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
                 this.renderMarker(addedMarker);
             }
+        }
+
+        zoomToMarkerBounds(splices);
+    }
+
+    zoomToMarkerBounds(splices) {
+        if (this.autoUpdateBounds) {
+            this._mapPromise.then(() => {
+                var bounds = new google.maps.LatLngBounds();
+                for (let splice of splices) {
+                    let markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    bounds.extend(markerLatLng);
+                }
+                this.map.fitBounds(bounds);
+            });
         }
     }
 
@@ -448,5 +475,10 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     enumerable: true,
     initializer: function () {
         return [];
+    }
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'autoUpdateBounds', [bindable], {
+    enumerable: true,
+    initializer: function () {
+        return false;
     }
 })), _class2)) || _class) || _class);
