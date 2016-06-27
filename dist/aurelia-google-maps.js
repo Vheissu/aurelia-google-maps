@@ -457,9 +457,9 @@ export class GoogleMaps {
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                             let renderedMarker = this._renderedMarkers[markerIndex];
 
-                            // Check if the latitude/longitude matches
-                            if (renderedMarker.position.lat() === removedObj.latitude &&
-                                renderedMarker.position.lng() === removedObj.longitude) {
+                            // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
+                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
+                                renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                 // Set the map to null;
                                 renderedMarker.setMap(null);
 
@@ -486,7 +486,8 @@ export class GoogleMaps {
     zoomToMarkerBounds(splices) {
         if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
-                var bounds = new google.maps.LatLngBounds();
+                let bounds = new google.maps.LatLngBounds();
+
                 for (let splice of splices) {
                     // extend the bounds to include each marker's position
                     let markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
@@ -495,7 +496,7 @@ export class GoogleMaps {
                 this.map.fitBounds(bounds);
             });
         }
-    }   
+    }
 
     error() {
         console.error.apply(console, arguments);

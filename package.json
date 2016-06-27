@@ -1,6 +1,6 @@
 {
   "name": "aurelia-google-maps",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "registry": "github",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
@@ -54,6 +54,7 @@
     "gulp-yuidoc": "^0.1.2",
     "isparta": "^4.0.0",
     "jasmine-core": "^2.4.1",
+    "jspm": "^0.16.39",
     "karma": "^0.13.22",
     "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^1.0.1",
@@ -74,18 +75,17 @@
   },
   "jspm": {
     "registry": "npm",
-    "jspmPackage": true,
     "main": "index",
     "format": "amd",
     "directories": {
       "dist": "dist/amd"
     },
     "dependencies": {
-      "aurelia-binding": "^1.0.0-beta.2.0.7",
-      "aurelia-dependency-injection": "^1.0.0-beta.2.1.1",
-      "aurelia-event-aggregator": "^1.0.0-beta.2.0.1",
-      "aurelia-task-queue": "^1.0.0-beta.2.0.1",
-      "aurelia-templating": "^1.0.0-beta.3.0.6"
+      "aurelia-binding": "^1.0.0-rc.1.0.2",
+      "aurelia-dependency-injection": "^1.0.0-rc.1.0.0",
+      "aurelia-event-aggregator": "^1.0.0-rc.1.0.0",
+      "aurelia-task-queue": "^1.0.0-rc.1.0.0",
+      "aurelia-templating": "^1.0.0-rc.1.0.0"
     },
     "devDependencies": {
       "babel": "babel-core@^5.8.24",
@@ -94,10 +94,10 @@
     }
   },
   "dependencies": {
-    "aurelia-binding": "^1.0.0-beta.2.0.7",
-    "aurelia-dependency-injection": "^1.0.0-beta.2.1.1",
-    "aurelia-event-aggregator": "^1.0.0-beta.2.0.1",
-    "aurelia-task-queue": "^1.0.0-beta.2.0.1",
-    "aurelia-templating": "^1.0.0-beta.3.0.6"
+    "aurelia-binding": "^1.0.0-rc.1.0.2",
+    "aurelia-dependency-injection": "^1.0.0-rc.1.0.0",
+    "aurelia-event-aggregator": "^1.0.0-rc.1.0.0",
+    "aurelia-task-queue": "^1.0.0-rc.1.0.0",
+    "aurelia-templating": "^1.0.0-rc.1.0.0"
   }
 }

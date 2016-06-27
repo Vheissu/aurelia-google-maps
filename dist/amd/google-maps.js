@@ -506,7 +506,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
                             if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                                 var renderedMarker = this._renderedMarkers[markerIndex];
 
-                                if (renderedMarker.position.lat() === removedObj.latitude && renderedMarker.position.lng() === removedObj.longitude) {
+                                if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) && renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                     renderedMarker.setMap(null);
 
                                     this._renderedMarkers.splice(markerIndex, 1);
@@ -533,6 +533,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             if (this.autoUpdateBounds) {
                 this._mapPromise.then(function () {
                     var bounds = new google.maps.LatLngBounds();
+
                     for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
                         var _ref5;
 
