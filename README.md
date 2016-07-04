@@ -80,7 +80,7 @@ when these values are changed.
 
 ### Map Type
 
-Set the Google Basic Map Type.  
+Set the Google Basic Map Type.  See docs [docs](https://developers.google.com/maps/documentation/javascript/maptypes#BasicMapTypes)
 
 ##### Supported Constants
 * HYBRID - This map type displays a transparent layer of major streets on satellite images.
