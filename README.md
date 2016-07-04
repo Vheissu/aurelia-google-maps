@@ -82,12 +82,13 @@ when these values are changed.
 
 Set the Google Basic Map Type.  
 
-#### Supported Constants
+##### Supported Constants
 * HYBRID - This map type displays a transparent layer of major streets on satellite images.
 * ROADMAP -	This map type displays a normal street map.
 * SATELLITE -	This map type displays satellite images.
 * TERRAIN	- This map type displays maps with physical features such as terrain and vegetatio
 
+##### Example
 ``` html
 <template>
     <google-map markers.bind="myMarkers" map-type="HYBRID"></google-map>
