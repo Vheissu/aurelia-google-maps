@@ -78,6 +78,22 @@ These properties also support working with Aurelia's databinding, so you can
 bind any of the above to variables in your viewmodel and the map updates
 when these values are changed.
 
+### Map Type
+
+Set the Google Basic Map Type.  
+
+#### Supported Constants
+* HYBRID - This map type displays a transparent layer of major streets on satellite images.
+* ROADMAP -	This map type displays a normal street map.
+* SATELLITE -	This map type displays satellite images.
+* TERRAIN	- This map type displays maps with physical features such as terrain and vegetatio
+
+``` html
+<template>
+    <google-map markers.bind="myMarkers" map-type="HYBRID"></google-map>
+</template>
+```
+
 ### Map Click Event
 
 It is possible to catch the map click events as specified by the [Google Maps documentation](https://developers.google.com/maps/documentation/javascript/events#ShapeEvents).

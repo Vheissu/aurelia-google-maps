@@ -26,6 +26,7 @@ export class GoogleMaps {
     @bindable disableDefaultUI = false;
     @bindable markers = [];
     @bindable autoUpdateBounds = false;
+    @bindable mapType = 'ROADMAP';
 
     map = null;
     _renderedMarkers = [];
@@ -84,11 +85,13 @@ export class GoogleMaps {
 
         this._scriptPromise.then(() => {
             let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            let mapTypeId = this.getMapTypeId();
 
             let options = {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
-                disableDefaultUI: this.disableDefaultUI
+                disableDefaultUI: this.disableDefaultUI,
+                mapTypeId: mapTypeId
             };
 
             this.map = new google.maps.Map(this.element, options);
@@ -474,6 +477,18 @@ export class GoogleMaps {
                 this.map.fitBounds(bounds);
             });
         }
+    }
+
+    getMapTypeId() {
+        if (this.mapType.toUpperCase() === 'HYBRID') {
+            return google.maps.MapTypeId.HYBRID;
+        } else if (this.mapType.toUpperCase() === 'SATELLITE') {
+            return google.maps.MapTypeId.SATELLITE;
+        } else if (this.mapType.toUpperCase() === 'TERRAIN') {
+            return google.maps.MapTypeId.TERRAIN;
+        }
+
+        return google.maps.MapTypeId.ROADMAP;
     }
 
     error() {
