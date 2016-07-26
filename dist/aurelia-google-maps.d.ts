@@ -28,6 +28,7 @@ export declare class GoogleMaps {
   disableDefaultUI: any;
   markers: any;
   autoUpdateBounds: any;
+  mapType: any;
   map: any;
   _renderedMarkers: any;
   _markersSubscription: any;
@@ -114,6 +115,7 @@ export declare class GoogleMaps {
        */
   markerCollectionChange(splices?: any): any;
   zoomToMarkerBounds(splices?: any): any;
+  getMapTypeId(): any;
   error(): any;
 }
 export declare function configure(aurelia?: any, configCallback?: any): any;

@@ -1,4 +1,4 @@
-var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
+var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8;
 
 function _initDefineProp(target, property, descriptor, context) {
     if (!descriptor) return;
@@ -77,6 +77,8 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
         _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
 
+        _initDefineProp(this, 'mapType', _descriptor8, this);
+
         this.map = null;
         this._renderedMarkers = [];
         this._markersSubscription = null;
@@ -131,11 +133,13 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
 
         this._scriptPromise.then(() => {
             let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            let mapTypeId = this.getMapTypeId();
 
             let options = {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
-                disableDefaultUI: this.disableDefaultUI
+                disableDefaultUI: this.disableDefaultUI,
+                mapTypeId: mapTypeId
             };
 
             this.map = new google.maps.Map(this.element, options);
@@ -444,6 +448,18 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
         }
     }
 
+    getMapTypeId() {
+        if (this.mapType.toUpperCase() === 'HYBRID') {
+            return google.maps.MapTypeId.HYBRID;
+        } else if (this.mapType.toUpperCase() === 'SATELLITE') {
+            return google.maps.MapTypeId.SATELLITE;
+        } else if (this.mapType.toUpperCase() === 'TERRAIN') {
+            return google.maps.MapTypeId.TERRAIN;
+        }
+
+        return google.maps.MapTypeId.ROADMAP;
+    }
+
     error() {
         console.error.apply(console, arguments);
     }
@@ -481,5 +497,10 @@ export let GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Elem
     enumerable: true,
     initializer: function () {
         return false;
+    }
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, 'mapType', [bindable], {
+    enumerable: true,
+    initializer: function () {
+        return 'ROADMAP';
     }
 })), _class2)) || _class) || _class);

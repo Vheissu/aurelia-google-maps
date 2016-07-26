@@ -57,7 +57,7 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
     }
 
-    var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
+    var _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8;
 
     var GM = 'googlemap';
     var BOUNDSCHANGED = GM + ':bounds_changed';
@@ -85,6 +85,8 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             _initDefineProp(this, 'markers', _descriptor6, this);
 
             _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
+
+            _initDefineProp(this, 'mapType', _descriptor8, this);
 
             this.map = null;
             this._renderedMarkers = [];
@@ -142,11 +144,13 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
 
             this._scriptPromise.then(function () {
                 var latLng = new google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
+                var mapTypeId = _this.getMapTypeId();
 
                 var options = {
                     center: latLng,
                     zoom: parseInt(_this.zoom, 10),
-                    disableDefaultUI: _this.disableDefaultUI
+                    disableDefaultUI: _this.disableDefaultUI,
+                    mapTypeId: mapTypeId
                 };
 
                 _this.map = new google.maps.Map(_this.element, options);
@@ -556,6 +560,18 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
             }
         };
 
+        GoogleMaps.prototype.getMapTypeId = function getMapTypeId() {
+            if (this.mapType.toUpperCase() === 'HYBRID') {
+                return google.maps.MapTypeId.HYBRID;
+            } else if (this.mapType.toUpperCase() === 'SATELLITE') {
+                return google.maps.MapTypeId.SATELLITE;
+            } else if (this.mapType.toUpperCase() === 'TERRAIN') {
+                return google.maps.MapTypeId.TERRAIN;
+            }
+
+            return google.maps.MapTypeId.ROADMAP;
+        };
+
         GoogleMaps.prototype.error = function error() {
             console.error.apply(console, arguments);
         };
@@ -595,6 +611,11 @@ define(['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aureli
         enumerable: true,
         initializer: function initializer() {
             return false;
+        }
+    }), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, 'mapType', [_aureliaTemplating.bindable], {
+        enumerable: true,
+        initializer: function initializer() {
+            return 'ROADMAP';
         }
     })), _class2)) || _class) || _class);
 });
