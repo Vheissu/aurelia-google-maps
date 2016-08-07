@@ -6,6 +6,14 @@ inserting Google Maps into your application.
 
 ## To Install
 
+**Webpack/Aurelia CLI**
+
+``` shell
+npm install aurelia-google-maps --save
+```
+
+**Jspm**
+
 ``` shell
 jspm install aurelia-google-maps
 ```
