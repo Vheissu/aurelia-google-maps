@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-dependency-injection';
 import {bindable, customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
-import {BindingEngine} from 'aurelia-framework';
+import {BindingEngine} from 'aurelia-binding';
 import {EventAggregator} from 'aurelia-event-aggregator';
 
 import {Configure} from './configure';
