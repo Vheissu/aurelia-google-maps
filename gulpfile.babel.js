@@ -11,6 +11,12 @@ const assetPatterns = ["./src/**/*.html", "./*.css", "./src/**/*.json"];
 const sassStyles = ["./styles/**/*.scss", "./src/**/*.scss"];
 const typescriptPattern = "./src/**/*.ts";
 const destination = "dist";
+const destinations = [
+    "dist/amd",
+    "dist/commonjs",
+    "dist/es2015",
+    "dist/system"
+];
 
 /**
  * Cleanup some directories and files
@@ -30,7 +36,10 @@ gulp.task('cleanup', () => {
 gulp.task("copy-assets", () => {
     return gulp
         .src(assetPatterns)
-        .pipe(gulp.dest(destination));
+        .pipe(gulp.dest(destinations[0]))
+        .pipe(gulp.dest(destinations[1]))
+        .pipe(gulp.dest(destinations[2]))
+        .pipe(gulp.dest(destinations[3]));
 });
 
 /**
@@ -45,7 +54,10 @@ gulp.task("compile-sass", () => {
         .pipe(sass())
         .pipe(sourcemaps.write())
         .pipe(autoprefixer())
-        .pipe(gulp.dest(destination))
+        .pipe(gulp.dest(destinations[0]))
+        .pipe(gulp.dest(destinations[1]))
+        .pipe(gulp.dest(destinations[2]))
+        .pipe(gulp.dest(destinations[3]))
         .resume();
 });
 

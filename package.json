@@ -2,6 +2,8 @@
   "name": "aurelia-google-maps",
   "version": "1.0.12",
   "registry": "github",
+  "license": "MIT",
+  "author": "Dwayne Charrington <dwaynecharrington@gmail.com>",
   "description": "A plugin for working with Google Maps within Aurelia",
   "main": "dist/commonjs/index.js",
   "typings": "dist/commonjs/index.d.ts",
@@ -20,10 +22,6 @@
   "bugs": {
     "url": "https://github.com/Vheissu/aurelia-google-maps/issues"
   },
-  "license": "MIT",
-  "author": "Dwayne Charrington <dwaynecharrington@gmail.com>",
-  "main": "dist/commonjs/index.js",
-  "typings": "dist/aurelia-google-maps.d.ts",
   "repository": {
     "type": "git",
     "url": "http://github.com/Vheissu/aurelia-google-maps"
@@ -42,6 +40,18 @@
     "jasmine-core": "^2.4.1",
     "karma": "^1.1.1",
     "karma-jasmine": "^1.0.2",
+    "karma-typescript-preprocessor": "^0.2.1",
+    "node-sass": "^3.8.0",
+    "run-sequence": "^1.2.2",
+    "typescript": "^2.1.0-dev.20160801"
+  },
+  "dependencies": {
+    "aurelia-dependency-injection": "^1.0.0",
+    "aurelia-event-aggregator": "^1.0.0",
+    "aurelia-framework": "^1.0.1",
+    "aurelia-task-queue": "^1.0.0",
+    "aurelia-templating": "^1.0.0"
+  },
   "jspm": {
     "registry": "npm",
     "main": "index",
@@ -56,17 +66,6 @@
       "aurelia-task-queue": "^1.0.0-rc.1.0.0",
       "aurelia-templating": "^1.0.0-rc.1.0.0"
     },
-    "devDependencies": {
-      "babel": "babel-core@^5.8.24",
-      "babel-runtime": "^5.8.24",
-      "core-js": "^1.1.4"
-    }
-    "karma-typescript-preprocessor": "^0.2.1",
-    "node-sass": "^3.8.0",
-    "run-sequence": "^1.2.2",
-    "typescript": "^2.1.0-dev.20160801"
-  },
-  "dependencies": {
-    
+    "devDependencies": {}
   }
 }
