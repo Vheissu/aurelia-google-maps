@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var aurelia_dependency_injection_1 = require('aurelia-dependency-injection');
 var aurelia_templating_1 = require('aurelia-templating');
 var aurelia_task_queue_1 = require('aurelia-task-queue');
-var aurelia_framework_1 = require('aurelia-framework');
+var aurelia_binding_1 = require('aurelia-binding');
 var aurelia_event_aggregator_1 = require('aurelia-event-aggregator');
 var configure_1 = require('./configure');
 var GM = 'googlemap';
@@ -400,7 +400,7 @@ var GoogleMaps = (function () {
     ], GoogleMaps.prototype, "mapType", void 0);
     GoogleMaps = __decorate([
         aurelia_templating_1.customElement('google-map'),
-        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_framework_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
+        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
         __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
     ], GoogleMaps);
     return GoogleMaps;

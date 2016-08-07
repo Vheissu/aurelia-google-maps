@@ -31,7 +31,7 @@ define("configure", ["require", "exports"], function (require, exports) {
     }());
     exports.Configure = Configure;
 });
-define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', "configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_framework_1, aurelia_event_aggregator_1, configure_1) {
+define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-binding', 'aurelia-event-aggregator', "configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1) {
     "use strict";
     var GM = 'googlemap';
     var BOUNDSCHANGED = GM + ":bounds_changed";
@@ -419,7 +419,7 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
         ], GoogleMaps.prototype, "mapType", void 0);
         GoogleMaps = __decorate([
             aurelia_templating_1.customElement('google-map'),
-            aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_framework_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
+            aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
             __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
         ], GoogleMaps);
         return GoogleMaps;

@@ -1,4 +1,4 @@
-System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function(exports_1, context_1) {
+System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-binding', 'aurelia-event-aggregator', './configure'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_framework_1, aurelia_event_aggregator_1, configure_1;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1;
     var GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
     return {
         setters:[
@@ -23,8 +23,8 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             function (aurelia_task_queue_1_1) {
                 aurelia_task_queue_1 = aurelia_task_queue_1_1;
             },
-            function (aurelia_framework_1_1) {
-                aurelia_framework_1 = aurelia_framework_1_1;
+            function (aurelia_binding_1_1) {
+                aurelia_binding_1 = aurelia_binding_1_1;
             },
             function (aurelia_event_aggregator_1_1) {
                 aurelia_event_aggregator_1 = aurelia_event_aggregator_1_1;
@@ -419,7 +419,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                 ], GoogleMaps.prototype, "mapType", void 0);
                 GoogleMaps = __decorate([
                     aurelia_templating_1.customElement('google-map'),
-                    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_framework_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
+                    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
                     __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
                 ], GoogleMaps);
                 return GoogleMaps;
