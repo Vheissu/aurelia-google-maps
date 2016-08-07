@@ -19,13 +19,19 @@ const APILOADED = `${GM}:api:loaded`;
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {
+    private element: Element;
+    private taskQueue: TaskQueue;
+    private config;
+    private bindingEngine: BindingEngine;
+    private eventAggregator: EventAggregator;
+
     @bindable address = null;
-    @bindable longitude = 0;
-    @bindable latitude = 0;
-    @bindable zoom = 8;
-    @bindable disableDefaultUI = false;
+    @bindable longitude: number = 0;
+    @bindable latitude: number = 0;
+    @bindable zoom: number = 8;
+    @bindable disableDefaultUI: boolean = false;
     @bindable markers = [];
-    @bindable autoUpdateBounds = false;
+    @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
 
     map = null;
@@ -63,7 +69,7 @@ export class GoogleMaps {
         this.eventAggregator.subscribe('startMarkerHighlight', function(data) {
             let mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+            mrkr.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
         });
 
         this.eventAggregator.subscribe('stopMarkerHighLight', function(data) {
@@ -84,23 +90,23 @@ export class GoogleMaps {
         });
 
         this._scriptPromise.then(() => {
-            let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            let latLng = new (<any>window).google.maps.LatLng(parseFloat((<any>this.latitude)), parseFloat((<any>this.longitude)));
             let mapTypeId = this.getMapTypeId();
 
-            let options = {
+            let options: any = {
                 center: latLng,
-                zoom: parseInt(this.zoom, 10),
+                zoom: parseInt((<any>this.zoom), 10),
                 disableDefaultUI: this.disableDefaultUI,
                 mapTypeId: mapTypeId
             };
 
-            this.map = new google.maps.Map(this.element, options);
+            this.map = new (<any>window).google.maps.Map(this.element, options);
             this._mapResolve();
 
             // Add event listener for click event
             this.map.addListener('click', (e) => {
                 let changeEvent;
-                if (window.CustomEvent) {
+                if ((<any>window).CustomEvent) {
                     changeEvent = new CustomEvent('map-click', {
                         detail: e,
                         bubbles: true
@@ -156,7 +162,7 @@ export class GoogleMaps {
      *
      */
     renderMarker(marker) {
-        let markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
         this._mapPromise.then(() => {
             // Create the marker
@@ -178,7 +184,7 @@ export class GoogleMaps {
                  *the event payload is the marker itself*/
                 createdMarker.addListener('mouseover', () => {
                     this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                    createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    createdMarker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
                 });
 
                 createdMarker.addListener('mouseout', () => {
@@ -204,7 +210,7 @@ export class GoogleMaps {
                 }
 
                 if (marker.infoWindow) {
-                    createdMarker.infoWindow = new google.maps.InfoWindow({
+                    createdMarker.infoWindow = new (<any>window).google.maps.InfoWindow({
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
@@ -234,7 +240,7 @@ export class GoogleMaps {
     geocodeAddress(address, geocoder) {
         this._mapPromise.then(() => {
             geocoder.geocode({'address': address}, (results, status) => {
-                if (status === google.maps.GeocoderStatus.OK) {
+                if (status === (<any>window).google.maps.GeocoderStatus.OK) {
                     this.setCenter(results[0].geometry.location);
 
                     this.createMarker({
@@ -252,7 +258,7 @@ export class GoogleMaps {
      * Get the users current coordinate info from their browser
      *
      */
-    getCurrentPosition() {
+    getCurrentPosition(): any {
         if (navigator.geolocation) {
             return navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
         }
@@ -275,7 +281,7 @@ export class GoogleMaps {
             return this._scriptPromise;
         }
 
-        if (window.google === undefined || window.google.maps === undefined) {
+        if ((<any>window).google === undefined || (<any>window).google.maps === undefined) {
             // google has not been defined yet
             let script = document.createElement('script');
 
@@ -286,7 +292,7 @@ export class GoogleMaps {
             document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {
-                window.myGoogleMapsCallback = () => {
+                (<any>window).myGoogleMapsCallback = () => {
                     this.sendApiLoadedEvent();
                     resolve();
                 };
@@ -299,7 +305,7 @@ export class GoogleMaps {
             return this._scriptPromise;
         }
 
-        if (window.google && window.google.maps) {
+        if ((<any>window).google && (<any>window).google.maps) {
             // google has been defined already, so return an immediately resolved Promise that has scope
             this._scriptPromise = new Promise(resolve => { resolve(); });
 
@@ -319,7 +325,7 @@ export class GoogleMaps {
 
     createMarker(options) {
         return this._scriptPromise.then(() => {
-            return Promise.resolve(new google.maps.Marker(options));
+            return Promise.resolve(new (<any>window).google.maps.Marker(options));
         });
     }
 
@@ -338,14 +344,14 @@ export class GoogleMaps {
 
     updateCenter() {
         this._mapPromise.then(() => {
-            let latLng = new google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
+            let latLng = new (<any>window).google.maps.LatLng(parseFloat((<any>this.latitude)), parseFloat((<any>this.longitude)));
             this.setCenter(latLng);
         });
     }
 
     addressChanged(newValue) {
         this._mapPromise.then(() => {
-            let geocoder = new google.maps.Geocoder;
+            let geocoder = new (<any>window).google.maps.Geocoder;
 
             this.taskQueue.queueMicroTask(() => {
                 this.geocodeAddress(newValue, geocoder);
@@ -445,7 +451,7 @@ export class GoogleMaps {
                                 renderedMarker.setMap(null);
 
                                 // Splice out this rendered marker as well
-                                this._renderedMarkers.splice(markerIndex, 1);
+                                this._renderedMarkers.splice((<any>markerIndex), 1);
                                 break;
                             }
                         }
@@ -461,17 +467,17 @@ export class GoogleMaps {
             }
         }
 
-        zoomToMarkerBounds(splices);
+        this.zoomToMarkerBounds(splices);
     }
 
     zoomToMarkerBounds(splices) {
         if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
-                let bounds = new google.maps.LatLngBounds();
+                let bounds = new (<any>window).google.maps.LatLngBounds();
 
                 for (let splice of splices) {
                     // extend the bounds to include each marker's position
-                    let markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
                     bounds.extend(markerLatLng);
                 }
                 this.map.fitBounds(bounds);
@@ -481,14 +487,14 @@ export class GoogleMaps {
 
     getMapTypeId() {
         if (this.mapType.toUpperCase() === 'HYBRID') {
-            return google.maps.MapTypeId.HYBRID;
+            return (<any>window).google.maps.MapTypeId.HYBRID;
         } else if (this.mapType.toUpperCase() === 'SATELLITE') {
-            return google.maps.MapTypeId.SATELLITE;
+            return (<any>window).google.maps.MapTypeId.SATELLITE;
         } else if (this.mapType.toUpperCase() === 'TERRAIN') {
-            return google.maps.MapTypeId.TERRAIN;
+            return (<any>window).google.maps.MapTypeId.TERRAIN;
         }
 
-        return google.maps.MapTypeId.ROADMAP;
+        return (<any>window).google.maps.MapTypeId.ROADMAP;
     }
 
     error() {

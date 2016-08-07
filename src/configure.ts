@@ -1,4 +1,11 @@
+export interface ConfigInterface {
+    apiScript: string;
+    apiKey: string;
+    apiLibraries: string;
+}
+
 export class Configure {
+    private _config: ConfigInterface;
 
     constructor() {
         this._config = {
@@ -8,7 +15,7 @@ export class Configure {
         };
     }
 
-    options(obj) {
+    options(obj: ConfigInterface) {
         Object.assign(this._config, obj);
     }
 

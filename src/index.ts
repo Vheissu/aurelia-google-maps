@@ -1,4 +1,5 @@
 import { Configure } from './configure';
+import { GoogleMaps } from './google-maps';
 
 export function configure(aurelia, configCallback) {
     let instance = aurelia.container.get(Configure);
@@ -10,3 +11,6 @@ export function configure(aurelia, configCallback) {
 
     aurelia.globalResources('./google-maps');
 }
+
+export { Configure };
+export { GoogleMaps };
