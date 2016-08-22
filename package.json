@@ -55,9 +55,9 @@
   "jspm": {
     "registry": "npm",
     "main": "index",
-    "format": "amd",
+    "format": "cjs",
     "directories": {
-      "dist": "dist/amd"
+      "dist": "dist/commonjs"
     },
     "dependencies": {
         "aurelia-binding": "^1.0.1",
