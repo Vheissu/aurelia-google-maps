@@ -21,7 +21,7 @@ const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
-let GoogleMaps = class GoogleMaps {
+export let GoogleMaps = class GoogleMaps {
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.address = null;
         this.longitude = 0;
@@ -351,41 +351,40 @@ let GoogleMaps = class GoogleMaps {
     }
 };
 __decorate([
-    bindable,
-    __metadata("design:type", Object)
+    bindable, 
+    __metadata('design:type', Object)
 ], GoogleMaps.prototype, "address", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Number)
+    bindable, 
+    __metadata('design:type', Number)
 ], GoogleMaps.prototype, "longitude", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Number)
+    bindable, 
+    __metadata('design:type', Number)
 ], GoogleMaps.prototype, "latitude", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Number)
+    bindable, 
+    __metadata('design:type', Number)
 ], GoogleMaps.prototype, "zoom", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Boolean)
+    bindable, 
+    __metadata('design:type', Boolean)
 ], GoogleMaps.prototype, "disableDefaultUI", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Object)
+    bindable, 
+    __metadata('design:type', Object)
 ], GoogleMaps.prototype, "markers", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Boolean)
+    bindable, 
+    __metadata('design:type', Boolean)
 ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
 __decorate([
-    bindable,
-    __metadata("design:type", Object)
+    bindable, 
+    __metadata('design:type', Object)
 ], GoogleMaps.prototype, "mapType", void 0);
 GoogleMaps = __decorate([
     customElement('google-map'),
-    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), 
+    __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
 ], GoogleMaps);
-export { GoogleMaps };
 //# sourceMappingURL=google-maps.js.map
