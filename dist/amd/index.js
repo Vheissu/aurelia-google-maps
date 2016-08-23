@@ -93,6 +93,9 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
             this.element.addEventListener('dragstart', function (evt) {
                 evt.preventDefault();
             });
+            this.element.addEventListener("zoom_to_bounds", function (evt) {
+                _this.zoomToMarkerBounds();
+            });
             this._scriptPromise.then(function () {
                 var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
                 var mapTypeId = _this.getMapTypeId();
@@ -301,14 +304,6 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                 });
             });
         };
-        GoogleMaps.prototype.autoUpdateBoundsChanged = function (newValue) {
-            var _this = this;
-            this._mapPromise.then(function () {
-                _this.taskQueue.queueMicroTask(function () {
-                    _this.zoomToMarkerBounds(_this.markers);
-                });
-            });
-        };
         GoogleMaps.prototype.markersChanged = function (newValue) {
             var _this = this;
             if (this._markersSubscription !== null) {
@@ -328,9 +323,12 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                     _this.renderMarker(marker);
                 }
             });
-            this.zoomToMarkerBounds(newValue);
+            this.zoomToMarkerBounds();
         };
         GoogleMaps.prototype.markerCollectionChange = function (splices) {
+            if (!splices.length) {
+                return;
+            }
             for (var _i = 0, splices_1 = splices; _i < splices_1.length; _i++) {
                 var splice = splices_1[_i];
                 if (splice.removed.length) {
@@ -354,16 +352,16 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                     this.renderMarker(addedMarker);
                 }
             }
-            this.zoomToMarkerBounds(splices);
+            this.zoomToMarkerBounds();
         };
-        GoogleMaps.prototype.zoomToMarkerBounds = function (splices) {
+        GoogleMaps.prototype.zoomToMarkerBounds = function () {
             var _this = this;
             if (this.autoUpdateBounds) {
                 this._mapPromise.then(function () {
                     var bounds = new window.google.maps.LatLngBounds();
-                    for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
-                        var splice = splices_2[_i];
-                        var markerLatLng = new window.google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
+                        var marker = _a[_i];
+                        var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                         bounds.extend(markerLatLng);
                     }
                     _this.map.fitBounds(bounds);

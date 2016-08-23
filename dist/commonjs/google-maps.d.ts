@@ -35,10 +35,9 @@ export declare class GoogleMaps {
     latitudeChanged(newValue: any): void;
     longitudeChanged(newValue: any): void;
     zoomChanged(newValue: any): void;
-    autoUpdateBoundsChanged(newValue: any): void;
     markersChanged(newValue: any): void;
     markerCollectionChange(splices: any): void;
-    zoomToMarkerBounds(splices: any): void;
+    zoomToMarkerBounds(): void;
     getMapTypeId(): any;
     error(): void;
 }
