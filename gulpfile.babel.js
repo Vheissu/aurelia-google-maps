@@ -91,7 +91,7 @@ gulp.task("copy-definition-file", () => {
  */
 gulp.task('tsc', shell.task([
     "tsc --project tsconfig.json",
-    "tsc --project tsconfig.es2015.json",
+    "tsc --project tsconfig.commonjs.json",
     "tsc --project tsconfig.system.json",
     "tsc --project tsconfig.amd.json"
 ]));
