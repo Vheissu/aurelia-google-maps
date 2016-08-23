@@ -1,529 +1,345 @@
-'use strict';
-
-System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-framework', 'aurelia-event-aggregator', './configure'], function (_export, _context) {
+System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-task-queue', 'aurelia-binding', 'aurelia-event-aggregator', './configure'], function(exports_1, context_1) {
     "use strict";
-
-    var inject, bindable, customElement, TaskQueue, BindingEngine, EventAggregator, Configure, _typeof, _dec, _dec2, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
-
-    function _initDefineProp(target, property, descriptor, context) {
-        if (!descriptor) return;
-        Object.defineProperty(target, property, {
-            enumerable: descriptor.enumerable,
-            configurable: descriptor.configurable,
-            writable: descriptor.writable,
-            value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
-        });
-    }
-
-    
-
-    function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
-        var desc = {};
-        Object['ke' + 'ys'](descriptor).forEach(function (key) {
-            desc[key] = descriptor[key];
-        });
-        desc.enumerable = !!desc.enumerable;
-        desc.configurable = !!desc.configurable;
-
-        if ('value' in desc || desc.initializer) {
-            desc.writable = true;
-        }
-
-        desc = decorators.slice().reverse().reduce(function (desc, decorator) {
-            return decorator(target, property, desc) || desc;
-        }, desc);
-
-        if (context && desc.initializer !== void 0) {
-            desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
-            desc.initializer = undefined;
-        }
-
-        if (desc.initializer === void 0) {
-            Object['define' + 'Property'](target, property, desc);
-            desc = null;
-        }
-
-        return desc;
-    }
-
-    function _initializerWarningHelper(descriptor, context) {
-        throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
-    }
-
+    var __moduleName = context_1 && context_1.id;
+    var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    var __metadata = (this && this.__metadata) || function (k, v) {
+        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+    };
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1;
+    var GM, BOUNDSCHANGED, CLICK, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
     return {
-        setters: [function (_aureliaDependencyInjection) {
-            inject = _aureliaDependencyInjection.inject;
-        }, function (_aureliaTemplating) {
-            bindable = _aureliaTemplating.bindable;
-            customElement = _aureliaTemplating.customElement;
-        }, function (_aureliaTaskQueue) {
-            TaskQueue = _aureliaTaskQueue.TaskQueue;
-        }, function (_aureliaFramework) {
-            BindingEngine = _aureliaFramework.BindingEngine;
-        }, function (_aureliaEventAggregator) {
-            EventAggregator = _aureliaEventAggregator.EventAggregator;
-        }, function (_configure) {
-            Configure = _configure.Configure;
-        }],
-        execute: function () {
-            _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-                return typeof obj;
-            } : function (obj) {
-                return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-            };
+        setters:[
+            function (aurelia_dependency_injection_1_1) {
+                aurelia_dependency_injection_1 = aurelia_dependency_injection_1_1;
+            },
+            function (aurelia_templating_1_1) {
+                aurelia_templating_1 = aurelia_templating_1_1;
+            },
+            function (aurelia_task_queue_1_1) {
+                aurelia_task_queue_1 = aurelia_task_queue_1_1;
+            },
+            function (aurelia_binding_1_1) {
+                aurelia_binding_1 = aurelia_binding_1_1;
+            },
+            function (aurelia_event_aggregator_1_1) {
+                aurelia_event_aggregator_1 = aurelia_event_aggregator_1_1;
+            },
+            function (configure_1_1) {
+                configure_1 = configure_1_1;
+            }],
+        execute: function() {
             GM = 'googlemap';
-            BOUNDSCHANGED = GM + ':bounds_changed';
-            CLICK = GM + ':click';
-            MARKERCLICK = GM + ':marker:click';
-            MARKERMOUSEOVER = GM + ':marker:mouse_over';
-            MARKERMOUSEOUT = GM + ':marker:mouse_out';
-            APILOADED = GM + ':api:loaded';
-
-            _export('GoogleMaps', GoogleMaps = (_dec = customElement('google-map'), _dec2 = inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), _dec(_class = _dec2(_class = (_class2 = function () {
+            BOUNDSCHANGED = GM + ":bounds_changed";
+            CLICK = GM + ":click";
+            MARKERCLICK = GM + ":marker:click";
+            MARKERMOUSEOVER = GM + ":marker:mouse_over";
+            MARKERMOUSEOUT = GM + ":marker:mouse_out";
+            APILOADED = GM + ":api:loaded";
+            GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
-                    
-
-                    _initDefineProp(this, 'address', _descriptor, this);
-
-                    _initDefineProp(this, 'longitude', _descriptor2, this);
-
-                    _initDefineProp(this, 'latitude', _descriptor3, this);
-
-                    _initDefineProp(this, 'zoom', _descriptor4, this);
-
-                    _initDefineProp(this, 'disableDefaultUI', _descriptor5, this);
-
-                    _initDefineProp(this, 'markers', _descriptor6, this);
-
-                    _initDefineProp(this, 'autoUpdateBounds', _descriptor7, this);
-
-                    _initDefineProp(this, 'mapType', _descriptor8, this);
-
+                    this.address = null;
+                    this.longitude = 0;
+                    this.latitude = 0;
+                    this.zoom = 8;
+                    this.disableDefaultUI = false;
+                    this.markers = [];
+                    this.autoUpdateBounds = false;
+                    this.mapType = 'ROADMAP';
                     this.map = null;
                     this._renderedMarkers = [];
                     this._markersSubscription = null;
                     this._scriptPromise = null;
                     this._mapPromise = null;
                     this._mapResolve = null;
-
                     this.element = element;
                     this.taskQueue = taskQueue;
                     this.config = config;
                     this.bindingEngine = bindingEngine;
                     this.eventAggregator = eventAggregator;
-
                     if (!config.get('apiScript')) {
                         console.error('No API script is defined.');
                     }
-
                     if (!config.get('apiKey')) {
                         console.error('No API key has been specified.');
                     }
-
                     this.loadApiScript();
-
                     var self = this;
                     this._mapPromise = this._scriptPromise.then(function () {
                         return new Promise(function (resolve, reject) {
                             self._mapResolve = resolve;
                         });
                     });
-
                     this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
                         var mrkr = self._renderedMarkers[data.index];
                         mrkr.setIcon(mrkr.custom.altIcon);
-                        mrkr.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                        mrkr.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
                     });
-
                     this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
                         var mrkr = self._renderedMarkers[data.index];
                         mrkr.setIcon(mrkr.custom.defaultIcon);
                     });
-
                     this.eventAggregator.subscribe('panToMarker', function (data) {
                         self.map.panTo(self._renderedMarkers[data.index].position);
                         self.map.setZoom(17);
                     });
                 }
-
-                GoogleMaps.prototype.attached = function attached() {
+                GoogleMaps.prototype.attached = function () {
                     var _this = this;
-
                     this.element.addEventListener('dragstart', function (evt) {
                         evt.preventDefault();
                     });
-
+                    this.element.addEventListener("zoom_to_bounds", function (evt) {
+                        _this.zoomToMarkerBounds();
+                    });
                     this._scriptPromise.then(function () {
-                        var latLng = new google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
+                        var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
                         var mapTypeId = _this.getMapTypeId();
-
                         var options = {
                             center: latLng,
                             zoom: parseInt(_this.zoom, 10),
                             disableDefaultUI: _this.disableDefaultUI,
                             mapTypeId: mapTypeId
                         };
-
-                        _this.map = new google.maps.Map(_this.element, options);
+                        _this.map = new window.google.maps.Map(_this.element, options);
                         _this._mapResolve();
-
                         _this.map.addListener('click', function (e) {
-                            var changeEvent = void 0;
+                            var changeEvent;
                             if (window.CustomEvent) {
                                 changeEvent = new CustomEvent('map-click', {
                                     detail: e,
                                     bubbles: true
                                 });
-                            } else {
+                            }
+                            else {
                                 changeEvent = document.createEvent('CustomEvent');
                                 changeEvent.initCustomEvent('map-click', true, true, { data: e });
                             }
-
                             _this.element.dispatchEvent(changeEvent);
                             _this.eventAggregator.publish(CLICK, e);
                         });
-
                         _this.map.addListener('dragend', function () {
                             _this.sendBoundsEvent();
                         });
-
                         _this.map.addListener('zoom_changed', function () {
                             _this.sendBoundsEvent();
                         });
                     });
                 };
-
-                GoogleMaps.prototype.sendBoundsEvent = function sendBoundsEvent() {
+                GoogleMaps.prototype.sendBoundsEvent = function () {
                     var bounds = this.map.getBounds();
                     if (bounds) {
                         this.eventAggregator.publish(BOUNDSCHANGED, bounds);
                     }
                 };
-
-                GoogleMaps.prototype.sendApiLoadedEvent = function sendApiLoadedEvent() {
+                GoogleMaps.prototype.sendApiLoadedEvent = function () {
                     this.eventAggregator.publish(APILOADED, this._scriptPromise);
                 };
-
-                GoogleMaps.prototype.renderMarker = function renderMarker(marker) {
-                    var _this2 = this;
-
-                    var markerLatLng = new google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
-
+                GoogleMaps.prototype.renderMarker = function (marker) {
+                    var _this = this;
+                    var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                     this._mapPromise.then(function () {
-                        _this2.createMarker({
-                            map: _this2.map,
+                        _this.createMarker({
+                            map: _this.map,
                             position: markerLatLng
                         }).then(function (createdMarker) {
                             createdMarker.addListener('click', function () {
                                 if (!createdMarker.infoWindow) {
-                                    _this2.eventAggregator.publish(MARKERCLICK, createdMarker);
-                                } else {
-                                    createdMarker.infoWindow.open(_this2.map, createdMarker);
+                                    _this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                                }
+                                else {
+                                    createdMarker.infoWindow.open(_this.map, createdMarker);
                                 }
                             });
-
                             createdMarker.addListener('mouseover', function () {
-                                _this2.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
-                                createdMarker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                                _this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                                createdMarker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
                             });
-
                             createdMarker.addListener('mouseout', function () {
-                                _this2.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                                _this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
                             });
-
                             createdMarker.addListener('dblclick', function () {
-                                _this2.map.setZoom(15);
-                                _this2.map.panTo(createdMarker.position);
+                                _this.map.setZoom(15);
+                                _this.map.panTo(createdMarker.position);
                             });
-
                             if (marker.icon) {
                                 createdMarker.setIcon(marker.icon);
                             }
-
                             if (marker.label) {
                                 createdMarker.setLabel(marker.label);
                             }
-
                             if (marker.title) {
                                 createdMarker.setTitle(marker.title);
                             }
-
                             if (marker.infoWindow) {
-                                createdMarker.infoWindow = new google.maps.InfoWindow({
+                                createdMarker.infoWindow = new window.google.maps.InfoWindow({
                                     content: marker.infoWindow.content,
                                     pixelOffset: marker.infoWindow.pixelOffset,
                                     position: marker.infoWindow.position,
                                     maxWidth: marker.infoWindow.maxWidth
                                 });
                             }
-
                             if (marker.custom) {
                                 createdMarker.custom = marker.custom;
                             }
-
-                            _this2._renderedMarkers.push(createdMarker);
+                            _this._renderedMarkers.push(createdMarker);
                         });
                     });
                 };
-
-                GoogleMaps.prototype.geocodeAddress = function geocodeAddress(address, geocoder) {
-                    var _this3 = this;
-
+                GoogleMaps.prototype.geocodeAddress = function (address, geocoder) {
+                    var _this = this;
                     this._mapPromise.then(function () {
                         geocoder.geocode({ 'address': address }, function (results, status) {
-                            if (status === google.maps.GeocoderStatus.OK) {
-                                _this3.setCenter(results[0].geometry.location);
-
-                                _this3.createMarker({
-                                    map: _this3.map,
+                            if (status === window.google.maps.GeocoderStatus.OK) {
+                                _this.setCenter(results[0].geometry.location);
+                                _this.createMarker({
+                                    map: _this.map,
                                     position: results[0].geometry.location
                                 });
                             }
                         });
                     });
                 };
-
-                GoogleMaps.prototype.getCurrentPosition = function getCurrentPosition() {
+                GoogleMaps.prototype.getCurrentPosition = function () {
                     if (navigator.geolocation) {
-                        return navigator.geolocation.getCurrentPosition(function (position) {
-                            return Promise.resolve(position);
-                        }, function (evt) {
-                            return Promise.reject(evt);
-                        });
+                        return navigator.geolocation.getCurrentPosition(function (position) { return Promise.resolve(position); }, function (evt) { return Promise.reject(evt); });
                     }
-
                     return Promise.reject('Browser Geolocation not supported or found.');
                 };
-
-                GoogleMaps.prototype.loadApiScript = function loadApiScript() {
-                    var _this4 = this;
-
+                GoogleMaps.prototype.loadApiScript = function () {
+                    var _this = this;
                     if (this._scriptPromise) {
                         return this._scriptPromise;
                     }
-
                     if (window.google === undefined || window.google.maps === undefined) {
-                        var _ret = function () {
-                            var script = document.createElement('script');
-
-                            script.type = 'text/javascript';
-                            script.async = true;
-                            script.defer = true;
-                            script.src = _this4.config.get('apiScript') + '?key=' + _this4.config.get('apiKey') + '&libraries=' + _this4.config.get('apiLibraries') + '&callback=myGoogleMapsCallback';
-                            document.body.appendChild(script);
-
-                            _this4._scriptPromise = new Promise(function (resolve, reject) {
-                                window.myGoogleMapsCallback = function () {
-                                    _this4.sendApiLoadedEvent();
-                                    resolve();
-                                };
-
-                                script.onerror = function (error) {
-                                    reject(error);
-                                };
-                            });
-
-                            return {
-                                v: _this4._scriptPromise
+                        var script_1 = document.createElement('script');
+                        script_1.type = 'text/javascript';
+                        script_1.async = true;
+                        script_1.defer = true;
+                        script_1.src = this.config.get('apiScript') + "?key=" + this.config.get('apiKey') + "&libraries=" + this.config.get('apiLibraries') + "&callback=myGoogleMapsCallback";
+                        document.body.appendChild(script_1);
+                        this._scriptPromise = new Promise(function (resolve, reject) {
+                            window.myGoogleMapsCallback = function () {
+                                _this.sendApiLoadedEvent();
+                                resolve();
                             };
-                        }();
-
-                        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-                    }
-
-                    if (window.google && window.google.maps) {
-                        this._scriptPromise = new Promise(function (resolve) {
-                            resolve();
+                            script_1.onerror = function (error) {
+                                reject(error);
+                            };
                         });
-
                         return this._scriptPromise;
                     }
-
+                    if (window.google && window.google.maps) {
+                        this._scriptPromise = new Promise(function (resolve) { resolve(); });
+                        return this._scriptPromise;
+                    }
                     return false;
                 };
-
-                GoogleMaps.prototype.setOptions = function setOptions(options) {
+                GoogleMaps.prototype.setOptions = function (options) {
                     if (!this.map) {
                         return;
                     }
-
                     this.map.setOptions(options);
                 };
-
-                GoogleMaps.prototype.createMarker = function createMarker(options) {
+                GoogleMaps.prototype.createMarker = function (options) {
                     return this._scriptPromise.then(function () {
-                        return Promise.resolve(new google.maps.Marker(options));
+                        return Promise.resolve(new window.google.maps.Marker(options));
                     });
                 };
-
-                GoogleMaps.prototype.getCenter = function getCenter() {
-                    var _this5 = this;
-
+                GoogleMaps.prototype.getCenter = function () {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        return Promise.resolve(_this5.map.getCenter());
+                        return Promise.resolve(_this.map.getCenter());
                     });
                 };
-
-                GoogleMaps.prototype.setCenter = function setCenter(latLong) {
-                    var _this6 = this;
-
+                GoogleMaps.prototype.setCenter = function (latLong) {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        _this6.map.setCenter(latLong);
-                        _this6.sendBoundsEvent();
+                        _this.map.setCenter(latLong);
+                        _this.sendBoundsEvent();
                     });
                 };
-
-                GoogleMaps.prototype.updateCenter = function updateCenter() {
-                    var _this7 = this;
-
+                GoogleMaps.prototype.updateCenter = function () {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        var latLng = new google.maps.LatLng(parseFloat(_this7.latitude), parseFloat(_this7.longitude));
-                        _this7.setCenter(latLng);
+                        var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
+                        _this.setCenter(latLng);
                     });
                 };
-
-                GoogleMaps.prototype.addressChanged = function addressChanged(newValue) {
-                    var _this8 = this;
-
+                GoogleMaps.prototype.addressChanged = function (newValue) {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        var geocoder = new google.maps.Geocoder();
-
-                        _this8.taskQueue.queueMicroTask(function () {
-                            _this8.geocodeAddress(newValue, geocoder);
+                        var geocoder = new window.google.maps.Geocoder;
+                        _this.taskQueue.queueMicroTask(function () {
+                            _this.geocodeAddress(newValue, geocoder);
                         });
                     });
                 };
-
-                GoogleMaps.prototype.latitudeChanged = function latitudeChanged(newValue) {
-                    var _this9 = this;
-
+                GoogleMaps.prototype.latitudeChanged = function (newValue) {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        _this9.taskQueue.queueMicroTask(function () {
-                            _this9.updateCenter();
+                        _this.taskQueue.queueMicroTask(function () {
+                            _this.updateCenter();
                         });
                     });
                 };
-
-                GoogleMaps.prototype.longitudeChanged = function longitudeChanged(newValue) {
-                    var _this10 = this;
-
+                GoogleMaps.prototype.longitudeChanged = function (newValue) {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        _this10.taskQueue.queueMicroTask(function () {
-                            _this10.updateCenter();
+                        _this.taskQueue.queueMicroTask(function () {
+                            _this.updateCenter();
                         });
                     });
                 };
-
-                GoogleMaps.prototype.zoomChanged = function zoomChanged(newValue) {
-                    var _this11 = this;
-
+                GoogleMaps.prototype.zoomChanged = function (newValue) {
+                    var _this = this;
                     this._mapPromise.then(function () {
-                        _this11.taskQueue.queueMicroTask(function () {
+                        _this.taskQueue.queueMicroTask(function () {
                             var zoomValue = parseInt(newValue, 10);
-                            _this11.map.setZoom(zoomValue);
+                            _this.map.setZoom(zoomValue);
                         });
                     });
                 };
-
-                GoogleMaps.prototype.autoUpdateBoundsChanged = function autoUpdateBoundsChanged(newValue) {
-                    var _this12 = this;
-
-                    this._mapPromise.then(function () {
-                        _this12.taskQueue.queueMicroTask(function () {
-                            _this12.zoomToMarkerBounds(_this12.markers);
-                        });
-                    });
-                };
-
-                GoogleMaps.prototype.markersChanged = function markersChanged(newValue) {
-                    var _this13 = this;
-
+                GoogleMaps.prototype.markersChanged = function (newValue) {
+                    var _this = this;
                     if (this._markersSubscription !== null) {
                         this._markersSubscription.dispose();
-
-                        for (var _iterator = this._renderedMarkers, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                            var _ref;
-
-                            if (_isArray) {
-                                if (_i >= _iterator.length) break;
-                                _ref = _iterator[_i++];
-                            } else {
-                                _i = _iterator.next();
-                                if (_i.done) break;
-                                _ref = _i.value;
-                            }
-
-                            var marker = _ref;
-
+                        for (var _i = 0, _a = this._renderedMarkers; _i < _a.length; _i++) {
+                            var marker = _a[_i];
                             marker.setMap(null);
                         }
-
                         this._renderedMarkers = [];
                     }
-
-                    this._markersSubscription = this.bindingEngine.collectionObserver(this.markers).subscribe(function (splices) {
-                        _this13.markerCollectionChange(splices);
-                    });
-
+                    this._markersSubscription = this.bindingEngine
+                        .collectionObserver(this.markers)
+                        .subscribe(function (splices) { _this.markerCollectionChange(splices); });
                     this._mapPromise.then(function () {
-                        for (var _iterator2 = newValue, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-                            var _ref2;
-
-                            if (_isArray2) {
-                                if (_i2 >= _iterator2.length) break;
-                                _ref2 = _iterator2[_i2++];
-                            } else {
-                                _i2 = _iterator2.next();
-                                if (_i2.done) break;
-                                _ref2 = _i2.value;
-                            }
-
-                            var _marker = _ref2;
-
-                            _this13.renderMarker(_marker);
+                        for (var _i = 0, newValue_1 = newValue; _i < newValue_1.length; _i++) {
+                            var marker = newValue_1[_i];
+                            _this.renderMarker(marker);
                         }
                     });
-
-                    this.zoomToMarkerBounds(newValue);
+                    this.zoomToMarkerBounds();
                 };
-
-                GoogleMaps.prototype.markerCollectionChange = function markerCollectionChange(splices) {
-                    for (var _iterator3 = splices, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-                        var _ref3;
-
-                        if (_isArray3) {
-                            if (_i3 >= _iterator3.length) break;
-                            _ref3 = _iterator3[_i3++];
-                        } else {
-                            _i3 = _iterator3.next();
-                            if (_i3.done) break;
-                            _ref3 = _i3.value;
-                        }
-
-                        var splice = _ref3;
-
+                GoogleMaps.prototype.markerCollectionChange = function (splices) {
+                    if (!splices.length) {
+                        return;
+                    }
+                    for (var _i = 0, splices_1 = splices; _i < splices_1.length; _i++) {
+                        var splice = splices_1[_i];
                         if (splice.removed.length) {
-                            for (var _iterator4 = splice.removed, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-                                var _ref4;
-
-                                if (_isArray4) {
-                                    if (_i4 >= _iterator4.length) break;
-                                    _ref4 = _iterator4[_i4++];
-                                } else {
-                                    _i4 = _iterator4.next();
-                                    if (_i4.done) break;
-                                    _ref4 = _i4.value;
-                                }
-
-                                var removedObj = _ref4;
-
+                            for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
+                                var removedObj = _b[_a];
                                 for (var markerIndex in this._renderedMarkers) {
                                     if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                                         var renderedMarker = this._renderedMarkers[markerIndex];
-
-                                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) && renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
+                                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
+                                            renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
                                             renderedMarker.setMap(null);
-
                                             this._renderedMarkers.splice(markerIndex, 1);
                                             break;
                                         }
@@ -531,106 +347,83 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                                 }
                             }
                         }
-
                         if (splice.addedCount) {
                             var addedMarker = this.markers[splice.index];
-
                             this.renderMarker(addedMarker);
                         }
                     }
-
-                    zoomToMarkerBounds(splices);
+                    this.zoomToMarkerBounds();
                 };
-
-                GoogleMaps.prototype.zoomToMarkerBounds = function zoomToMarkerBounds(splices) {
-                    var _this14 = this;
-
+                GoogleMaps.prototype.zoomToMarkerBounds = function () {
+                    var _this = this;
                     if (this.autoUpdateBounds) {
                         this._mapPromise.then(function () {
-                            var bounds = new google.maps.LatLngBounds();
-
-                            for (var _iterator5 = splices, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
-                                var _ref5;
-
-                                if (_isArray5) {
-                                    if (_i5 >= _iterator5.length) break;
-                                    _ref5 = _iterator5[_i5++];
-                                } else {
-                                    _i5 = _iterator5.next();
-                                    if (_i5.done) break;
-                                    _ref5 = _i5.value;
-                                }
-
-                                var splice = _ref5;
-
-                                var markerLatLng = new google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                            var bounds = new window.google.maps.LatLngBounds();
+                            for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
+                                var marker = _a[_i];
+                                var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                                 bounds.extend(markerLatLng);
                             }
-                            _this14.map.fitBounds(bounds);
+                            _this.map.fitBounds(bounds);
                         });
                     }
                 };
-
-                GoogleMaps.prototype.getMapTypeId = function getMapTypeId() {
+                GoogleMaps.prototype.getMapTypeId = function () {
                     if (this.mapType.toUpperCase() === 'HYBRID') {
-                        return google.maps.MapTypeId.HYBRID;
-                    } else if (this.mapType.toUpperCase() === 'SATELLITE') {
-                        return google.maps.MapTypeId.SATELLITE;
-                    } else if (this.mapType.toUpperCase() === 'TERRAIN') {
-                        return google.maps.MapTypeId.TERRAIN;
+                        return window.google.maps.MapTypeId.HYBRID;
                     }
-
-                    return google.maps.MapTypeId.ROADMAP;
+                    else if (this.mapType.toUpperCase() === 'SATELLITE') {
+                        return window.google.maps.MapTypeId.SATELLITE;
+                    }
+                    else if (this.mapType.toUpperCase() === 'TERRAIN') {
+                        return window.google.maps.MapTypeId.TERRAIN;
+                    }
+                    return window.google.maps.MapTypeId.ROADMAP;
                 };
-
-                GoogleMaps.prototype.error = function error() {
+                GoogleMaps.prototype.error = function () {
                     console.error.apply(console, arguments);
                 };
-
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Object)
+                ], GoogleMaps.prototype, "address", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Number)
+                ], GoogleMaps.prototype, "longitude", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Number)
+                ], GoogleMaps.prototype, "latitude", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Number)
+                ], GoogleMaps.prototype, "zoom", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Boolean)
+                ], GoogleMaps.prototype, "disableDefaultUI", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Object)
+                ], GoogleMaps.prototype, "markers", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Boolean)
+                ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Object)
+                ], GoogleMaps.prototype, "mapType", void 0);
+                GoogleMaps = __decorate([
+                    aurelia_templating_1.customElement('google-map'),
+                    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
+                    __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
+                ], GoogleMaps);
                 return GoogleMaps;
-            }(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'address', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return null;
-                }
-            }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'longitude', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return 0;
-                }
-            }), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'latitude', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return 0;
-                }
-            }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'zoom', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return 8;
-                }
-            }), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'disableDefaultUI', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return false;
-                }
-            }), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'markers', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return [];
-                }
-            }), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'autoUpdateBounds', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return false;
-                }
-            }), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, 'mapType', [bindable], {
-                enumerable: true,
-                initializer: function initializer() {
-                    return 'ROADMAP';
-                }
-            })), _class2)) || _class) || _class));
-
-            _export('GoogleMaps', GoogleMaps);
+            }());
+            exports_1("GoogleMaps", GoogleMaps);
         }
-    };
+    }
 });
+//# sourceMappingURL=google-maps.js.map

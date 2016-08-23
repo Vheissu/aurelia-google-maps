@@ -1,43 +1,32 @@
-'use strict';
-
-System.register([], function (_export, _context) {
+System.register([], function(exports_1, context_1) {
     "use strict";
-
+    var __moduleName = context_1 && context_1.id;
     var Configure;
-
-    
-
     return {
-        setters: [],
-        execute: function () {
-            _export('Configure', Configure = function () {
+        setters:[],
+        execute: function() {
+            Configure = (function () {
                 function Configure() {
-                    
-
                     this._config = {
                         apiScript: 'https://maps.googleapis.com/maps/api/js',
                         apiKey: '',
                         apiLibraries: ''
                     };
                 }
-
-                Configure.prototype.options = function options(obj) {
+                Configure.prototype.options = function (obj) {
                     Object.assign(this._config, obj);
                 };
-
-                Configure.prototype.get = function get(key) {
+                Configure.prototype.get = function (key) {
                     return this._config[key];
                 };
-
-                Configure.prototype.set = function set(key, val) {
+                Configure.prototype.set = function (key, val) {
                     this._config[key] = val;
                     return this._config[key];
                 };
-
                 return Configure;
             }());
-
-            _export('Configure', Configure);
+            exports_1("Configure", Configure);
         }
-    };
+    }
 });
+//# sourceMappingURL=configure.js.map
