@@ -2,6 +2,7 @@ import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
 import { EventAggregator } from 'aurelia-event-aggregator';
 import { Configure } from './configure';
+import { GoogleMapsAPI } from './google-maps-api';
 export interface BaseMarker {
     icon?: string;
     label?: string;
@@ -29,6 +30,7 @@ export declare class GoogleMaps {
     private config;
     private bindingEngine;
     private eventAggregator;
+    private googleMapsApi;
     private validMarkers;
     private _geocoder;
     address: any;
@@ -48,7 +50,7 @@ export declare class GoogleMaps {
     _mapPromise: Promise<any> | any;
     _mapResolve: Promise<any> | any;
     _locationByAddressMarkers: any;
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator);
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI);
     clearMarkers(): void;
     attached(): void;
     sendBoundsEvent(): void;
@@ -59,7 +61,6 @@ export declare class GoogleMaps {
     private geocode(address);
     private readonly geocoder;
     getCurrentPosition(): any;
-    loadApiScript(): any;
     setOptions(options: any): void;
     createMarker(options: any): any;
     getCenter(): void;
