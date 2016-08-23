@@ -89,6 +89,10 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
+        this.element.addEventListener("zoom_to_bounds", evt => {
+            this.zoomToMarkerBounds();
+        });
+
         this._scriptPromise.then(() => {
             let latLng = new (<any>window).google.maps.LatLng(parseFloat((<any>this.latitude)), parseFloat((<any>this.longitude)));
             let mapTypeId = this.getMapTypeId();
@@ -141,7 +145,7 @@ export class GoogleMaps {
      * The `bounds` object is an instance of `LatLngBounds`
      * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
      */
-    sendBoundsEvent() {
+    sendBoundsEvent() { 
         let bounds = this.map.getBounds();
         if (bounds) {
             this.eventAggregator.publish(BOUNDSCHANGED, bounds);
@@ -384,14 +388,6 @@ export class GoogleMaps {
         });
     }
 
-    autoUpdateBoundsChanged(newValue) {
-        this._mapPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                this.zoomToMarkerBounds(this.markers);
-            });
-        });
-    }
-
     /**
      * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
      * where we need to resubscribe Observers and delete all previously rendered markers.
@@ -425,7 +421,7 @@ export class GoogleMaps {
             }
         });
 
-        this.zoomToMarkerBounds(newValue);
+        this.zoomToMarkerBounds();
     }
 
     /**
@@ -435,6 +431,11 @@ export class GoogleMaps {
      * @param splices
      */
     markerCollectionChange(splices) {
+        if (!splices.length) {
+            // Collection changed but the splices didn't
+            return;
+        }
+
         for (let splice of splices) {
             if (splice.removed.length) {
                 // Iterate over all the removed markers
@@ -467,17 +468,17 @@ export class GoogleMaps {
             }
         }
 
-        this.zoomToMarkerBounds(splices);
+        this.zoomToMarkerBounds();
     }
 
-    zoomToMarkerBounds(splices) {
+    zoomToMarkerBounds() {
         if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
                 let bounds = new (<any>window).google.maps.LatLngBounds();
 
-                for (let splice of splices) {
+                for (let marker of this.markers) {
                     // extend the bounds to include each marker's position
-                    let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                    let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                     bounds.extend(markerLatLng);
                 }
                 this.map.fitBounds(bounds);

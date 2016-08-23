@@ -72,6 +72,9 @@ export let GoogleMaps = class GoogleMaps {
         this.element.addEventListener('dragstart', evt => {
             evt.preventDefault();
         });
+        this.element.addEventListener("zoom_to_bounds", evt => {
+            this.zoomToMarkerBounds();
+        });
         this._scriptPromise.then(() => {
             let latLng = new window.google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
             let mapTypeId = this.getMapTypeId();
@@ -270,13 +273,6 @@ export let GoogleMaps = class GoogleMaps {
             });
         });
     }
-    autoUpdateBoundsChanged(newValue) {
-        this._mapPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                this.zoomToMarkerBounds(this.markers);
-            });
-        });
-    }
     markersChanged(newValue) {
         if (this._markersSubscription !== null) {
             this._markersSubscription.dispose();
@@ -293,9 +289,12 @@ export let GoogleMaps = class GoogleMaps {
                 this.renderMarker(marker);
             }
         });
-        this.zoomToMarkerBounds(newValue);
+        this.zoomToMarkerBounds();
     }
     markerCollectionChange(splices) {
+        if (!splices.length) {
+            return;
+        }
         for (let splice of splices) {
             if (splice.removed.length) {
                 for (let removedObj of splice.removed) {
@@ -317,14 +316,14 @@ export let GoogleMaps = class GoogleMaps {
                 this.renderMarker(addedMarker);
             }
         }
-        this.zoomToMarkerBounds(splices);
+        this.zoomToMarkerBounds();
     }
-    zoomToMarkerBounds(splices) {
+    zoomToMarkerBounds() {
         if (this.autoUpdateBounds) {
             this._mapPromise.then(() => {
                 let bounds = new window.google.maps.LatLngBounds();
-                for (let splice of splices) {
-                    let markerLatLng = new window.google.maps.LatLng(parseFloat(splice.latitude), parseFloat(splice.longitude));
+                for (let marker of this.markers) {
+                    let markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                     bounds.extend(markerLatLng);
                 }
                 this.map.fitBounds(bounds);
