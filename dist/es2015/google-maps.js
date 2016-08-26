@@ -319,16 +319,17 @@ export let GoogleMaps = class GoogleMaps {
         this.zoomToMarkerBounds();
     }
     zoomToMarkerBounds() {
-        if (this.autoUpdateBounds) {
-            this._mapPromise.then(() => {
-                let bounds = new window.google.maps.LatLngBounds();
-                for (let marker of this.markers) {
-                    let markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
-                    bounds.extend(markerLatLng);
-                }
-                this.map.fitBounds(bounds);
-            });
+        if (!this.markers.length || !this.autoUpdateBounds) {
+            return;
         }
+        this._mapPromise.then(() => {
+            let bounds = new window.google.maps.LatLngBounds();
+            for (let marker of this.markers) {
+                let markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                bounds.extend(markerLatLng);
+            }
+            this.map.fitBounds(bounds);
+        });
     }
     getMapTypeId() {
         if (this.mapType.toUpperCase() === 'HYBRID') {

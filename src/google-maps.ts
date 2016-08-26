@@ -472,18 +472,22 @@ export class GoogleMaps {
     }
 
     zoomToMarkerBounds() {
-        if (this.autoUpdateBounds) {
-            this._mapPromise.then(() => {
-                let bounds = new (<any>window).google.maps.LatLngBounds();
-
-                for (let marker of this.markers) {
-                    // extend the bounds to include each marker's position
-                    let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
-                    bounds.extend(markerLatLng);
-                }
-                this.map.fitBounds(bounds);
-            });
+        // Don't try to fit bounds when there's no markers, or autoUpdateBounds is disabled
+        if (!this.markers.length || !this.autoUpdateBounds) {
+            return;
         }
+
+        this._mapPromise.then(() => {
+            let bounds = new (<any>window).google.maps.LatLngBounds();
+
+            for (let marker of this.markers) {
+                // extend the bounds to include each marker's position
+                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                bounds.extend(markerLatLng);
+            }
+            
+            this.map.fitBounds(bounds);
+        });
     }
 
     getMapTypeId() {
