@@ -341,17 +341,18 @@ var GoogleMaps = (function () {
     };
     GoogleMaps.prototype.zoomToMarkerBounds = function () {
         var _this = this;
-        if (this.autoUpdateBounds) {
-            this._mapPromise.then(function () {
-                var bounds = new window.google.maps.LatLngBounds();
-                for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
-                    var marker = _a[_i];
-                    var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
-                    bounds.extend(markerLatLng);
-                }
-                _this.map.fitBounds(bounds);
-            });
+        if (!this.markers.length || !this.autoUpdateBounds) {
+            return;
         }
+        this._mapPromise.then(function () {
+            var bounds = new window.google.maps.LatLngBounds();
+            for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
+                var marker = _a[_i];
+                var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                bounds.extend(markerLatLng);
+            }
+            _this.map.fitBounds(bounds);
+        });
     };
     GoogleMaps.prototype.getMapTypeId = function () {
         if (this.mapType.toUpperCase() === 'HYBRID') {
