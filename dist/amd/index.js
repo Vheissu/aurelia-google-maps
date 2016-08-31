@@ -348,8 +348,11 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                     }
                 }
                 if (splice.addedCount) {
-                    var addedMarker = this.markers[splice.index];
-                    this.renderMarker(addedMarker);
+                    var addedMarkers = this.markers.slice(splice.index, splice.addedCount);
+                    for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
+                        var addedMarker = addedMarkers_1[_c];
+                        this.renderMarker(addedMarker);
+                    }
                 }
             }
             this.zoomToMarkerBounds();
