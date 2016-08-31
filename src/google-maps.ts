@@ -466,9 +466,11 @@ export class GoogleMaps {
 
             // Add the new markers to the map
             if (splice.addedCount) {
-                let addedMarker = this.markers[splice.index];
+                let addedMarkers = this.markers.slice(splice.index, splice.addedCount);
 
-                this.renderMarker(addedMarker);
+                for (let addedMarker of addedMarkers) {
+                    this.renderMarker(addedMarker);
+                }
             }
         }
 

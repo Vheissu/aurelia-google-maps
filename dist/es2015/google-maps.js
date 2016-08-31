@@ -316,8 +316,10 @@ export let GoogleMaps = class GoogleMaps {
                 }
             }
             if (splice.addedCount) {
-                let addedMarker = this.markers[splice.index];
-                this.renderMarker(addedMarker);
+                let addedMarkers = this.markers.slice(splice.index, splice.addedCount);
+                for (let addedMarker of addedMarkers) {
+                    this.renderMarker(addedMarker);
+                }
             }
         }
         this.zoomToMarkerBounds();
