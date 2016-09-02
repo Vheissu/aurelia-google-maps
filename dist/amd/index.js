@@ -94,7 +94,7 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                 evt.preventDefault();
             });
             this.element.addEventListener("zoom_to_bounds", function (evt) {
-                _this.zoomToMarkerBounds();
+                _this.zoomToMarkerBounds(true);
             });
             this._scriptPromise.then(function () {
                 var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
@@ -354,9 +354,13 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
             }
             this.zoomToMarkerBounds();
         };
-        GoogleMaps.prototype.zoomToMarkerBounds = function () {
+        GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
             var _this = this;
-            if (this.autoUpdateBounds) {
+            if (force === void 0) { force = false; }
+            if (typeof force === 'undefined') {
+                force = false;
+            }
+            if (this.autoUpdateBounds || force) {
                 this._mapPromise.then(function () {
                     var bounds = new window.google.maps.LatLngBounds();
                     for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {

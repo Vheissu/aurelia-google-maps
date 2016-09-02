@@ -73,7 +73,7 @@ export let GoogleMaps = class GoogleMaps {
             evt.preventDefault();
         });
         this.element.addEventListener("zoom_to_bounds", evt => {
-            this.zoomToMarkerBounds();
+            this.zoomToMarkerBounds(true);
         });
         this._scriptPromise.then(() => {
             let latLng = new window.google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
@@ -318,8 +318,11 @@ export let GoogleMaps = class GoogleMaps {
         }
         this.zoomToMarkerBounds();
     }
-    zoomToMarkerBounds() {
-        if (this.autoUpdateBounds) {
+    zoomToMarkerBounds(force = false) {
+        if (typeof force === 'undefined') {
+            force = false;
+        }
+        if (this.autoUpdateBounds || force) {
             this._mapPromise.then(() => {
                 let bounds = new window.google.maps.LatLngBounds();
                 for (let marker of this.markers) {
