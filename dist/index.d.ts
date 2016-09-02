@@ -53,7 +53,7 @@ declare module "google-maps" {
         zoomChanged(newValue: any): void;
         markersChanged(newValue: any): void;
         markerCollectionChange(splices: any): void;
-        zoomToMarkerBounds(): void;
+        zoomToMarkerBounds(force?: boolean): void;
         getMapTypeId(): any;
         error(): void;
     }

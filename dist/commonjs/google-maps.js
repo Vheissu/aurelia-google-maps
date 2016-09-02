@@ -76,7 +76,7 @@ var GoogleMaps = (function () {
             evt.preventDefault();
         });
         this.element.addEventListener("zoom_to_bounds", function (evt) {
-            _this.zoomToMarkerBounds();
+            _this.zoomToMarkerBounds(true);
         });
         this._scriptPromise.then(function () {
             var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
@@ -342,9 +342,13 @@ var GoogleMaps = (function () {
         }
         this.zoomToMarkerBounds();
     };
-    GoogleMaps.prototype.zoomToMarkerBounds = function () {
+    GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
         var _this = this;
-        if (!this.markers.length || !this.autoUpdateBounds) {
+        if (force === void 0) { force = false; }
+        if (typeof force === 'undefined') {
+            force = false;
+        }
+        if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
             return;
         }
         this._mapPromise.then(function () {
