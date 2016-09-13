@@ -84,7 +84,6 @@ export class GoogleMaps {
         });
     }
 
-
     attached() {
         this.element.addEventListener('dragstart', evt => {
             evt.preventDefault();
@@ -425,7 +424,13 @@ export class GoogleMaps {
             }
         });
 
-        this.zoomToMarkerBounds();
+        /**
+         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+         */
+        this.taskQueue.queueTask(() => {
+            this.zoomToMarkerBounds();
+        });
     }
 
     /**
@@ -474,7 +479,13 @@ export class GoogleMaps {
             }
         }
 
-        this.zoomToMarkerBounds();
+        /**
+         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+         */
+        this.taskQueue.queueTask(() => {
+            this.zoomToMarkerBounds();
+        });
     }
 
     zoomToMarkerBounds(force = false) {
@@ -484,9 +495,10 @@ export class GoogleMaps {
         
         // Unless forced, if there's no markers, or not auto update bounds
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+            console.log(`Not zooming`);
             return;
         }
-    
+        
         this._mapPromise.then(() => {
             let bounds = new (<any>window).google.maps.LatLngBounds();
 

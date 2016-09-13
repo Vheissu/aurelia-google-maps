@@ -328,9 +328,12 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                     _this.renderMarker(marker);
                 }
             });
-            this.zoomToMarkerBounds();
+            this.taskQueue.queueTask(function () {
+                _this.zoomToMarkerBounds();
+            });
         };
         GoogleMaps.prototype.markerCollectionChange = function (splices) {
+            var _this = this;
             if (!splices.length) {
                 return;
             }
@@ -360,7 +363,9 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                     }
                 }
             }
-            this.zoomToMarkerBounds();
+            this.taskQueue.queueTask(function () {
+                _this.zoomToMarkerBounds();
+            });
         };
         GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
             var _this = this;
@@ -369,6 +374,7 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                 force = false;
             }
             if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+                console.log("Not zooming");
                 return;
             }
             this._mapPromise.then(function () {

@@ -308,9 +308,12 @@ var GoogleMaps = (function () {
                 _this.renderMarker(marker);
             }
         });
-        this.zoomToMarkerBounds();
+        this.taskQueue.queueTask(function () {
+            _this.zoomToMarkerBounds();
+        });
     };
     GoogleMaps.prototype.markerCollectionChange = function (splices) {
+        var _this = this;
         if (!splices.length) {
             return;
         }
@@ -340,7 +343,9 @@ var GoogleMaps = (function () {
                 }
             }
         }
-        this.zoomToMarkerBounds();
+        this.taskQueue.queueTask(function () {
+            _this.zoomToMarkerBounds();
+        });
     };
     GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
         var _this = this;
@@ -349,6 +354,7 @@ var GoogleMaps = (function () {
             force = false;
         }
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+            console.log("Not zooming");
             return;
         }
         this._mapPromise.then(function () {

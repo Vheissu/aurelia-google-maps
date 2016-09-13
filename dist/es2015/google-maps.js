@@ -293,7 +293,9 @@ export let GoogleMaps = class GoogleMaps {
                 this.renderMarker(marker);
             }
         });
-        this.zoomToMarkerBounds();
+        this.taskQueue.queueTask(() => {
+            this.zoomToMarkerBounds();
+        });
     }
     markerCollectionChange(splices) {
         if (!splices.length) {
@@ -322,13 +324,16 @@ export let GoogleMaps = class GoogleMaps {
                 }
             }
         }
-        this.zoomToMarkerBounds();
+        this.taskQueue.queueTask(() => {
+            this.zoomToMarkerBounds();
+        });
     }
     zoomToMarkerBounds(force = false) {
         if (typeof force === 'undefined') {
             force = false;
         }
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+            console.log(`Not zooming`);
             return;
         }
         this._mapPromise.then(() => {

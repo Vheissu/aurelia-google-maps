@@ -327,9 +327,12 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             _this.renderMarker(marker);
                         }
                     });
-                    this.zoomToMarkerBounds();
+                    this.taskQueue.queueTask(function () {
+                        _this.zoomToMarkerBounds();
+                    });
                 };
                 GoogleMaps.prototype.markerCollectionChange = function (splices) {
+                    var _this = this;
                     if (!splices.length) {
                         return;
                     }
@@ -359,7 +362,9 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             }
                         }
                     }
-                    this.zoomToMarkerBounds();
+                    this.taskQueue.queueTask(function () {
+                        _this.zoomToMarkerBounds();
+                    });
                 };
                 GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
                     var _this = this;
@@ -368,6 +373,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         force = false;
                     }
                     if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+                        console.log("Not zooming");
                         return;
                     }
                     this._mapPromise.then(function () {
