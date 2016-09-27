@@ -2,6 +2,7 @@ export interface ConfigInterface {
     apiScript: string;
     apiKey: string;
     apiLibraries: string;
+    options: any;
 }
 
 export class Configure {
@@ -11,7 +12,8 @@ export class Configure {
         this._config = {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
-            apiLibraries: ''
+            apiLibraries: '',
+            options: {}
         };
     }
 

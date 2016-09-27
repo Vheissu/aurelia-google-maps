@@ -1,16 +1,17 @@
-System.register([], function(exports_1, context_1) {
+System.register([], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var Configure;
     return {
-        setters:[],
-        execute: function() {
+        setters: [],
+        execute: function () {
             Configure = (function () {
                 function Configure() {
                     this._config = {
                         apiScript: 'https://maps.googleapis.com/maps/api/js',
                         apiKey: '',
-                        apiLibraries: ''
+                        apiLibraries: '',
+                        options: {}
                     };
                 }
                 Configure.prototype.options = function (obj) {
@@ -27,6 +28,6 @@ System.register([], function(exports_1, context_1) {
             }());
             exports_1("Configure", Configure);
         }
-    }
+    };
 });
 //# sourceMappingURL=configure.js.map

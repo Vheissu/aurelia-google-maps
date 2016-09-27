@@ -2,6 +2,7 @@ export interface ConfigInterface {
     apiScript: string;
     apiKey: string;
     apiLibraries: string;
+    options: any;
 }
 export declare class Configure {
     private _config;

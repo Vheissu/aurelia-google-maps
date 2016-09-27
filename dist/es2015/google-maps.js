@@ -16,11 +16,12 @@ import { Configure } from './configure';
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
+const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
-export let GoogleMaps = class GoogleMaps {
+let GoogleMaps = class GoogleMaps {
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.address = null;
         this.longitude = 0;
@@ -78,12 +79,12 @@ export let GoogleMaps = class GoogleMaps {
         this._scriptPromise.then(() => {
             let latLng = new window.google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
             let mapTypeId = this.getMapTypeId();
-            let options = {
+            let options = Object.assign(this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI,
                 mapTypeId: mapTypeId
-            };
+            });
             this.map = new window.google.maps.Map(this.element, options);
             this._mapResolve();
             this.map.addListener('click', (e) => {
@@ -159,6 +160,9 @@ export let GoogleMaps = class GoogleMaps {
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
                         maxWidth: marker.infoWindow.maxWidth
+                    });
+                    createdMarker.infoWindow.addListener('domready', () => {
+                        this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
                 if (marker.custom) {
@@ -347,40 +351,41 @@ export let GoogleMaps = class GoogleMaps {
     }
 };
 __decorate([
-    bindable, 
-    __metadata('design:type', Object)
+    bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "address", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Number)
+    bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "longitude", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Number)
+    bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "latitude", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Number)
+    bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "zoom", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Boolean)
+    bindable,
+    __metadata("design:type", Boolean)
 ], GoogleMaps.prototype, "disableDefaultUI", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Object)
+    bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Boolean)
+    bindable,
+    __metadata("design:type", Boolean)
 ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
 __decorate([
-    bindable, 
-    __metadata('design:type', Object)
+    bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "mapType", void 0);
 GoogleMaps = __decorate([
     customElement('google-map'),
-    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), 
-    __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
+    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], GoogleMaps);
+export { GoogleMaps };
 //# sourceMappingURL=google-maps.js.map

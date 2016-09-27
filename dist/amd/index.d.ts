@@ -3,6 +3,7 @@ declare module "configure" {
         apiScript: string;
         apiKey: string;
         apiLibraries: string;
+        options: any;
     }
     export class Configure {
         private _config;

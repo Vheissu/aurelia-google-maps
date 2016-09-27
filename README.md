@@ -29,7 +29,8 @@ export function configure(aurelia) {
         .plugin('aurelia-google-maps', config => {
             config.options({
                 apiKey: 'myapiKey',
-                apiLibraries: 'drawing,geometry' //get optional libraries like drawing, geometry, ... - comma seperated list
+                apiLibraries: 'drawing,geometry', //get optional libraries like drawing, geometry, ... - comma seperated list
+                options: { panControl: true, panControlOptions: { position: 9 } } //add google.maps.MapOptions on construct (https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
             });
         })
 }
@@ -140,6 +141,8 @@ is the `Marker` object for the clicked marker
 *   `googlemap:marker:mouse_over`- emitted when the mouse enters the marker, payload is the `Marker`object for the entered marker
 
 *   `googlemap:marker:mouse_out` - emitted when the mouse exits the marker, payload is the `Marker` object for the exited marker
+
+*   `googlemap:infowindow:domready` - emitted when the infoWindow is fully loaded, payload is the `InfoWindow` object for the related marker
 
 ### Render array of markers
 
