@@ -3,7 +3,8 @@ export class Configure {
         this._config = {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
-            apiLibraries: ''
+            apiLibraries: '',
+            options: {}
         };
     }
     options(obj) {

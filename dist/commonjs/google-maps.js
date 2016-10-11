@@ -8,15 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var aurelia_dependency_injection_1 = require('aurelia-dependency-injection');
-var aurelia_templating_1 = require('aurelia-templating');
-var aurelia_task_queue_1 = require('aurelia-task-queue');
-var aurelia_binding_1 = require('aurelia-binding');
-var aurelia_event_aggregator_1 = require('aurelia-event-aggregator');
-var configure_1 = require('./configure');
+var aurelia_dependency_injection_1 = require("aurelia-dependency-injection");
+var aurelia_templating_1 = require("aurelia-templating");
+var aurelia_task_queue_1 = require("aurelia-task-queue");
+var aurelia_binding_1 = require("aurelia-binding");
+var aurelia_event_aggregator_1 = require("aurelia-event-aggregator");
+var configure_1 = require("./configure");
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
 var CLICK = GM + ":click";
+var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
 var MARKERCLICK = GM + ":marker:click";
 var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
@@ -80,12 +81,12 @@ var GoogleMaps = (function () {
         this._scriptPromise.then(function () {
             var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
             var mapTypeId = _this.getMapTypeId();
-            var options = {
+            var options = Object.assign(_this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt(_this.zoom, 10),
                 disableDefaultUI: _this.disableDefaultUI,
                 mapTypeId: mapTypeId
-            };
+            });
             _this.map = new window.google.maps.Map(_this.element, options);
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
@@ -162,6 +163,9 @@ var GoogleMaps = (function () {
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
                         maxWidth: marker.infoWindow.maxWidth
+                    });
+                    createdMarker.infoWindow.addListener('domready', function () {
+                        _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
                 if (marker.custom) {
@@ -364,44 +368,44 @@ var GoogleMaps = (function () {
     GoogleMaps.prototype.error = function () {
         console.error.apply(console, arguments);
     };
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Object)
-    ], GoogleMaps.prototype, "address", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Number)
-    ], GoogleMaps.prototype, "longitude", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Number)
-    ], GoogleMaps.prototype, "latitude", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Number)
-    ], GoogleMaps.prototype, "zoom", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Boolean)
-    ], GoogleMaps.prototype, "disableDefaultUI", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Object)
-    ], GoogleMaps.prototype, "markers", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Boolean)
-    ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
-    __decorate([
-        aurelia_templating_1.bindable, 
-        __metadata('design:type', Object)
-    ], GoogleMaps.prototype, "mapType", void 0);
-    GoogleMaps = __decorate([
-        aurelia_templating_1.customElement('google-map'),
-        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
-        __metadata('design:paramtypes', [Object, Object, Object, Object, Object])
-    ], GoogleMaps);
     return GoogleMaps;
 }());
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
+], GoogleMaps.prototype, "address", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
+], GoogleMaps.prototype, "longitude", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
+], GoogleMaps.prototype, "latitude", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
+], GoogleMaps.prototype, "zoom", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "disableDefaultUI", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
+], GoogleMaps.prototype, "markers", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "autoUpdateBounds", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
+], GoogleMaps.prototype, "mapType", void 0);
+GoogleMaps = __decorate([
+    aurelia_templating_1.customElement('google-map'),
+    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+], GoogleMaps);
 exports.GoogleMaps = GoogleMaps;
 //# sourceMappingURL=google-maps.js.map

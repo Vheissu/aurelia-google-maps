@@ -1,7 +1,7 @@
 "use strict";
-var configure_1 = require('./configure');
+var configure_1 = require("./configure");
 exports.Configure = configure_1.Configure;
-var google_maps_1 = require('./google-maps');
+var google_maps_1 = require("./google-maps");
 exports.GoogleMaps = google_maps_1.GoogleMaps;
 function configure(aurelia, configCallback) {
     var instance = aurelia.container.get(configure_1.Configure);

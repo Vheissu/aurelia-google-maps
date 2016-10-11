@@ -1,6 +1,6 @@
 {
   "name": "aurelia-google-maps",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "registry": "github",
   "license": "MIT",
   "author": "Dwayne Charrington <dwaynecharrington@gmail.com>",
@@ -68,5 +68,16 @@
       "aurelia-templating": "^1.0.0"
     },
     "devDependencies": {}
+  },
+  "aurelia": {
+    "build": {
+      "resources": [
+        "aurelia-google-maps/google-maps",
+        "aurelia-google-maps/maps.css"
+      ]
+    },
+    "documentation": {
+      "articles": []
+    }
   }
 }
