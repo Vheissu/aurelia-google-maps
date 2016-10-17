@@ -41,6 +41,7 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
     var MARKERCLICK = GM + ":marker:click";
     var MARKERMOUSEOVER = GM + ":marker:mouse_over";
     var MARKERMOUSEOUT = GM + ":marker:mouse_out";
+    var MARKERSCHANGED = GM + ":markers_changed";
     var APILOADED = GM + ":api:loaded";
     var GoogleMaps = (function () {
         function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -168,6 +169,9 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                         _this.map.setZoom(15);
                         _this.map.panTo(createdMarker.position);
                     });
+                    if (marker.animation) {
+                        createdMarker.setAnimation(marker.animation);
+                    }
                     if (marker.icon) {
                         createdMarker.setIcon(marker.icon);
                     }
@@ -329,6 +333,7 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                 }
             });
             this.zoomToMarkerBounds();
+            this.eventAggregator.publish(MARKERSCHANGED);
         };
         GoogleMaps.prototype.markerCollectionChange = function (splices) {
             if (!splices.length) {

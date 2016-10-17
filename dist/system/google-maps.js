@@ -10,7 +10,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, MARKERSCHANGED, APILOADED, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -40,6 +40,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             MARKERCLICK = GM + ":marker:click";
             MARKERMOUSEOVER = GM + ":marker:mouse_over";
             MARKERMOUSEOUT = GM + ":marker:mouse_out";
+            MARKERSCHANGED = GM + ":markers_changed";
             APILOADED = GM + ":api:loaded";
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -167,6 +168,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                                 _this.map.setZoom(15);
                                 _this.map.panTo(createdMarker.position);
                             });
+                            if (marker.animation) {
+                                createdMarker.setAnimation(marker.animation);
+                            }
                             if (marker.icon) {
                                 createdMarker.setIcon(marker.icon);
                             }
@@ -328,6 +332,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         }
                     });
                     this.zoomToMarkerBounds();
+                    this.eventAggregator.publish(MARKERSCHANGED);
                 };
                 GoogleMaps.prototype.markerCollectionChange = function (splices) {
                     if (!splices.length) {

@@ -20,6 +20,7 @@ const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const MARKERSCHANGED = `${GM}:markers_changed`;
 const APILOADED = `${GM}:api:loaded`;
 let GoogleMaps = class GoogleMaps {
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -145,6 +146,9 @@ let GoogleMaps = class GoogleMaps {
                     this.map.setZoom(15);
                     this.map.panTo(createdMarker.position);
                 });
+                if (marker.animation) {
+                    createdMarker.setAnimation(marker.animation);
+                }
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -294,6 +298,7 @@ let GoogleMaps = class GoogleMaps {
             }
         });
         this.zoomToMarkerBounds();
+        this.eventAggregator.publish(MARKERSCHANGED);
     }
     markerCollectionChange(splices) {
         if (!splices.length) {
