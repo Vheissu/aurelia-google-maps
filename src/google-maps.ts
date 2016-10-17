@@ -12,9 +12,9 @@ const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
-//const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const MARKERSCHANGED = `${GM}:markers_changed`;
 const APILOADED = `${GM}:api:loaded`;
 
 @customElement('google-map')
@@ -202,6 +202,10 @@ export class GoogleMaps {
                 });
 
                 // Set some optional marker properties if they exist
+                if (marker.animation) {
+                    createdMarker.setAnimation(marker.animation);
+                }
+
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -426,6 +430,8 @@ export class GoogleMaps {
         });
 
         this.zoomToMarkerBounds();
+
+        this.eventAggregator.publish(MARKERSCHANGED);
     }
 
     /**
