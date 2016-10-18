@@ -112,19 +112,24 @@ export class GoogleMaps {
 
             // Add event listener for click event
             this.map.addListener('click', (e) => {
-                let changeEvent;
-                if ((<any>window).CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
-                } else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
-                }
+                if (this.element.attributes['map-click.delegate']) {
+                    let changeEvent;
+                    if ((<any>window).CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    } else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
 
-                this.element.dispatchEvent(changeEvent);
-                this.eventAggregator.publish(CLICK, e);
+                    this.element.dispatchEvent(changeEvent);
+                    this.eventAggregator.publish(CLICK, e);
+                }
+                else if (this.autoCloseInfoWindows && this._previousInfoWindow) {
+                    this._previousInfoWindow.close();
+                }
             });
 
             /**

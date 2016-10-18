@@ -113,19 +113,24 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                 _this.map = new window.google.maps.Map(_this.element, options);
                 _this._mapResolve();
                 _this.map.addListener('click', function (e) {
-                    var changeEvent;
-                    if (window.CustomEvent) {
-                        changeEvent = new CustomEvent('map-click', {
-                            detail: e,
-                            bubbles: true
-                        });
+                    if (_this.element.attributes['map-click.delegate']) {
+                        var changeEvent = void 0;
+                        if (window.CustomEvent) {
+                            changeEvent = new CustomEvent('map-click', {
+                                detail: e,
+                                bubbles: true
+                            });
+                        }
+                        else {
+                            changeEvent = document.createEvent('CustomEvent');
+                            changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                        }
+                        _this.element.dispatchEvent(changeEvent);
+                        _this.eventAggregator.publish(CLICK, e);
                     }
-                    else {
-                        changeEvent = document.createEvent('CustomEvent');
-                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    else if (_this.autoCloseInfoWindows && _this._previousInfoWindow) {
+                        _this._previousInfoWindow.close();
                     }
-                    _this.element.dispatchEvent(changeEvent);
-                    _this.eventAggregator.publish(CLICK, e);
                 });
                 _this.map.addListener('dragend', function () {
                     _this.sendBoundsEvent();

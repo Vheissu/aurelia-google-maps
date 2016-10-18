@@ -91,19 +91,24 @@ let GoogleMaps = class GoogleMaps {
             this.map = new window.google.maps.Map(this.element, options);
             this._mapResolve();
             this.map.addListener('click', (e) => {
-                let changeEvent;
-                if (window.CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
+                if (this.element.attributes['map-click.delegate']) {
+                    let changeEvent;
+                    if (window.CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    }
+                    else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
+                    this.element.dispatchEvent(changeEvent);
+                    this.eventAggregator.publish(CLICK, e);
                 }
-                else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                else if (this.autoCloseInfoWindows && this._previousInfoWindow) {
+                    this._previousInfoWindow.close();
                 }
-                this.element.dispatchEvent(changeEvent);
-                this.eventAggregator.publish(CLICK, e);
             });
             this.map.addListener('dragend', () => {
                 this.sendBoundsEvent();
