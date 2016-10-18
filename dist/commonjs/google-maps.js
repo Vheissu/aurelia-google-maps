@@ -31,6 +31,7 @@ var GoogleMaps = (function () {
         this.zoom = 8;
         this.disableDefaultUI = false;
         this.markers = [];
+        this.autoCloseInfoWindows = false;
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
         this.map = null;
@@ -39,6 +40,7 @@ var GoogleMaps = (function () {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._previousInfoWindow = null;
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -135,6 +137,11 @@ var GoogleMaps = (function () {
                         _this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
                     else {
+                        if (_this.autoCloseInfoWindows) {
+                            if (_this._previousInfoWindow)
+                                _this._previousInfoWindow.close();
+                            _this._previousInfoWindow = createdMarker.infoWindow;
+                        }
                         createdMarker.infoWindow.open(_this.map, createdMarker);
                     }
                 });
@@ -399,6 +406,10 @@ __decorate([
     aurelia_templating_1.bindable,
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "autoCloseInfoWindows", void 0);
 __decorate([
     aurelia_templating_1.bindable,
     __metadata("design:type", Boolean)

@@ -30,6 +30,7 @@ let GoogleMaps = class GoogleMaps {
         this.zoom = 8;
         this.disableDefaultUI = false;
         this.markers = [];
+        this.autoCloseInfoWindows = false;
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
         this.map = null;
@@ -38,6 +39,7 @@ let GoogleMaps = class GoogleMaps {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._previousInfoWindow = null;
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -132,6 +134,11 @@ let GoogleMaps = class GoogleMaps {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
                     else {
+                        if (this.autoCloseInfoWindows) {
+                            if (this._previousInfoWindow)
+                                this._previousInfoWindow.close();
+                            this._previousInfoWindow = createdMarker.infoWindow;
+                        }
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
                 });
@@ -379,6 +386,10 @@ __decorate([
     bindable,
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
+__decorate([
+    bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "autoCloseInfoWindows", void 0);
 __decorate([
     bindable,
     __metadata("design:type", Boolean)

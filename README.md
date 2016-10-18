@@ -83,6 +83,16 @@ Automatically adjust the bounds of the map by using the provided markers
 </template>
 ```
 
+### Automatically close infoWindow 
+
+Automatically close the previous opened infoWindow when opening a new one
+
+``` html
+<template>
+    <google-map markers.bind="myMarkers" auto-close-info-windows="true"></google-map>
+</template>
+```
+
 These properties also support working with Aurelia's databinding, so you can
 bind any of the above to variables in your viewmodel and the map updates
 when these values are changed.
@@ -144,6 +154,8 @@ is the `Marker` object for the clicked marker
 
 *   `googlemap:infowindow:domready` - emitted when the infoWindow is fully loaded, payload is the `InfoWindow` object for the related marker
 
+*   `googlemap:markers_changed` - emitted directly after all markers are added to the map, there is no payload
+
 ### Render array of markers
 
 Markers can be bound to the element with the `markers` attribute like below:
@@ -166,6 +178,7 @@ var myMarkers = [
         icon: '/images/bullseye.png',
         title: 'My Big Target',
         custom: {id: 123456},
+        animation: google.maps.Animation.BOUNCE,
         infoWindow: {content: `
                 <div id="content">
                   <div id="siteNotice"></div>
@@ -187,7 +200,8 @@ var myMarkers = [
 *   `label` (optional) - string|MarkerLabel - see [docs](<https://developers.google.com/maps/documentation/javascript/reference#MarkerOptions>)
 *   `title` (optional) - string - Rollover text, see [docs](<https://developers.google.com/maps/documentation/javascript/reference#MarkerOptions>)
 *   `custom` (optional) - store arbitrary data (e.g. an `id` field) in this object, retrieve it from the `googlemap:marker:click` event payload
-*   `infoWindow` (optional) - object - If set, the `googlemap:marker:click` evetn will not be called, instead an infowindow containing the given content will show up - see [docs](https://developers.google.com/maps/documentation/javascript/infowindows)
+*   `animation` (optional) - google.maps.Animation constant - see [docs](<https://developers.google.com/maps/documentation/javascript/3.exp/reference#Animation>)
+*   `infoWindow` (optional) - object - If set, the `googlemap:marker:click` event will not be called, instead an infowindow containing the given content will show up - see [docs](https://developers.google.com/maps/documentation/javascript/infowindows)
 
 ## Supported Properties
 

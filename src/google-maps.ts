@@ -32,6 +32,7 @@ export class GoogleMaps {
     @bindable zoom: number = 8;
     @bindable disableDefaultUI: boolean = false;
     @bindable markers = [];
+    @bindable autoCloseInfoWindows: boolean = false;
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
 
@@ -41,6 +42,7 @@ export class GoogleMaps {
     _scriptPromise = null;
     _mapPromise = null;
     _mapResolve = null;
+    _previousInfoWindow = null;
 
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.element = element;
@@ -181,6 +183,10 @@ export class GoogleMaps {
                     if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     } else {
+                        if (this.autoCloseInfoWindows) {
+                            if (this._previousInfoWindow) this._previousInfoWindow.close();
+                            this._previousInfoWindow = createdMarker.infoWindow;
+                        }
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
                 });
