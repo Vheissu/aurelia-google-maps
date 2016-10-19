@@ -26,6 +26,7 @@ declare module "google-maps" {
         zoom: number;
         disableDefaultUI: boolean;
         markers: any[];
+        autoCloseInfoWindows: boolean;
         autoUpdateBounds: boolean;
         mapType: string;
         map: any;
@@ -34,6 +35,7 @@ declare module "google-maps" {
         _scriptPromise: any;
         _mapPromise: any;
         _mapResolve: any;
+        _previousInfoWindow: any;
         constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
         attached(): void;
         sendBoundsEvent(): void;

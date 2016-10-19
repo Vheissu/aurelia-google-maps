@@ -18,9 +18,11 @@ var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
 var CLICK = GM + ":click";
 var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
+var MAPCREATED = GM + ":map_created";
 var MARKERCLICK = GM + ":marker:click";
 var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
+var MARKERSCHANGED = GM + ":markers_changed";
 var APILOADED = GM + ":api:loaded";
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -30,6 +32,7 @@ var GoogleMaps = (function () {
         this.zoom = 8;
         this.disableDefaultUI = false;
         this.markers = [];
+        this.autoCloseInfoWindows = false;
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
         this.map = null;
@@ -38,6 +41,7 @@ var GoogleMaps = (function () {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._previousInfoWindow = null;
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -88,21 +92,28 @@ var GoogleMaps = (function () {
                 mapTypeId: mapTypeId
             });
             _this.map = new window.google.maps.Map(_this.element, options);
+            _this.eventAggregator.publish(MAPCREATED, _this.map);
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
-                var changeEvent;
-                if (window.CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
+                if (_this.element.attributes['map-click.delegate']) {
+                    var changeEvent = void 0;
+                    if (window.CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    }
+                    else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
+                    _this.element.dispatchEvent(changeEvent);
+                    _this.eventAggregator.publish(CLICK, e);
                 }
-                else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                else if (_this.autoCloseInfoWindows && _this._previousInfoWindow) {
+                    _this._previousInfoWindow.close();
+                    _this._previousInfoWindow = null;
                 }
-                _this.element.dispatchEvent(changeEvent);
-                _this.eventAggregator.publish(CLICK, e);
             });
             _this.map.addListener('dragend', function () {
                 _this.sendBoundsEvent();
@@ -133,6 +144,13 @@ var GoogleMaps = (function () {
                     if (!createdMarker.infoWindow) {
                         _this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
+                    else if (_this.autoCloseInfoWindows) {
+                        if (_this._previousInfoWindow)
+                            _this._previousInfoWindow.close();
+                        _this._previousInfoWindow = _this._previousInfoWindow !== createdMarker.infoWindow ? createdMarker.infoWindow : null;
+                        if (_this._previousInfoWindow)
+                            _this._previousInfoWindow.open(_this.map, createdMarker);
+                    }
                     else {
                         createdMarker.infoWindow.open(_this.map, createdMarker);
                     }
@@ -148,6 +166,9 @@ var GoogleMaps = (function () {
                     _this.map.setZoom(15);
                     _this.map.panTo(createdMarker.position);
                 });
+                if (marker.animation) {
+                    createdMarker.setAnimation(marker.animation);
+                }
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -309,6 +330,7 @@ var GoogleMaps = (function () {
             }
         });
         this.zoomToMarkerBounds();
+        this.eventAggregator.publish(MARKERSCHANGED);
     };
     GoogleMaps.prototype.markerCollectionChange = function (splices) {
         if (!splices.length) {
@@ -394,6 +416,10 @@ __decorate([
     aurelia_templating_1.bindable,
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "autoCloseInfoWindows", void 0);
 __decorate([
     aurelia_templating_1.bindable,
     __metadata("design:type", Boolean)

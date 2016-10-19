@@ -10,6 +10,7 @@ export declare class GoogleMaps {
     zoom: number;
     disableDefaultUI: boolean;
     markers: any[];
+    autoCloseInfoWindows: boolean;
     autoUpdateBounds: boolean;
     mapType: string;
     map: any;
@@ -18,6 +19,7 @@ export declare class GoogleMaps {
     _scriptPromise: any;
     _mapPromise: any;
     _mapResolve: any;
+    _previousInfoWindow: any;
     constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
     attached(): void;
     sendBoundsEvent(): void;

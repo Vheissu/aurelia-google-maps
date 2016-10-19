@@ -17,9 +17,11 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
+const MAPCREATED = `${GM}:map_created`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const MARKERSCHANGED = `${GM}:markers_changed`;
 const APILOADED = `${GM}:api:loaded`;
 let GoogleMaps = class GoogleMaps {
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
@@ -29,6 +31,7 @@ let GoogleMaps = class GoogleMaps {
         this.zoom = 8;
         this.disableDefaultUI = false;
         this.markers = [];
+        this.autoCloseInfoWindows = false;
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
         this.map = null;
@@ -37,6 +40,7 @@ let GoogleMaps = class GoogleMaps {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._previousInfoWindow = null;
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -86,21 +90,28 @@ let GoogleMaps = class GoogleMaps {
                 mapTypeId: mapTypeId
             });
             this.map = new window.google.maps.Map(this.element, options);
+            this.eventAggregator.publish(MAPCREATED, this.map);
             this._mapResolve();
             this.map.addListener('click', (e) => {
-                let changeEvent;
-                if (window.CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
+                if (this.element.attributes['map-click.delegate']) {
+                    let changeEvent;
+                    if (window.CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    }
+                    else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
+                    this.element.dispatchEvent(changeEvent);
+                    this.eventAggregator.publish(CLICK, e);
                 }
-                else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                else if (this.autoCloseInfoWindows && this._previousInfoWindow) {
+                    this._previousInfoWindow.close();
+                    this._previousInfoWindow = null;
                 }
-                this.element.dispatchEvent(changeEvent);
-                this.eventAggregator.publish(CLICK, e);
             });
             this.map.addListener('dragend', () => {
                 this.sendBoundsEvent();
@@ -130,6 +141,13 @@ let GoogleMaps = class GoogleMaps {
                     if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
+                    else if (this.autoCloseInfoWindows) {
+                        if (this._previousInfoWindow)
+                            this._previousInfoWindow.close();
+                        this._previousInfoWindow = this._previousInfoWindow !== createdMarker.infoWindow ? createdMarker.infoWindow : null;
+                        if (this._previousInfoWindow)
+                            this._previousInfoWindow.open(this.map, createdMarker);
+                    }
                     else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
@@ -145,6 +163,9 @@ let GoogleMaps = class GoogleMaps {
                     this.map.setZoom(15);
                     this.map.panTo(createdMarker.position);
                 });
+                if (marker.animation) {
+                    createdMarker.setAnimation(marker.animation);
+                }
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -294,6 +315,7 @@ let GoogleMaps = class GoogleMaps {
             }
         });
         this.zoomToMarkerBounds();
+        this.eventAggregator.publish(MARKERSCHANGED);
     }
     markerCollectionChange(splices) {
         if (!splices.length) {
@@ -374,6 +396,10 @@ __decorate([
     bindable,
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
+__decorate([
+    bindable,
+    __metadata("design:type", Boolean)
+], GoogleMaps.prototype, "autoCloseInfoWindows", void 0);
 __decorate([
     bindable,
     __metadata("design:type", Boolean)

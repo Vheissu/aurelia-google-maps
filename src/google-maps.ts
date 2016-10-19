@@ -11,10 +11,11 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
+const MAPCREATED = `${GM}:map_created`;
 const MARKERCLICK = `${GM}:marker:click`;
-//const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+const MARKERSCHANGED = `${GM}:markers_changed`;
 const APILOADED = `${GM}:api:loaded`;
 
 @customElement('google-map')
@@ -32,6 +33,7 @@ export class GoogleMaps {
     @bindable zoom: number = 8;
     @bindable disableDefaultUI: boolean = false;
     @bindable markers = [];
+    @bindable autoCloseInfoWindows: boolean = false;
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
 
@@ -41,6 +43,7 @@ export class GoogleMaps {
     _scriptPromise = null;
     _mapPromise = null;
     _mapResolve = null;
+    _previousInfoWindow = null;
 
     constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.element = element;
@@ -106,23 +109,30 @@ export class GoogleMaps {
             });
 
             this.map = new (<any>window).google.maps.Map(this.element, options);
+            this.eventAggregator.publish(MAPCREATED, this.map);
             this._mapResolve();
 
             // Add event listener for click event
             this.map.addListener('click', (e) => {
-                let changeEvent;
-                if ((<any>window).CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
-                } else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
-                }
+                if (this.element.attributes['map-click.delegate']) {
+                    let changeEvent;
+                    if ((<any>window).CustomEvent) {
+                        changeEvent = new CustomEvent('map-click', {
+                            detail: e,
+                            bubbles: true
+                        });
+                    } else {
+                        changeEvent = document.createEvent('CustomEvent');
+                        changeEvent.initCustomEvent('map-click', true, true, { data: e });
+                    }
 
-                this.element.dispatchEvent(changeEvent);
-                this.eventAggregator.publish(CLICK, e);
+                    this.element.dispatchEvent(changeEvent);
+                    this.eventAggregator.publish(CLICK, e);
+                }
+                else if (this.autoCloseInfoWindows && this._previousInfoWindow) {
+                    this._previousInfoWindow.close();
+                    this._previousInfoWindow = null;
+                }
             });
 
             /**
@@ -180,7 +190,13 @@ export class GoogleMaps {
                 createdMarker.addListener('click', () => {
                     if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
-                    } else {
+                    }
+                    else if (this.autoCloseInfoWindows) {
+                        if (this._previousInfoWindow) this._previousInfoWindow.close();
+                        this._previousInfoWindow = this._previousInfoWindow !== createdMarker.infoWindow ? createdMarker.infoWindow : null;
+                        if (this._previousInfoWindow) this._previousInfoWindow.open(this.map, createdMarker);
+                    }
+                    else {
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
                 });
@@ -202,6 +218,10 @@ export class GoogleMaps {
                 });
 
                 // Set some optional marker properties if they exist
+                if (marker.animation) {
+                    createdMarker.setAnimation(marker.animation);
+                }
+
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -426,6 +446,8 @@ export class GoogleMaps {
         });
 
         this.zoomToMarkerBounds();
+
+        this.eventAggregator.publish(MARKERSCHANGED);
     }
 
     /**
