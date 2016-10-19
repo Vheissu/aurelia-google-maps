@@ -17,6 +17,7 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
+const MAPCREATED = `${GM}:map_created`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
@@ -89,6 +90,7 @@ let GoogleMaps = class GoogleMaps {
                 mapTypeId: mapTypeId
             });
             this.map = new window.google.maps.Map(this.element, options);
+            this.eventAggregator.publish(MAPCREATED, this.map);
             this._mapResolve();
             this.map.addListener('click', (e) => {
                 if (this.element.attributes['map-click.delegate']) {

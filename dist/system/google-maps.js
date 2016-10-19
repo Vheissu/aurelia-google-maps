@@ -10,7 +10,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, MARKERSCHANGED, APILOADED, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MAPCREATED, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, MARKERSCHANGED, APILOADED, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -37,6 +37,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             BOUNDSCHANGED = GM + ":bounds_changed";
             CLICK = GM + ":click";
             INFOWINDOWDOMREADY = GM + ":infowindow:domready";
+            MAPCREATED = GM + ":map_created";
             MARKERCLICK = GM + ":marker:click";
             MARKERMOUSEOVER = GM + ":marker:mouse_over";
             MARKERMOUSEOUT = GM + ":marker:mouse_out";
@@ -110,6 +111,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             mapTypeId: mapTypeId
                         });
                         _this.map = new window.google.maps.Map(_this.element, options);
+                        _this.eventAggregator.publish(MAPCREATED, _this.map);
                         _this._mapResolve();
                         _this.map.addListener('click', function (e) {
                             if (_this.element.attributes['map-click.delegate']) {

@@ -11,6 +11,7 @@ const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
+const MAPCREATED = `${GM}:map_created`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
@@ -108,6 +109,7 @@ export class GoogleMaps {
             });
 
             this.map = new (<any>window).google.maps.Map(this.element, options);
+            this.eventAggregator.publish(MAPCREATED, this.map);
             this._mapResolve();
 
             // Add event listener for click event

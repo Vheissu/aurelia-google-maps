@@ -142,11 +142,11 @@ propagated via the Aurelia Event Aggregator framework:
 
 *   `googlemap:click` - The equivalent of the `map-click` above
 
-*   `googlemap:bounds_changed` - emitted when the map is dragged or zoomed,
-payload is the new map bounds as a `LatLngBounds` object.
+*   `googlemap:map_created` - emitted when the map is created, payload is the `Map` object
 
-*   `googlemap:marker:click` - emitted when a map marker is clicked, payload
-is the `Marker` object for the clicked marker
+*   `googlemap:bounds_changed` - emitted when the map is dragged or zoomed, payload is the new map bounds as a `LatLngBounds` object.
+
+*   `googlemap:marker:click` - emitted when a map marker is clicked, payload is the `Marker` object for the clicked marker
 
 *   `googlemap:marker:mouse_over`- emitted when the mouse enters the marker, payload is the `Marker`object for the entered marker
 

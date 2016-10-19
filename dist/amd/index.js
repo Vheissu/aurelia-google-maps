@@ -38,6 +38,7 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
     var BOUNDSCHANGED = GM + ":bounds_changed";
     var CLICK = GM + ":click";
     var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
+    var MAPCREATED = GM + ":map_created";
     var MARKERCLICK = GM + ":marker:click";
     var MARKERMOUSEOVER = GM + ":marker:mouse_over";
     var MARKERMOUSEOUT = GM + ":marker:mouse_out";
@@ -111,6 +112,7 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                     mapTypeId: mapTypeId
                 });
                 _this.map = new window.google.maps.Map(_this.element, options);
+                _this.eventAggregator.publish(MAPCREATED, _this.map);
                 _this._mapResolve();
                 _this.map.addListener('click', function (e) {
                     if (_this.element.attributes['map-click.delegate']) {
