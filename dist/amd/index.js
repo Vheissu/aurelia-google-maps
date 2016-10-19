@@ -132,6 +132,7 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                     }
                     else if (_this.autoCloseInfoWindows && _this._previousInfoWindow) {
                         _this._previousInfoWindow.close();
+                        _this._previousInfoWindow = null;
                     }
                 });
                 _this.map.addListener('dragend', function () {
@@ -163,12 +164,14 @@ define("google-maps", ["require", "exports", "aurelia-dependency-injection", "au
                         if (!createdMarker.infoWindow) {
                             _this.eventAggregator.publish(MARKERCLICK, createdMarker);
                         }
+                        else if (_this.autoCloseInfoWindows) {
+                            if (_this._previousInfoWindow)
+                                _this._previousInfoWindow.close();
+                            _this._previousInfoWindow = _this._previousInfoWindow !== createdMarker.infoWindow ? createdMarker.infoWindow : null;
+                            if (_this._previousInfoWindow)
+                                _this._previousInfoWindow.open(_this.map, createdMarker);
+                        }
                         else {
-                            if (_this.autoCloseInfoWindows) {
-                                if (_this._previousInfoWindow)
-                                    _this._previousInfoWindow.close();
-                                _this._previousInfoWindow = createdMarker.infoWindow;
-                            }
                             createdMarker.infoWindow.open(_this.map, createdMarker);
                         }
                     });

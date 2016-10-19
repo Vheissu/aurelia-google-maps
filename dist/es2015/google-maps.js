@@ -110,6 +110,7 @@ let GoogleMaps = class GoogleMaps {
                 }
                 else if (this.autoCloseInfoWindows && this._previousInfoWindow) {
                     this._previousInfoWindow.close();
+                    this._previousInfoWindow = null;
                 }
             });
             this.map.addListener('dragend', () => {
@@ -140,12 +141,14 @@ let GoogleMaps = class GoogleMaps {
                     if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
+                    else if (this.autoCloseInfoWindows) {
+                        if (this._previousInfoWindow)
+                            this._previousInfoWindow.close();
+                        this._previousInfoWindow = this._previousInfoWindow !== createdMarker.infoWindow ? createdMarker.infoWindow : null;
+                        if (this._previousInfoWindow)
+                            this._previousInfoWindow.open(this.map, createdMarker);
+                    }
                     else {
-                        if (this.autoCloseInfoWindows) {
-                            if (this._previousInfoWindow)
-                                this._previousInfoWindow.close();
-                            this._previousInfoWindow = createdMarker.infoWindow;
-                        }
                         createdMarker.infoWindow.open(this.map, createdMarker);
                     }
                 });
