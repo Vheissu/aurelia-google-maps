@@ -374,7 +374,6 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                 force = false;
             }
             if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
-                console.log("Not zooming");
                 return;
             }
             this._mapPromise.then(function () {

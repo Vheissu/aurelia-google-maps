@@ -333,7 +333,6 @@ export let GoogleMaps = class GoogleMaps {
             force = false;
         }
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
-            console.log(`Not zooming`);
             return;
         }
         this._mapPromise.then(() => {

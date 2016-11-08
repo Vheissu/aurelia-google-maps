@@ -373,7 +373,6 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                         force = false;
                     }
                     if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
-                        console.log("Not zooming");
                         return;
                     }
                     this._mapPromise.then(function () {

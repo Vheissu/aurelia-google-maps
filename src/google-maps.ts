@@ -495,7 +495,6 @@ export class GoogleMaps {
         
         // Unless forced, if there's no markers, or not auto update bounds
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
-            console.log(`Not zooming`);
             return;
         }
         
