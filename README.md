@@ -197,6 +197,7 @@ var myMarkers = [
 *   zoom: A zoom value, default is 8
 *   disableDefaultUI: A boolean of true or false. Default is false.
 *   markers: An array of objects with key/value pairs as described above.
+*   options: A Google Maps options object specified [here](https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
 
 ## Supported Events
 
