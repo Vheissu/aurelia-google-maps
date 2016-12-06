@@ -34,6 +34,7 @@ export class GoogleMaps {
     @bindable markers = [];
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
+    @bindable options = {};
 
     map = null;
     _renderedMarkers = [];
@@ -98,7 +99,7 @@ export class GoogleMaps {
             let latLng = new (<any>window).google.maps.LatLng(parseFloat((<any>this.latitude)), parseFloat((<any>this.longitude)));
             let mapTypeId = this.getMapTypeId();
 
-            let options: any = Object.assign(this.config.get('options'), {
+            let options: any = Object.assign({}, this.options, this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt((<any>this.zoom), 10),
                 disableDefaultUI: this.disableDefaultUI,
