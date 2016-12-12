@@ -1,28 +1,36 @@
 module.exports = function(config) {
   config.set({
-    basePath: "",
-    frameworks: ["jasmine"],
+
+    basePath: '',
+    frameworks: ['jasmine', 'requirejs'],
+
     files: [
-      "src/**/*.ts",
-      "test/**/*.ts"
+      'dist/test/test/main.js',
+      { pattern: 'dist/test/**/*.js', included: false, watched: true },
+      //{ pattern: 'dist/test/**/*.html', included: false, watched: true },
+      { pattern: 'node_modules/**/*.js', included: false, watched: false },
     ],
+
+    exclude: [
+    ],
+
     preprocessors: {
-      'test/**/*.ts': ['typescript'],
-      'src/**/*.ts': ['typescript']
     },
-    typescriptPreprocessor: {
-      options: {
-        sourceMap: false,
-        target: 'es5',
-        module: 'amd',
-        noImplicitAny: true,
-        noResolve: true,
-        removeComments: true,
-        concatenateOutput: false 
-      },
-      transformPath: function(path) {
-        return path.replace(/\.ts$/, '.js');
-      }
-    }
-  });
-};
+
+    reporters: ['progress'],
+
+    port: 9876,
+
+    colors: true,
+
+    logLevel: config.LOG_INFO,
+
+    autoWatch: true,
+
+    browsers: ['Chrome'],
+
+    singleRun: false,
+
+    concurrency: Infinity
+  })
+}

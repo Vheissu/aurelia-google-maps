@@ -22,7 +22,7 @@ const APILOADED = `${GM}:api:loaded`;
 export class GoogleMaps {
     private element: Element;
     private taskQueue: TaskQueue;
-    private config;
+    private config: any;
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
 
@@ -36,14 +36,14 @@ export class GoogleMaps {
     @bindable mapType = 'ROADMAP';
     @bindable options = {};
 
-    map = null;
-    _renderedMarkers = [];
-    _markersSubscription = null;
-    _scriptPromise = null;
-    _mapPromise = null;
-    _mapResolve = null;
+    public map: any = null;
+    public _renderedMarkers: any = [];
+    public _markersSubscription: any = null;
+    public _scriptPromise: Promise<any> | any = null;
+    public _mapPromise: Promise<any> | any = null;
+    public _mapResolve: Promise<any> | any = null;
 
-    constructor(element, taskQueue, config, bindingEngine, eventAggregator) {
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -60,26 +60,26 @@ export class GoogleMaps {
 
         this.loadApiScript();
 
-        let self = this;
+        let self: GoogleMaps = this;
         this._mapPromise = this._scriptPromise.then(() => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 // Register the the resolve method for _mapPromise
                 self._mapResolve = resolve;
             });
         });
 
-        this.eventAggregator.subscribe('startMarkerHighlight', function(data) {
-            let mrkr = self._renderedMarkers[data.index];
+        this.eventAggregator.subscribe('startMarkerHighlight', function(data: any) {
+            let mrkr: any = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
             mrkr.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
         });
 
-        this.eventAggregator.subscribe('stopMarkerHighLight', function(data) {
-            let mrkr = self._renderedMarkers[data.index];
+        this.eventAggregator.subscribe('stopMarkerHighLight', function(data: any) {
+            let mrkr: any = self._renderedMarkers[data.index];
             mrkr.setIcon( mrkr.custom.defaultIcon);
         });
 
-        this.eventAggregator.subscribe('panToMarker', function(data) {
+        this.eventAggregator.subscribe('panToMarker', function(data: any) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
         });
@@ -90,7 +90,7 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
-        this.element.addEventListener("zoom_to_bounds", evt => {
+        this.element.addEventListener('zoom_to_bounds', () => {
             this.zoomToMarkerBounds(true);
         });
 
@@ -109,7 +109,7 @@ export class GoogleMaps {
             this._mapResolve();
 
             // Add event listener for click event
-            this.map.addListener('click', (e) => {
+            this.map.addListener('click', (e: Event) => {
                 let changeEvent;
                 if ((<any>window).CustomEvent) {
                     changeEvent = new CustomEvent('map-click', {
@@ -166,7 +166,7 @@ export class GoogleMaps {
      * @param marker
      *
      */
-    renderMarker(marker) {
+    renderMarker(marker: any) {
         let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
 
         this._mapPromise.then(() => {
@@ -174,7 +174,7 @@ export class GoogleMaps {
             this.createMarker({
                 map: this.map,
                 position: markerLatLng
-            }).then(createdMarker => {
+            }).then((createdMarker: any) => {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
@@ -245,9 +245,9 @@ export class GoogleMaps {
      * @param geocoder any
      *
      */
-    geocodeAddress(address, geocoder) {
+    geocodeAddress(address: string, geocoder: any) {
         this._mapPromise.then(() => {
-            geocoder.geocode({'address': address}, (results, status) => {
+            geocoder.geocode({'address': address}, (results: any, status: string) => {
                 if (status === (<any>window).google.maps.GeocoderStatus.OK) {
                     this.setCenter(results[0].geometry.location);
 
@@ -323,7 +323,7 @@ export class GoogleMaps {
         return false;
     }
 
-    setOptions(options) {
+    setOptions(options: any) {
         if (!this.map) {
             return;
         }
@@ -331,7 +331,7 @@ export class GoogleMaps {
         this.map.setOptions(options);
     }
 
-    createMarker(options) {
+    createMarker(options: any) {
         return this._scriptPromise.then(() => {
             return Promise.resolve(new (<any>window).google.maps.Marker(options));
         });
@@ -343,7 +343,7 @@ export class GoogleMaps {
         });
     }
 
-    setCenter(latLong) {
+    setCenter(latLong: any) {
         this._mapPromise.then(() => {
             this.map.setCenter(latLong);
             this.sendBoundsEvent();
@@ -357,7 +357,7 @@ export class GoogleMaps {
         });
     }
 
-    addressChanged(newValue) {
+    addressChanged(newValue: any) {
         this._mapPromise.then(() => {
             let geocoder = new (<any>window).google.maps.Geocoder;
 
@@ -367,7 +367,7 @@ export class GoogleMaps {
         });
     }
 
-    latitudeChanged(newValue) {
+    latitudeChanged() {
         this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
@@ -375,7 +375,7 @@ export class GoogleMaps {
         });
     }
 
-    longitudeChanged(newValue) {
+    longitudeChanged() {
         this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 this.updateCenter();
@@ -383,7 +383,7 @@ export class GoogleMaps {
         });
     }
 
-    zoomChanged(newValue) {
+    zoomChanged(newValue: any) {
         this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
                 let zoomValue = parseInt(newValue, 10);
@@ -398,7 +398,7 @@ export class GoogleMaps {
      *
      * @param newValue
      */
-    markersChanged(newValue) {
+    markersChanged(newValue: any) {
         // If there was a previous subscription
         if (this._markersSubscription !== null) {
             // Dispose of the subscription
@@ -440,7 +440,7 @@ export class GoogleMaps {
      *
      * @param splices
      */
-    markerCollectionChange(splices) {
+    markerCollectionChange(splices: any) {
         if (!splices.length) {
             // Collection changed but the splices didn't
             return;
