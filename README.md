@@ -22,7 +22,7 @@ The Aurelia CLI requires some additional configuration to use this plugin. Open 
     "main": "index",
     "resources": [
         "./google-maps.html",
-        "./google-maps.css"
+        "./maps.css"
     ]
 }
 ```
