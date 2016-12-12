@@ -1,14 +1,5 @@
-export interface ConfigInterface {
-    apiScript: string;
-    apiKey: string;
-    apiLibraries: string;
-    options: any;
-}
-
-export class Configure {
-    private _config: any;
-
-    constructor() {
+var Configure = (function () {
+    function Configure() {
         this._config = {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
@@ -16,17 +7,16 @@ export class Configure {
             options: {}
         };
     }
-
-    options(obj: ConfigInterface) {
+    Configure.prototype.options = function (obj) {
         Object.assign(this._config, obj);
-    }
-
-    get(key: string) {
+    };
+    Configure.prototype.get = function (key) {
         return this._config[key];
-    }
-
-    set(key: string, val: any) {
+    };
+    Configure.prototype.set = function (key, val) {
         this._config[key] = val;
         return this._config[key];
-    }
-}
+    };
+    return Configure;
+}());
+export { Configure };

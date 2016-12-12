@@ -31,7 +31,7 @@ export class GoogleMaps {
     @bindable latitude: number = 0;
     @bindable zoom: number = 8;
     @bindable disableDefaultUI: boolean = false;
-    @bindable markers = [];
+    @bindable markers: any = [];
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
     @bindable options = {};
