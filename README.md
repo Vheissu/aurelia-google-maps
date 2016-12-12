@@ -12,6 +12,23 @@ inserting Google Maps into your application.
 npm install aurelia-google-maps --save
 ```
 
+### CLI User?
+The Aurelia CLI requires some additional configuration to use this plugin. Open up your `aurelia.json` file located in the `aurelia_project` directory and at the bottom of the `dependencies` section add in the following:
+
+```
+{
+    "name": "aurelia-google-maps",
+    "path": "../node_modules/aurelia-google-maps/dist/amd",
+    "main": "index",
+    "resources": [
+        "./google-maps.html",
+        "./google-maps.css"
+    ]
+}
+```
+
+This will ensure your CLI project includes the static assets this plugin uses as well as including the core Javascript parts.
+
 **Jspm**
 
 ``` shell
