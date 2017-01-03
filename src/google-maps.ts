@@ -16,6 +16,7 @@ const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
+const LOCATIONADDED = `${GM}:marker:added`;
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -42,6 +43,7 @@ export class GoogleMaps {
     public _scriptPromise: Promise<any> | any = null;
     public _mapPromise: Promise<any> | any = null;
     public _mapResolve: Promise<any> | any = null;
+    public _locationByAddressMarkers: any = [];
 
     constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator) {
         this.element = element;
@@ -83,6 +85,23 @@ export class GoogleMaps {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
         });
+
+        this.eventAggregator.subscribe(`clearMarkers`, function() {
+            this.clearMarkers();
+        });
+    }
+
+    clearMarkers() {
+        if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+            return;
+        }
+
+        this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function(marker: any) {
+            marker.setMap(null);
+        });
+
+        this._locationByAddressMarkers = [];
+        this._renderedMarkers = [];
     }
 
     attached() {
@@ -146,7 +165,7 @@ export class GoogleMaps {
      * The `bounds` object is an instance of `LatLngBounds`
      * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
      */
-    sendBoundsEvent() { 
+    sendBoundsEvent() {
         let bounds = this.map.getBounds();
         if (bounds) {
             this.eventAggregator.publish(BOUNDSCHANGED, bounds);
@@ -248,14 +267,20 @@ export class GoogleMaps {
     geocodeAddress(address: string, geocoder: any) {
         this._mapPromise.then(() => {
             geocoder.geocode({'address': address}, (results: any, status: string) => {
-                if (status === (<any>window).google.maps.GeocoderStatus.OK) {
-                    this.setCenter(results[0].geometry.location);
-
-                    this.createMarker({
-                        map: this.map,
-                        position: results[0].geometry.location
-                    });
+                if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
+                    return;
                 }
+
+                let firstResultLocation = results[0].geometry.location;
+
+                this.setCenter(firstResultLocation);
+                this.createMarker({
+                    map: this.map,
+                    position: firstResultLocation
+                }).then((createdMarker: any) => {
+                    this._locationByAddressMarkers.push(createdMarker);
+                    this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, {placeId: results[0].place_id}));
+                });
             });
         });
     }
@@ -493,12 +518,12 @@ export class GoogleMaps {
         if (typeof force === 'undefined') {
             force = false;
         }
-        
+
         // Unless forced, if there's no markers, or not auto update bounds
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
             return;
         }
-        
+
         this._mapPromise.then(() => {
             let bounds = new (<any>window).google.maps.LatLngBounds();
 
