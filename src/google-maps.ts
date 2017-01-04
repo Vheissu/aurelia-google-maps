@@ -552,4 +552,8 @@ export class GoogleMaps {
     error() {
         console.error.apply(console, arguments);
     }
+
+    resize() {
+        (<any>window).google.maps.event.trigger(this.map, 'resize');
+    }
 }

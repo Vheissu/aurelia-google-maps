@@ -23,7 +23,9 @@ export declare class GoogleMaps {
     _scriptPromise: Promise<any> | any;
     _mapPromise: Promise<any> | any;
     _mapResolve: Promise<any> | any;
+    _locationByAddressMarkers: any;
     constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator);
+    clearMarkers(): void;
     attached(): void;
     /**
      * Send the map bounds as an EA event
@@ -96,4 +98,5 @@ export declare class GoogleMaps {
     zoomToMarkerBounds(force?: boolean): void;
     getMapTypeId(): any;
     error(): void;
+    resize(): void;
 }

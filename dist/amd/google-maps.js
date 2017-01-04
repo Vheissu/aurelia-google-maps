@@ -16,6 +16,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     var MARKERMOUSEOVER = GM + ":marker:mouse_over";
     var MARKERMOUSEOUT = GM + ":marker:mouse_out";
     var APILOADED = GM + ":api:loaded";
+    var LOCATIONADDED = GM + ":marker:added";
     var GoogleMaps = (function () {
         function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
             this.address = null;
@@ -33,6 +34,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             this._scriptPromise = null;
             this._mapPromise = null;
             this._mapResolve = null;
+            this._locationByAddressMarkers = [];
             this.element = element;
             this.taskQueue = taskQueue;
             this.config = config;
@@ -65,7 +67,20 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 self.map.panTo(self._renderedMarkers[data.index].position);
                 self.map.setZoom(17);
             });
+            this.eventAggregator.subscribe("clearMarkers", function () {
+                this.clearMarkers();
+            });
         }
+        GoogleMaps.prototype.clearMarkers = function () {
+            if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+                return;
+            }
+            this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function (marker) {
+                marker.setMap(null);
+            });
+            this._locationByAddressMarkers = [];
+            this._renderedMarkers = [];
+        };
         GoogleMaps.prototype.attached = function () {
             var _this = this;
             this.element.addEventListener('dragstart', function (evt) {
@@ -213,13 +228,18 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             var _this = this;
             this._mapPromise.then(function () {
                 geocoder.geocode({ 'address': address }, function (results, status) {
-                    if (status === window.google.maps.GeocoderStatus.OK) {
-                        _this.setCenter(results[0].geometry.location);
-                        _this.createMarker({
-                            map: _this.map,
-                            position: results[0].geometry.location
-                        });
+                    if (status !== window.google.maps.GeocoderStatus.OK) {
+                        return;
                     }
+                    var firstResultLocation = results[0].geometry.location;
+                    _this.setCenter(firstResultLocation);
+                    _this.createMarker({
+                        map: _this.map,
+                        position: firstResultLocation
+                    }).then(function (createdMarker) {
+                        _this._locationByAddressMarkers.push(createdMarker);
+                        _this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: results[0].place_id }));
+                    });
                 });
             });
         };
@@ -467,6 +487,9 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
         };
         GoogleMaps.prototype.error = function () {
             console.error.apply(console, arguments);
+        };
+        GoogleMaps.prototype.resize = function () {
+            window.google.maps.event.trigger(this.map, 'resize');
         };
         return GoogleMaps;
     }());

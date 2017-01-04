@@ -7,7 +7,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -40,6 +40,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             MARKERMOUSEOVER = GM + ":marker:mouse_over";
             MARKERMOUSEOUT = GM + ":marker:mouse_out";
             APILOADED = GM + ":api:loaded";
+            LOCATIONADDED = GM + ":marker:added";
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
                     this.address = null;
@@ -57,6 +58,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this._scriptPromise = null;
                     this._mapPromise = null;
                     this._mapResolve = null;
+                    this._locationByAddressMarkers = [];
                     this.element = element;
                     this.taskQueue = taskQueue;
                     this.config = config;
@@ -89,7 +91,20 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         self.map.panTo(self._renderedMarkers[data.index].position);
                         self.map.setZoom(17);
                     });
+                    this.eventAggregator.subscribe("clearMarkers", function () {
+                        this.clearMarkers();
+                    });
                 }
+                GoogleMaps.prototype.clearMarkers = function () {
+                    if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+                        return;
+                    }
+                    this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function (marker) {
+                        marker.setMap(null);
+                    });
+                    this._locationByAddressMarkers = [];
+                    this._renderedMarkers = [];
+                };
                 GoogleMaps.prototype.attached = function () {
                     var _this = this;
                     this.element.addEventListener('dragstart', function (evt) {
@@ -237,13 +252,18 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     var _this = this;
                     this._mapPromise.then(function () {
                         geocoder.geocode({ 'address': address }, function (results, status) {
-                            if (status === window.google.maps.GeocoderStatus.OK) {
-                                _this.setCenter(results[0].geometry.location);
-                                _this.createMarker({
-                                    map: _this.map,
-                                    position: results[0].geometry.location
-                                });
+                            if (status !== window.google.maps.GeocoderStatus.OK) {
+                                return;
                             }
+                            var firstResultLocation = results[0].geometry.location;
+                            _this.setCenter(firstResultLocation);
+                            _this.createMarker({
+                                map: _this.map,
+                                position: firstResultLocation
+                            }).then(function (createdMarker) {
+                                _this._locationByAddressMarkers.push(createdMarker);
+                                _this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: results[0].place_id }));
+                            });
                         });
                     });
                 };
@@ -491,6 +511,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 };
                 GoogleMaps.prototype.error = function () {
                     console.error.apply(console, arguments);
+                };
+                GoogleMaps.prototype.resize = function () {
+                    window.google.maps.event.trigger(this.map, 'resize');
                 };
                 return GoogleMaps;
             }());
