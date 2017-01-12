@@ -3,6 +3,7 @@ import {bindable, customElement} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from 'aurelia-binding';
 import {EventAggregator} from 'aurelia-event-aggregator';
+import {getLogger} from 'aurelia-logging';
 
 import {Configure} from './configure';
 
@@ -17,6 +18,7 @@ const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
 const LOCATIONADDED = `${GM}:marker:added`;
+const logger = getLogger('aurelia-google-maps');
 
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -53,11 +55,11 @@ export class GoogleMaps {
         this.eventAggregator = eventAggregator;
 
         if (!config.get('apiScript')) {
-            console.error('No API script is defined.');
+            logger.error('No API script is defined.');
         }
 
         if (!config.get('apiKey')) {
-            console.error('No API key has been specified.');
+            logger.error('No API key has been specified.');
         }
 
         this.loadApiScript();
@@ -550,7 +552,7 @@ export class GoogleMaps {
     }
 
     error() {
-        console.error.apply(console, arguments);
+        logger.error.apply(logger, arguments);
     }
 
     resize() {
