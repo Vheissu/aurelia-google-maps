@@ -45,7 +45,7 @@ export function configure(aurelia) {
     aurelia.use
         .plugin('aurelia-google-maps', config => {
             config.options({
-                apiKey: 'myapiKey',
+                apiKey: 'myapiKey', // use `false` to disable the key
                 apiLibraries: 'drawing,geometry', //get optional libraries like drawing, geometry, ... - comma seperated list
                 options: { panControl: true, panControlOptions: { position: 9 } } //add google.maps.MapOptions on construct (https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
             });
