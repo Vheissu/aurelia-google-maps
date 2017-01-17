@@ -58,7 +58,7 @@ export class GoogleMaps {
             logger.error('No API script is defined.');
         }
 
-        if (!config.get('apiKey')) {
+        if (!config.get('apiKey') && config.get('apiKey') !== false) {
             logger.error('No API key has been specified.');
         }
 
@@ -319,11 +319,14 @@ export class GoogleMaps {
         if ((<any>window).google === undefined || (<any>window).google.maps === undefined) {
             // google has not been defined yet
             let script = document.createElement('script');
+            let apiScript = this.config.get('apiScript');
+            let apiKey = this.config.get('apiKey') || '';
+            let apiLibraries = this.config.get('apiLibraries');
 
             script.type = 'text/javascript';
             script.async = true;
             script.defer = true;
-            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&libraries=${this.config.get('apiLibraries')}&callback=myGoogleMapsCallback`;
+            script.src = `${apiScript}?key=${apiKey}&libraries=${apiLibraries}&callback=myGoogleMapsCallback`;
             document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {
