@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "./configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1) {
+define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1) {
     "use strict";
     // use constants to guard against typos
     var GM = 'googlemap';
@@ -17,6 +17,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     var MARKERMOUSEOUT = GM + ":marker:mouse_out";
     var APILOADED = GM + ":api:loaded";
     var LOCATIONADDED = GM + ":marker:added";
+    var logger = aurelia_logging_1.getLogger('aurelia-google-maps');
     var GoogleMaps = (function () {
         function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
             this.address = null;
@@ -41,10 +42,10 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             this.bindingEngine = bindingEngine;
             this.eventAggregator = eventAggregator;
             if (!config.get('apiScript')) {
-                console.error('No API script is defined.');
+                logger.error('No API script is defined.');
             }
             if (!config.get('apiKey') && config.get('apiKey') !== false) {
-                console.error('No API key has been specified.');
+                logger.error('No API key has been specified.');
             }
             this.loadApiScript();
             var self = this;
@@ -489,7 +490,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             return window.google.maps.MapTypeId.ROADMAP;
         };
         GoogleMaps.prototype.error = function () {
-            console.error.apply(console, arguments);
+            logger.error.apply(logger, arguments);
         };
         GoogleMaps.prototype.resize = function () {
             window.google.maps.event.trigger(this.map, 'resize');

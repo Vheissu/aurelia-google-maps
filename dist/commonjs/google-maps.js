@@ -10,6 +10,7 @@ var aurelia_templating_1 = require("aurelia-templating");
 var aurelia_task_queue_1 = require("aurelia-task-queue");
 var aurelia_binding_1 = require("aurelia-binding");
 var aurelia_event_aggregator_1 = require("aurelia-event-aggregator");
+var aurelia_logging_1 = require("aurelia-logging");
 var configure_1 = require("./configure");
 // use constants to guard against typos
 var GM = 'googlemap';
@@ -22,6 +23,7 @@ var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
 var APILOADED = GM + ":api:loaded";
 var LOCATIONADDED = GM + ":marker:added";
+var logger = aurelia_logging_1.getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
         this.address = null;
@@ -46,10 +48,10 @@ var GoogleMaps = (function () {
         this.bindingEngine = bindingEngine;
         this.eventAggregator = eventAggregator;
         if (!config.get('apiScript')) {
-            console.error('No API script is defined.');
+            logger.error('No API script is defined.');
         }
         if (!config.get('apiKey') && config.get('apiKey') !== false) {
-            console.error('No API key has been specified.');
+            logger.error('No API key has been specified.');
         }
         this.loadApiScript();
         var self = this;
@@ -494,7 +496,7 @@ var GoogleMaps = (function () {
         return window.google.maps.MapTypeId.ROADMAP;
     };
     GoogleMaps.prototype.error = function () {
-        console.error.apply(console, arguments);
+        logger.error.apply(logger, arguments);
     };
     GoogleMaps.prototype.resize = function () {
         window.google.maps.event.trigger(this.map, 'resize');

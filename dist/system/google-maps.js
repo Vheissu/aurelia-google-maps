@@ -1,4 +1,4 @@
-System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "./configure"], function (exports_1, context_1) {
+System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (exports_1, context_1) {
     "use strict";
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -7,7 +7,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -25,6 +25,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             function (aurelia_event_aggregator_1_1) {
                 aurelia_event_aggregator_1 = aurelia_event_aggregator_1_1;
             },
+            function (aurelia_logging_1_1) {
+                aurelia_logging_1 = aurelia_logging_1_1;
+            },
             function (configure_1_1) {
                 configure_1 = configure_1_1;
             }
@@ -41,6 +44,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             MARKERMOUSEOUT = GM + ":marker:mouse_out";
             APILOADED = GM + ":api:loaded";
             LOCATIONADDED = GM + ":marker:added";
+            logger = aurelia_logging_1.getLogger('aurelia-google-maps');
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
                     this.address = null;
@@ -65,10 +69,10 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this.bindingEngine = bindingEngine;
                     this.eventAggregator = eventAggregator;
                     if (!config.get('apiScript')) {
-                        console.error('No API script is defined.');
+                        logger.error('No API script is defined.');
                     }
                     if (!config.get('apiKey') && config.get('apiKey') !== false) {
-                        console.error('No API key has been specified.');
+                        logger.error('No API key has been specified.');
                     }
                     this.loadApiScript();
                     var self = this;
@@ -513,7 +517,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     return window.google.maps.MapTypeId.ROADMAP;
                 };
                 GoogleMaps.prototype.error = function () {
-                    console.error.apply(console, arguments);
+                    logger.error.apply(logger, arguments);
                 };
                 GoogleMaps.prototype.resize = function () {
                     window.google.maps.event.trigger(this.map, 'resize');
