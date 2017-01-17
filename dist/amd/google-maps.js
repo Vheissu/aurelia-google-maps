@@ -43,7 +43,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             if (!config.get('apiScript')) {
                 console.error('No API script is defined.');
             }
-            if (!config.get('apiKey')) {
+            if (!config.get('apiKey') && config.get('apiKey') !== false) {
                 console.error('No API key has been specified.');
             }
             this.loadApiScript();
@@ -273,10 +273,13 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             if (window.google === undefined || window.google.maps === undefined) {
                 // google has not been defined yet
                 var script_1 = document.createElement('script');
+                var apiScript = this.config.get('apiScript');
+                var apiKey = this.config.get('apiKey') || '';
+                var apiLibraries = this.config.get('apiLibraries');
                 script_1.type = 'text/javascript';
                 script_1.async = true;
                 script_1.defer = true;
-                script_1.src = this.config.get('apiScript') + "?key=" + this.config.get('apiKey') + "&libraries=" + this.config.get('apiLibraries') + "&callback=myGoogleMapsCallback";
+                script_1.src = apiScript + "?key=" + apiKey + "&libraries=" + apiLibraries + "&callback=myGoogleMapsCallback";
                 document.body.appendChild(script_1);
                 this._scriptPromise = new Promise(function (resolve, reject) {
                     window.myGoogleMapsCallback = function () {
