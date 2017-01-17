@@ -1,4 +1,4 @@
 {
   "name": "aurelia-google-maps",
-  "main": "dist/amd/aurelia-google-maps.d.ts"
+  "main": "dist/amd/google-maps.d.ts"
 }
