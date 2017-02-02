@@ -559,6 +559,10 @@ export class GoogleMaps {
     }
 
     resize() {
-        (<any>window).google.maps.event.trigger(this.map, 'resize');
+        this._mapPromise.then(() => {
+            this.taskQueue.queueMicroTask(() => {
+                (<any>window).google.maps.event.trigger(this.map, 'resize');
+            });
+        });
     }
 }
