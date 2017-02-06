@@ -235,6 +235,10 @@ export class GoogleMaps {
                     createdMarker.setTitle(marker.title);
                 }
 
+                if (marker.draggable) {
+                    createdMarker.setDraggable(marker.draggable);
+                }
+
                 if (marker.infoWindow) {
                     createdMarker.infoWindow = new (<any>window).google.maps.InfoWindow({
                         content: marker.infoWindow.content,
