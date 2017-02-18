@@ -7,13 +7,11 @@ import {getLogger} from 'aurelia-logging';
 
 import {Configure} from './configure';
 
-// use constants to guard against typos
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
 const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
-//const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 const APILOADED = `${GM}:api:loaded`;
@@ -38,6 +36,7 @@ export class GoogleMaps {
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
     @bindable options = {};
+    @bindable mapLoaded: any;
 
     public map: any = null;
     public _renderedMarkers: any = [];
@@ -127,6 +126,9 @@ export class GoogleMaps {
             });
 
             this.map = new (<any>window).google.maps.Map(this.element, options);
+            if (this.mapLoaded) {
+                this.mapLoaded(this.map);
+            }
             this._mapResolve();
 
             // Add event listener for click event

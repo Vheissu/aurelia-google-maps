@@ -16,10 +16,10 @@ describe('google maps', () => {
 
     it('should render map', done => {
         component.create(bootstrap).then(() => {
-            const mapElement = document.querySelector('src/google-map');
+            const mapElement: any = document.querySelector('src/google-map');
             expect(mapElement.innerHTML).not.toBe('');
             done();
-       }).catch(e => console.log(e.toString()));
+       }).catch((e: Error) => console.log(e.toString()));
     });
     
     afterEach(() => {

@@ -104,6 +104,15 @@ These properties also support working with Aurelia's databinding, so you can
 bind any of the above to variables in your viewmodel and the map updates
 when these values are changed.
 
+### Map loaded callback (with map reference)
+When the map is loaded and instantiated, you can call a function inside of your view-model.
+
+``` html
+<template>
+    <google-map map-loaded.call="myLoadedCallback(map, $event)"></google-map>
+</template>
+```
+
 ### Map Type
 
 Set the Google Basic Map Type.  See [docs](https://developers.google.com/maps/documentation/javascript/maptypes#BasicMapTypes)
