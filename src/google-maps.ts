@@ -18,6 +18,8 @@ const APILOADED = `${GM}:api:loaded`;
 const LOCATIONADDED = `${GM}:marker:added`;
 const logger = getLogger('aurelia-google-maps');
 
+declare let google: any;
+
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {
@@ -545,7 +547,7 @@ export class GoogleMaps {
             }
 
             this.map.fitBounds(bounds);
-            let listener = google.maps.event.addListener(this.map, "idle", function() {
+            let listener = google.maps.event.addListener(this.map, 'idle', function() {
                 if (this.map.getZoom() > this.zoom) 
                     this.map.setZoom(this.zoom);
                 google.maps.event.removeListener(listener);

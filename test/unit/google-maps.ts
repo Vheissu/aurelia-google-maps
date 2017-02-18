@@ -6,7 +6,7 @@ describe('google maps', () => {
 
     beforeEach(() => {
         component = StageComponent
-            .withResources('src/google-map')
+            .withResources('dist/test/src/google-maps')
             .inView('<google-map latitude="37.323" longitude="-122.0527"></google-map>');
     });
 
@@ -16,7 +16,7 @@ describe('google maps', () => {
 
     it('should render map', done => {
         component.create(bootstrap).then(() => {
-            const mapElement: any = document.querySelector('src/google-map');
+            const mapElement: any = document.querySelector('google-map');
             expect(mapElement.innerHTML).not.toBe('');
             done();
        }).catch((e: Error) => console.log(e.toString()));
