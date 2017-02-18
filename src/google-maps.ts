@@ -1,9 +1,10 @@
 import {inject} from 'aurelia-dependency-injection';
-import {bindable, customElement} from 'aurelia-templating';
+import {bindable, customElement, useView} from 'aurelia-templating';
 import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from 'aurelia-binding';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {getLogger} from 'aurelia-logging';
+import { PLATFORM } from 'aurelia-pal';
 
 import {Configure} from './configure';
 
@@ -20,6 +21,7 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
+@useView(PLATFORM.moduleName('google-maps.html'))
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {

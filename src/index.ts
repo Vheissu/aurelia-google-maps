@@ -1,4 +1,6 @@
 import {FrameworkConfiguration} from 'aurelia-framework';
+import { PLATFORM } from 'aurelia-pal';
+
 import { Configure } from './configure';
 import { GoogleMaps } from './google-maps';
 
@@ -11,7 +13,7 @@ export function configure(aurelia: FrameworkConfiguration, configCallback?: (con
     }
 
     aurelia.globalResources([
-        './google-maps'
+        PLATFORM.moduleName('./google-maps')
     ]);
 }
 
