@@ -1,20 +1,22 @@
-System.register(["./configure", "./google-maps"], function (exports_1, context_1) {
+System.register(["aurelia-pal", "./configure", "./google-maps"], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     function configure(aurelia, configCallback) {
         var instance = aurelia.container.get(configure_1.Configure);
-        // Do we have a callback function?
         if (configCallback !== undefined && typeof (configCallback) === 'function') {
             configCallback(instance);
         }
         aurelia.globalResources([
-            './google-maps'
+            aurelia_pal_1.PLATFORM.moduleName('./google-maps')
         ]);
     }
     exports_1("configure", configure);
-    var configure_1, google_maps_1;
+    var aurelia_pal_1, configure_1, google_maps_1;
     return {
         setters: [
+            function (aurelia_pal_1_1) {
+                aurelia_pal_1 = aurelia_pal_1_1;
+            },
             function (configure_1_1) {
                 configure_1 = configure_1_1;
             },
@@ -28,3 +30,4 @@ System.register(["./configure", "./google-maps"], function (exports_1, context_1
         }
     };
 });
+//# sourceMappingURL=index.js.map

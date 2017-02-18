@@ -5,20 +5,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var aurelia_dependency_injection_1 = require("aurelia-dependency-injection");
 var aurelia_templating_1 = require("aurelia-templating");
 var aurelia_task_queue_1 = require("aurelia-task-queue");
 var aurelia_binding_1 = require("aurelia-binding");
 var aurelia_event_aggregator_1 = require("aurelia-event-aggregator");
 var aurelia_logging_1 = require("aurelia-logging");
+var aurelia_pal_1 = require("aurelia-pal");
 var configure_1 = require("./configure");
-// use constants to guard against typos
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
 var CLICK = GM + ":click";
 var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
 var MARKERCLICK = GM + ":marker:click";
-//const MARKERDOUBLECLICK = `${GM}:marker:dblclick`;
 var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
 var APILOADED = GM + ":api:loaded";
@@ -57,7 +59,6 @@ var GoogleMaps = (function () {
         var self = this;
         this._mapPromise = this._scriptPromise.then(function () {
             return new Promise(function (resolve) {
-                // Register the the resolve method for _mapPromise
                 self._mapResolve = resolve;
             });
         });
@@ -106,8 +107,10 @@ var GoogleMaps = (function () {
                 mapTypeId: mapTypeId
             });
             _this.map = new window.google.maps.Map(_this.element, options);
+            if (_this.mapLoaded) {
+                _this.mapLoaded(_this.map);
+            }
             _this._mapResolve();
-            // Add event listener for click event
             _this.map.addListener('click', function (e) {
                 var changeEvent;
                 if (window.CustomEvent) {
@@ -123,55 +126,31 @@ var GoogleMaps = (function () {
                 _this.element.dispatchEvent(changeEvent);
                 _this.eventAggregator.publish(CLICK, e);
             });
-            /**
-             * As a proxy for the very noisy bounds_changed event, we'll
-             * listen to these two instead:
-             *
-             * dragend */
             _this.map.addListener('dragend', function () {
                 _this.sendBoundsEvent();
             });
-            /* zoom_changed */
             _this.map.addListener('zoom_changed', function () {
                 _this.sendBoundsEvent();
             });
         });
     };
-    /**
-     * Send the map bounds as an EA event
-     *
-     * The `bounds` object is an instance of `LatLngBounds`
-     * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
-     */
     GoogleMaps.prototype.sendBoundsEvent = function () {
         var bounds = this.map.getBounds();
         if (bounds) {
             this.eventAggregator.publish(BOUNDSCHANGED, bounds);
         }
     };
-    /**
-     * Send after the api is loaded
-     * */
     GoogleMaps.prototype.sendApiLoadedEvent = function () {
         this.eventAggregator.publish(APILOADED, this._scriptPromise);
     };
-    /**
-     * Render a marker on the map and add it to collection of rendered markers
-     *
-     * @param marker
-     *
-     */
     GoogleMaps.prototype.renderMarker = function (marker) {
         var _this = this;
         var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
         this._mapPromise.then(function () {
-            // Create the marker
             _this.createMarker({
                 map: _this.map,
                 position: markerLatLng
             }).then(function (createdMarker) {
-                /* add event listener for click on the marker,
-                 * the event payload is the marker itself */
                 createdMarker.addListener('click', function () {
                     if (!createdMarker.infoWindow) {
                         _this.eventAggregator.publish(MARKERCLICK, createdMarker);
@@ -180,8 +159,6 @@ var GoogleMaps = (function () {
                         createdMarker.infoWindow.open(_this.map, createdMarker);
                     }
                 });
-                /*add event listener for hover over the marker,
-                 *the event payload is the marker itself*/
                 createdMarker.addListener('mouseover', function () {
                     _this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
                     createdMarker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
@@ -193,7 +170,6 @@ var GoogleMaps = (function () {
                     _this.map.setZoom(15);
                     _this.map.panTo(createdMarker.position);
                 });
-                // Set some optional marker properties if they exist
                 if (marker.icon) {
                     createdMarker.setIcon(marker.icon);
                 }
@@ -202,6 +178,9 @@ var GoogleMaps = (function () {
                 }
                 if (marker.title) {
                     createdMarker.setTitle(marker.title);
+                }
+                if (marker.draggable) {
+                    createdMarker.setDraggable(marker.draggable);
                 }
                 if (marker.infoWindow) {
                     createdMarker.infoWindow = new window.google.maps.InfoWindow({
@@ -214,23 +193,13 @@ var GoogleMaps = (function () {
                         _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
-                // Allows arbitrary data to be stored on the marker
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
-                // Add it the array of rendered markers
                 _this._renderedMarkers.push(createdMarker);
             });
         });
     };
-    /**
-     * Geocodes an address, once the Google Map script
-     * has been properly loaded and promise instantiated.
-     *
-     * @param address string
-     * @param geocoder any
-     *
-     */
     GoogleMaps.prototype.geocodeAddress = function (address, geocoder) {
         var _this = this;
         this._mapPromise.then(function () {
@@ -250,35 +219,18 @@ var GoogleMaps = (function () {
             });
         });
     };
-    /**
-     * Get Current Position
-     *
-     * Get the users current coordinate info from their browser
-     *
-     */
     GoogleMaps.prototype.getCurrentPosition = function () {
         if (navigator.geolocation) {
             return navigator.geolocation.getCurrentPosition(function (position) { return Promise.resolve(position); }, function (evt) { return Promise.reject(evt); });
         }
         return Promise.reject('Browser Geolocation not supported or found.');
     };
-    /**
-     * Load API Script
-     *
-     * Loads the Google Maps Javascript and then resolves a promise
-     * if loaded. If Google Maps is already loaded, we just return
-     * an immediately resolved promise.
-     *
-     * @return Promise
-     *
-     */
     GoogleMaps.prototype.loadApiScript = function () {
         var _this = this;
         if (this._scriptPromise) {
             return this._scriptPromise;
         }
         if (window.google === undefined || window.google.maps === undefined) {
-            // google has not been defined yet
             var script_1 = document.createElement('script');
             var apiScript = this.config.get('apiScript');
             var apiKey = this.config.get('apiKey') || '';
@@ -300,7 +252,6 @@ var GoogleMaps = (function () {
             return this._scriptPromise;
         }
         if (window.google && window.google.maps) {
-            // google has been defined already, so return an immediately resolved Promise that has scope
             this._scriptPromise = new Promise(function (resolve) { resolve(); });
             return this._scriptPromise;
         }
@@ -371,73 +322,45 @@ var GoogleMaps = (function () {
             });
         });
     };
-    /**
-     * Observing changes in the entire markers object. This is critical in case the user sets marker to a new empty Array,
-     * where we need to resubscribe Observers and delete all previously rendered markers.
-     *
-     * @param newValue
-     */
     GoogleMaps.prototype.markersChanged = function (newValue) {
         var _this = this;
-        // If there was a previous subscription
         if (this._markersSubscription !== null) {
-            // Dispose of the subscription
             this._markersSubscription.dispose();
-            // Remove all the currently rendered markers
             for (var _i = 0, _a = this._renderedMarkers; _i < _a.length; _i++) {
                 var marker = _a[_i];
                 marker.setMap(null);
             }
-            // And empty the renderMarkers collection
             this._renderedMarkers = [];
         }
-        // Add the subcription to markers
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
             .subscribe(function (splices) { _this.markerCollectionChange(splices); });
-        // Render all markers again
         this._mapPromise.then(function () {
             for (var _i = 0, newValue_1 = newValue; _i < newValue_1.length; _i++) {
                 var marker = newValue_1[_i];
                 _this.renderMarker(marker);
             }
         });
-        /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-         */
         this.taskQueue.queueTask(function () {
             _this.zoomToMarkerBounds();
         });
     };
-    /**
-     * Handle the change to the marker collection. Collection observer returns an array of splices which contains
-     * information about the change to the collection.
-     *
-     * @param splices
-     */
     GoogleMaps.prototype.markerCollectionChange = function (splices) {
         var _this = this;
         if (!splices.length) {
-            // Collection changed but the splices didn't
             return;
         }
         for (var _i = 0, splices_1 = splices; _i < splices_1.length; _i++) {
             var splice = splices_1[_i];
             if (splice.removed.length) {
-                // Iterate over all the removed markers
                 for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
                     var removedObj = _b[_a];
-                    // Iterate over all the rendered markers to find the one to remove
                     for (var markerIndex in this._renderedMarkers) {
                         if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
                             var renderedMarker = this._renderedMarkers[markerIndex];
-                            // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
                             if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
                                 renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                                // Set the map to null;
                                 renderedMarker.setMap(null);
-                                // Splice out this rendered marker as well
                                 this._renderedMarkers.splice(markerIndex, 1);
                                 break;
                             }
@@ -445,7 +368,6 @@ var GoogleMaps = (function () {
                     }
                 }
             }
-            // Add the new markers to the map
             if (splice.addedCount) {
                 var addedMarkers = this.markers.slice(splice.index, splice.addedCount);
                 for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
@@ -454,10 +376,6 @@ var GoogleMaps = (function () {
                 }
             }
         }
-        /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-         */
         this.taskQueue.queueTask(function () {
             _this.zoomToMarkerBounds();
         });
@@ -468,7 +386,6 @@ var GoogleMaps = (function () {
         if (typeof force === 'undefined') {
             force = false;
         }
-        // Unless forced, if there's no markers, or not auto update bounds
         if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
             return;
         }
@@ -476,11 +393,15 @@ var GoogleMaps = (function () {
             var bounds = new window.google.maps.LatLngBounds();
             for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
                 var marker = _a[_i];
-                // extend the bounds to include each marker's position
                 var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                 bounds.extend(markerLatLng);
             }
             _this.map.fitBounds(bounds);
+            var listener = google.maps.event.addListener(_this.map, 'idle', function () {
+                if (this.map.getZoom() > this.zoom)
+                    this.map.setZoom(this.zoom);
+                google.maps.event.removeListener(listener);
+            });
         });
     };
     GoogleMaps.prototype.getMapTypeId = function () {
@@ -499,39 +420,60 @@ var GoogleMaps = (function () {
         logger.error.apply(logger, arguments);
     };
     GoogleMaps.prototype.resize = function () {
-        window.google.maps.event.trigger(this.map, 'resize');
+        var _this = this;
+        this._mapPromise.then(function () {
+            _this.taskQueue.queueMicroTask(function () {
+                window.google.maps.event.trigger(_this.map, 'resize');
+            });
+        });
     };
     return GoogleMaps;
 }());
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "address", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "longitude", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "latitude", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Number)
 ], GoogleMaps.prototype, "zoom", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
 ], GoogleMaps.prototype, "disableDefaultUI", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "markers", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Boolean)
 ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "mapType", void 0);
 __decorate([
-    aurelia_templating_1.bindable
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
 ], GoogleMaps.prototype, "options", void 0);
+__decorate([
+    aurelia_templating_1.bindable,
+    __metadata("design:type", Object)
+], GoogleMaps.prototype, "mapLoaded", void 0);
 GoogleMaps = __decorate([
+    aurelia_templating_1.useView(aurelia_pal_1.PLATFORM.moduleName('google-maps.html')),
     aurelia_templating_1.customElement('google-map'),
-    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator)
+    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
+    __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator])
 ], GoogleMaps);
 exports.GoogleMaps = GoogleMaps;
+//# sourceMappingURL=google-maps.js.map

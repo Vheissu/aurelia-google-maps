@@ -23,3 +23,4 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.Configure = Configure;
 });
+//# sourceMappingURL=configure.js.map
