@@ -21,7 +21,7 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
-@useView(PLATFORM.moduleName('google-maps.html'))
+@useView(PLATFORM.moduleName('./google-maps.html'))
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {
