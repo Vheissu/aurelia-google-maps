@@ -19,15 +19,9 @@ The Aurelia CLI requires some additional configuration to use this plugin. Open 
 {
     "name": "aurelia-google-maps",
     "path": "../node_modules/aurelia-google-maps/dist/amd",
-    "main": "index",
-    "resources": [
-        "./google-maps.html",
-        "./maps.css"
-    ]
+    "main": "index"
 }
 ```
-
-This will ensure your CLI project includes the static assets this plugin uses as well as including the core Javascript parts.
 
 **Jspm**
 
