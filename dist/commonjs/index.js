@@ -6,6 +6,7 @@ var google_maps_1 = require("./google-maps");
 exports.GoogleMaps = google_maps_1.GoogleMaps;
 function configure(aurelia, configCallback) {
     var instance = aurelia.container.get(configure_1.Configure);
+    aurelia_pal_1.DOM.injectStyles("google-map { display: block; height: 350px; }");
     if (configCallback !== undefined && typeof (configCallback) === 'function') {
         configCallback(instance);
     }

@@ -8,12 +8,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { inject } from 'aurelia-dependency-injection';
-import { bindable, customElement, useView } from 'aurelia-templating';
+import { bindable, customElement, noView } from 'aurelia-templating';
 import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
 import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
-import { PLATFORM } from 'aurelia-pal';
 import { Configure } from './configure';
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
@@ -469,7 +468,7 @@ __decorate([
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "mapLoaded", void 0);
 GoogleMaps = __decorate([
-    useView(PLATFORM.moduleName('google-maps.html')),
+    noView(),
     customElement('google-map'),
     inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator),
     __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, EventAggregator])

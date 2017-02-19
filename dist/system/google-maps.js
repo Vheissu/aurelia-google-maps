@@ -1,4 +1,4 @@
-System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "aurelia-pal", "./configure"], function (exports_1, context_1) {
+System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (exports_1, context_1) {
     "use strict";
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -10,7 +10,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, aurelia_pal_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -30,9 +30,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             },
             function (aurelia_logging_1_1) {
                 aurelia_logging_1 = aurelia_logging_1_1;
-            },
-            function (aurelia_pal_1_1) {
-                aurelia_pal_1 = aurelia_pal_1_1;
             },
             function (configure_1_1) {
                 configure_1 = configure_1_1;
@@ -493,7 +490,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 __metadata("design:type", Object)
             ], GoogleMaps.prototype, "mapLoaded", void 0);
             GoogleMaps = __decorate([
-                aurelia_templating_1.useView(aurelia_pal_1.PLATFORM.moduleName('google-maps.html')),
+                aurelia_templating_1.noView(),
                 aurelia_templating_1.customElement('google-map'),
                 aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
                 __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator])

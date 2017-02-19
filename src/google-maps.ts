@@ -1,12 +1,11 @@
-import {inject} from 'aurelia-dependency-injection';
-import {bindable, customElement, useView} from 'aurelia-templating';
-import {TaskQueue} from 'aurelia-task-queue';
-import {BindingEngine} from 'aurelia-binding';
-import {EventAggregator} from 'aurelia-event-aggregator';
-import {getLogger} from 'aurelia-logging';
-import { PLATFORM } from 'aurelia-pal';
+import { inject } from 'aurelia-dependency-injection';
+import { bindable, customElement, noView } from 'aurelia-templating';
+import { TaskQueue } from 'aurelia-task-queue';
+import { BindingEngine } from 'aurelia-binding';
+import { EventAggregator } from 'aurelia-event-aggregator';
+import { getLogger } from 'aurelia-logging';
 
-import {Configure} from './configure';
+import { Configure } from './configure';
 
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
@@ -21,7 +20,7 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
-@useView(PLATFORM.moduleName('./google-maps.html'))
+@noView()
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
 export class GoogleMaps {

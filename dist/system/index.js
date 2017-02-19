@@ -3,6 +3,7 @@ System.register(["aurelia-pal", "./configure", "./google-maps"], function (expor
     var __moduleName = context_1 && context_1.id;
     function configure(aurelia, configCallback) {
         var instance = aurelia.container.get(configure_1.Configure);
+        aurelia_pal_1.DOM.injectStyles("google-map { display: block; height: 350px; }");
         if (configCallback !== undefined && typeof (configCallback) === 'function') {
             configCallback(instance);
         }

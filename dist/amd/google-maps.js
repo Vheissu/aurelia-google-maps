@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "aurelia-pal", "./configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, aurelia_pal_1, configure_1) {
+define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1) {
     "use strict";
     var GM = 'googlemap';
     var BOUNDSCHANGED = GM + ":bounds_changed";
@@ -463,7 +463,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
         __metadata("design:type", Object)
     ], GoogleMaps.prototype, "mapLoaded", void 0);
     GoogleMaps = __decorate([
-        aurelia_templating_1.useView(aurelia_pal_1.PLATFORM.moduleName('google-maps.html')),
+        aurelia_templating_1.noView(),
         aurelia_templating_1.customElement('google-map'),
         aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
         __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator])

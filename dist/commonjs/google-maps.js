@@ -14,7 +14,6 @@ var aurelia_task_queue_1 = require("aurelia-task-queue");
 var aurelia_binding_1 = require("aurelia-binding");
 var aurelia_event_aggregator_1 = require("aurelia-event-aggregator");
 var aurelia_logging_1 = require("aurelia-logging");
-var aurelia_pal_1 = require("aurelia-pal");
 var configure_1 = require("./configure");
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
@@ -470,7 +469,7 @@ __decorate([
     __metadata("design:type", Object)
 ], GoogleMaps.prototype, "mapLoaded", void 0);
 GoogleMaps = __decorate([
-    aurelia_templating_1.useView(aurelia_pal_1.PLATFORM.moduleName('google-maps.html')),
+    aurelia_templating_1.noView(),
     aurelia_templating_1.customElement('google-map'),
     aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
     __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator])

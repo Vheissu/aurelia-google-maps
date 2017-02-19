@@ -1,6 +1,6 @@
 {
   "name": "aurelia-google-maps",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
     "aurelia",
@@ -122,14 +122,5 @@
     "rimraf": "^2.5.4",
     "tslint": "^4.3.1",
     "typescript": "^2.1.6"
-  },
-  "aurelia": {
-    "build": {
-      "resources": [
-        "aurelia-google-maps/google-maps",
-        "aurelia-google-maps/google-maps.html",
-        "aurelia-google-maps/maps.css"
-      ]
-    }
   }
 }
