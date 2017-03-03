@@ -302,46 +302,47 @@ export class GoogleMaps {
      *
      */
     geocodeAddress(address: string) {
-        this._mapPromise.then(() => {
-            this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
-                if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
-                    return;
-                }
-
-                let firstResultLocation = results[0].geometry.location;
-
-                this.setCenter(firstResultLocation);
-                this.createMarker({
-                    map: this.map,
-                    position: firstResultLocation
-                }).then((createdMarker: any) => {
-                    this._locationByAddressMarkers.push(createdMarker);
-                    this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, {placeId: results[0].place_id}));
-                });
+        this.geocode(address).then(firstResult => {
+            this.setCenter(firstResult.geometry.location);
+            this.createMarker({
+                map: this.map,
+                position: firstResult.geometry.location
+            }).then((createdMarker: any) => {
+                this._locationByAddressMarkers.push(createdMarker);
+                this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
             });
         });
     }
 
     /**
-     * Geocodes Address and returns the coordinates
+     * Geocodes Address and returns the coordinates once the google map has been properly initialized
      *
      * @param address string
      *
      */
-    convertAddressToCoordinates(address: string): Promise<LatLongMarker> {
+    addressToMarker(address: string): Promise<LatLongMarker> {
+        return this.geocode(address).then(firstResults => {
+            return {
+                latitude: firstResults.geometry.location.lat(),
+                longitude: firstResults.geometry.location.lng()
+            }
+        });
+    }
+
+    /**
+     * Geocodes Address and returns the firstresults object after google maps has initialized
+     *
+     * @param address string
+     *
+     */
+    private geocode(address: string): Promise<any> {
         return this._mapPromise.then(() => {
             return new Promise((resolve, reject) => {
                 this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
                     if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
                         reject(new Error(``));
                     }
-
-                    let firstResultLocation = results[0].geometry.location;
-
-                    resolve({
-                        latitude: firstResultLocation.lat(),
-                        longitude: firstResultLocation.lng()
-                    });
+                    resolve(results[0]);
                 });
             });
         });
@@ -518,7 +519,7 @@ export class GoogleMaps {
             Promise.all<LatLongMarker>(
                 newValue.map(marker => {
                     if (isAddressMarker(marker)) {
-                        return this.convertAddressToCoordinates(marker.address);
+                        return this.addressToMarker(marker.address);
                     } else {
                         return marker;
                     }
