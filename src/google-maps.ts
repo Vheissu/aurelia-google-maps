@@ -20,6 +20,30 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
+export interface BaseMarker {
+    icon?: string;
+    label?: string;
+    title?: string;
+    draggable?: boolean;
+    custom?: any;
+    infoWindow?: { pixelOffset?: number, content: string, position?: number, maxWidth?: number }
+}
+
+export interface AddressMarker extends BaseMarker {
+    address: string;
+}
+
+export interface LatLongMarker extends BaseMarker {
+    latitude: number | string;
+    longitude: number | string;
+}
+
+const isAddressMarker = (marker: Marker): marker is AddressMarker => {
+    return (<AddressMarker>marker).address !== undefined;
+}
+
+export type Marker = AddressMarker | LatLongMarker;
+
 @noView()
 @customElement('google-map')
 @inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
@@ -192,8 +216,8 @@ export class GoogleMaps {
      * @param marker
      *
      */
-    renderMarker(marker: any) {
-        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+    renderMarker(marker: LatLongMarker): Promise<void> {
+        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
 
         this._mapPromise.then(() => {
             // Create the marker
@@ -437,7 +461,7 @@ export class GoogleMaps {
      *
      * @param newValue
      */
-    markersChanged(newValue: any) {
+    markersChanged(newValue: Marker[]) {
         // If there was a previous subscription
         if (this._markersSubscription !== null) {
             // Dispose of the subscription
