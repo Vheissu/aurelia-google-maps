@@ -172,7 +172,7 @@ Markers can be bound to the element with the `markers` attribute like below:
 <google-map markers.bind="myMarkers"></google-map>
 ```
 
-This markers variable should be an array of objects with at minimum either both the `latitude` and `longitude` key/value pairs or an address as string:
+This markers variable should be an array of objects with at minimum either both the `latitude` and `longitude` key/value pairs or just the `address` key/value pair: 
 
 ``` javascript
 var myMarkers = [
