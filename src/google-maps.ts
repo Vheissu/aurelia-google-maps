@@ -311,7 +311,7 @@ export class GoogleMaps {
                 this._locationByAddressMarkers.push(createdMarker);
                 this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
             });
-        });
+        }).catch(console.info);
     }
 
     /**
@@ -326,7 +326,7 @@ export class GoogleMaps {
                 latitude: firstResults.geometry.location.lat(),
                 longitude: firstResults.geometry.location.lng()
             }
-        });
+        }).catch(console.info);
     }
 
     /**
@@ -340,7 +340,7 @@ export class GoogleMaps {
             return new Promise((resolve, reject) => {
                 this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
                     if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
-                        reject(new Error(``));
+                        reject(new Error(`Failed to geocode address '${address}' with status: ${status}`));
                     }
                     resolve(results[0]);
                 });
@@ -525,7 +525,8 @@ export class GoogleMaps {
                     }
                 })
             ).then(validMarkers => {
-                this.validMarkers = validMarkers;
+                // Addresses that fail to parse return undefined (because the error is caught earlier in the promise chain)
+                this.validMarkers = validMarkers.filter(marker => typeof marker !== 'undefined');
                 return Promise.all(this.validMarkers.map(this.renderMarker.bind(this)));
             }).then(() => {
                 /**
