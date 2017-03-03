@@ -54,7 +54,7 @@ export class GoogleMaps {
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
     private validMarkers: LatLongMarker[];
-    private geocoder: any;
+    private _geocoder: any;
 
     @bindable address = null;
     @bindable longitude: number = 0;
@@ -301,9 +301,9 @@ export class GoogleMaps {
      * @param geocoder any
      *
      */
-    geocodeAddress(address: string, geocoder: any) {
+    geocodeAddress(address: string) {
         this._mapPromise.then(() => {
-            geocoder.geocode({'address': address}, (results: any, status: string) => {
+            this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
                 if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
                     return;
                 }
@@ -330,9 +330,6 @@ export class GoogleMaps {
      */
     convertAddressToCoordinates(address: string): Promise<LatLongMarker> {
         return this._mapPromise.then(() => {
-            if (!this.geocoder) {
-                this.geocoder = new (<any>window).google.maps.Geocoder;
-            }
             return new Promise((resolve, reject) => {
                 this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
                     if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
@@ -348,6 +345,13 @@ export class GoogleMaps {
                 });
             });
         });
+    }
+
+    private get geocoder() {
+        if (!this._geocoder) {
+            this._geocoder = new (<any>window).google.maps.Geocoder;
+        }
+        return this._geocoder;
     }
 
     /**
@@ -452,10 +456,8 @@ export class GoogleMaps {
 
     addressChanged(newValue: any) {
         this._mapPromise.then(() => {
-            let geocoder = new (<any>window).google.maps.Geocoder;
-
             this.taskQueue.queueMicroTask(() => {
-                this.geocodeAddress(newValue, geocoder);
+                this.geocodeAddress(newValue);
             });
         });
     }
