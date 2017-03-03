@@ -53,6 +53,8 @@ export class GoogleMaps {
     private config: any;
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
+    private validMarkers: LatLongMarker[];
+    private geocoder: any;
 
     @bindable address = null;
     @bindable longitude: number = 0;
@@ -219,7 +221,7 @@ export class GoogleMaps {
     renderMarker(marker: LatLongMarker): Promise<void> {
         let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
 
-        this._mapPromise.then(() => {
+        return this._mapPromise.then(() => {
             // Create the marker
             this.createMarker({
                 map: this.map,
@@ -315,6 +317,34 @@ export class GoogleMaps {
                 }).then((createdMarker: any) => {
                     this._locationByAddressMarkers.push(createdMarker);
                     this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, {placeId: results[0].place_id}));
+                });
+            });
+        });
+    }
+
+    /**
+     * Geocodes Address and returns the coordinates
+     *
+     * @param address string
+     *
+     */
+    convertAddressToCoordinates(address: string): Promise<LatLongMarker> {
+        return this._mapPromise.then(() => {
+            if (!this.geocoder) {
+                this.geocoder = new (<any>window).google.maps.Geocoder;
+            }
+            return new Promise((resolve, reject) => {
+                this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
+                    if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
+                        reject(new Error(``));
+                    }
+
+                    let firstResultLocation = results[0].geometry.location;
+
+                    resolve({
+                        latitude: firstResultLocation.lat(),
+                        longitude: firstResultLocation.lng()
+                    });
                 });
             });
         });
@@ -483,17 +513,26 @@ export class GoogleMaps {
 
         // Render all markers again
         this._mapPromise.then(() => {
-            for (let marker of newValue) {
-                this.renderMarker(marker);
-            }
-        });
-
-        /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-         */
-        this.taskQueue.queueTask(() => {
-            this.zoomToMarkerBounds();
+            Promise.all<LatLongMarker>(
+                newValue.map(marker => {
+                    if (isAddressMarker(marker)) {
+                        return this.convertAddressToCoordinates(marker.address);
+                    } else {
+                        return marker;
+                    }
+                })
+            ).then(validMarkers => {
+                this.validMarkers = validMarkers;
+                return Promise.all(this.validMarkers.map(this.renderMarker.bind(this)));
+            }).then(() => {
+                /**
+                 * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+                 * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+                 */
+                this.taskQueue.queueTask(() => {
+                    this.zoomToMarkerBounds();
+                });
+            });
         });
     }
 
@@ -558,16 +597,16 @@ export class GoogleMaps {
         }
 
         // Unless forced, if there's no markers, or not auto update bounds
-        if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+        if (!force && (!this.validMarkers.length || !this.autoUpdateBounds)) {
             return;
         }
 
         this._mapPromise.then(() => {
             let bounds = new (<any>window).google.maps.LatLngBounds();
 
-            for (let marker of this.markers) {
+            for (let marker of this.validMarkers) {
                 // extend the bounds to include each marker's position
-                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
                 bounds.extend(markerLatLng);
             }
 
