@@ -320,12 +320,13 @@ export class GoogleMaps {
      * @param address string
      *
      */
-    addressToMarker(address: string): Promise<LatLongMarker> {
-        return this.geocode(address).then(firstResults => {
-            return {
+    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker> {
+        return this.geocode(marker.address).then(firstResults => {
+            return { 
+                ... marker,
                 latitude: firstResults.geometry.location.lat(),
-                longitude: firstResults.geometry.location.lng()
-            }
+                longitude: firstResults.geometry.location.lng(),
+            };
         }).catch(console.info);
     }
 
@@ -519,7 +520,7 @@ export class GoogleMaps {
             Promise.all<LatLongMarker>(
                 newValue.map(marker => {
                     if (isAddressMarker(marker)) {
-                        return this.addressToMarker(marker.address);
+                        return this.addressMarkerToMarker(marker);
                     } else {
                         return marker;
                     }
