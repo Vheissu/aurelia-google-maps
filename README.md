@@ -172,13 +172,17 @@ Markers can be bound to the element with the `markers` attribute like below:
 <google-map markers.bind="myMarkers"></google-map>
 ```
 
-This markers variable should be an array of objects with at minimum the `latitude` and `longitude` key/value pairs:
+This markers variable should be an array of objects with at minimum either both the `latitude` and `longitude` key/value pairs or just the `address` key/value pair.
+Addresses for which geocoding fails get logged to the console as info:
 
 ``` javascript
 var myMarkers = [
 	{
         latitude: -27.451673,
         longitude: 153.043981
+    },
+    {
+       address: '1 Avenue B New York, NY 10009'
     },
     {
         latitude: 37.754582,

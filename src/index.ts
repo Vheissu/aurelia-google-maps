@@ -2,7 +2,7 @@ import {FrameworkConfiguration} from 'aurelia-framework';
 import { PLATFORM, DOM } from 'aurelia-pal';
 
 import { Configure } from './configure';
-import { GoogleMaps } from './google-maps';
+import { GoogleMaps, Marker } from './google-maps';
 
 export function configure(aurelia: FrameworkConfiguration, configCallback?: (config: Configure) => Promise<any>) {
     let instance = aurelia.container.get(Configure) as Configure;
@@ -21,3 +21,4 @@ export function configure(aurelia: FrameworkConfiguration, configCallback?: (con
 
 export { Configure };
 export { GoogleMaps };
+export { Marker };
