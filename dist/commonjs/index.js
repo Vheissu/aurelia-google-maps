@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var aurelia_pal_1 = require("aurelia-pal");
 var configure_1 = require("./configure");
 exports.Configure = configure_1.Configure;

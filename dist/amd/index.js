@@ -1,5 +1,6 @@
 define(["require", "exports", "aurelia-pal", "./configure", "./google-maps"], function (require, exports, aurelia_pal_1, configure_1, google_maps_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.Configure = configure_1.Configure;
     exports.GoogleMaps = google_maps_1.GoogleMaps;
     function configure(aurelia, configCallback) {

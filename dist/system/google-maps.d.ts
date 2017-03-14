@@ -2,12 +2,35 @@ import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
 import { EventAggregator } from 'aurelia-event-aggregator';
 import { Configure } from './configure';
+export interface BaseMarker {
+    icon?: string;
+    label?: string;
+    title?: string;
+    draggable?: boolean;
+    custom?: any;
+    infoWindow?: {
+        pixelOffset?: number;
+        content: string;
+        position?: number;
+        maxWidth?: number;
+    };
+}
+export interface AddressMarker extends BaseMarker {
+    address: string;
+}
+export interface LatLongMarker extends BaseMarker {
+    latitude: number | string;
+    longitude: number | string;
+}
+export declare type Marker = AddressMarker | LatLongMarker;
 export declare class GoogleMaps {
     private element;
     private taskQueue;
     private config;
     private bindingEngine;
     private eventAggregator;
+    private validMarkers;
+    private _geocoder;
     address: any;
     longitude: number;
     latitude: number;
@@ -30,8 +53,11 @@ export declare class GoogleMaps {
     attached(): void;
     sendBoundsEvent(): void;
     sendApiLoadedEvent(): void;
-    renderMarker(marker: any): void;
-    geocodeAddress(address: string, geocoder: any): void;
+    renderMarker(marker: LatLongMarker): Promise<void>;
+    geocodeAddress(address: string): void;
+    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker>;
+    private geocode(address);
+    private readonly geocoder;
     getCurrentPosition(): any;
     loadApiScript(): any;
     setOptions(options: any): void;
@@ -43,7 +69,7 @@ export declare class GoogleMaps {
     latitudeChanged(): void;
     longitudeChanged(): void;
     zoomChanged(newValue: any): void;
-    markersChanged(newValue: any): void;
+    markersChanged(newValue: Marker[]): void;
     markerCollectionChange(splices: any): void;
     zoomToMarkerBounds(force?: boolean): void;
     getMapTypeId(): any;

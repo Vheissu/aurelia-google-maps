@@ -1,5 +1,13 @@
 System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (exports_1, context_1) {
     "use strict";
+    var __assign = (this && this.__assign) || Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
         if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -10,7 +18,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, isAddressMarker, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -46,6 +54,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             APILOADED = GM + ":api:loaded";
             LOCATIONADDED = GM + ":marker:added";
             logger = aurelia_logging_1.getLogger('aurelia-google-maps');
+            isAddressMarker = function (marker) {
+                return marker.address !== undefined;
+            };
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
                     this.address = null;
@@ -166,7 +177,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 GoogleMaps.prototype.renderMarker = function (marker) {
                     var _this = this;
                     var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
-                    this._mapPromise.then(function () {
+                    return this._mapPromise.then(function () {
                         _this.createMarker({
                             map: _this.map,
                             position: markerLatLng
@@ -220,25 +231,47 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         });
                     });
                 };
-                GoogleMaps.prototype.geocodeAddress = function (address, geocoder) {
+                GoogleMaps.prototype.geocodeAddress = function (address) {
                     var _this = this;
-                    this._mapPromise.then(function () {
-                        geocoder.geocode({ 'address': address }, function (results, status) {
-                            if (status !== window.google.maps.GeocoderStatus.OK) {
-                                return;
-                            }
-                            var firstResultLocation = results[0].geometry.location;
-                            _this.setCenter(firstResultLocation);
-                            _this.createMarker({
-                                map: _this.map,
-                                position: firstResultLocation
-                            }).then(function (createdMarker) {
-                                _this._locationByAddressMarkers.push(createdMarker);
-                                _this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: results[0].place_id }));
+                    this.geocode(address).then(function (firstResult) {
+                        _this.setCenter(firstResult.geometry.location);
+                        _this.createMarker({
+                            map: _this.map,
+                            position: firstResult.geometry.location
+                        }).then(function (createdMarker) {
+                            _this._locationByAddressMarkers.push(createdMarker);
+                            _this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
+                        });
+                    }).catch(console.info);
+                };
+                GoogleMaps.prototype.addressMarkerToMarker = function (marker) {
+                    return this.geocode(marker.address).then(function (firstResults) {
+                        return __assign({}, marker, { latitude: firstResults.geometry.location.lat(), longitude: firstResults.geometry.location.lng() });
+                    }).catch(console.info);
+                };
+                GoogleMaps.prototype.geocode = function (address) {
+                    var _this = this;
+                    return this._mapPromise.then(function () {
+                        return new Promise(function (resolve, reject) {
+                            _this.geocoder.geocode({ 'address': address }, function (results, status) {
+                                if (status !== window.google.maps.GeocoderStatus.OK) {
+                                    reject(new Error("Failed to geocode address '" + address + "' with status: " + status));
+                                }
+                                resolve(results[0]);
                             });
                         });
                     });
                 };
+                Object.defineProperty(GoogleMaps.prototype, "geocoder", {
+                    get: function () {
+                        if (!this._geocoder) {
+                            this._geocoder = new window.google.maps.Geocoder;
+                        }
+                        return this._geocoder;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 GoogleMaps.prototype.getCurrentPosition = function () {
                     if (navigator.geolocation) {
                         return navigator.geolocation.getCurrentPosition(function (position) { return Promise.resolve(position); }, function (evt) { return Promise.reject(evt); });
@@ -311,9 +344,8 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 GoogleMaps.prototype.addressChanged = function (newValue) {
                     var _this = this;
                     this._mapPromise.then(function () {
-                        var geocoder = new window.google.maps.Geocoder;
                         _this.taskQueue.queueMicroTask(function () {
-                            _this.geocodeAddress(newValue, geocoder);
+                            _this.geocodeAddress(newValue);
                         });
                     });
                 };
@@ -356,13 +388,21 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         .collectionObserver(this.markers)
                         .subscribe(function (splices) { _this.markerCollectionChange(splices); });
                     this._mapPromise.then(function () {
-                        for (var _i = 0, newValue_1 = newValue; _i < newValue_1.length; _i++) {
-                            var marker = newValue_1[_i];
-                            _this.renderMarker(marker);
-                        }
-                    });
-                    this.taskQueue.queueTask(function () {
-                        _this.zoomToMarkerBounds();
+                        Promise.all(newValue.map(function (marker) {
+                            if (isAddressMarker(marker)) {
+                                return _this.addressMarkerToMarker(marker);
+                            }
+                            else {
+                                return marker;
+                            }
+                        })).then(function (validMarkers) {
+                            _this.validMarkers = validMarkers.filter(function (marker) { return typeof marker !== 'undefined'; });
+                            return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
+                        }).then(function () {
+                            _this.taskQueue.queueTask(function () {
+                                _this.zoomToMarkerBounds();
+                            });
+                        });
                     });
                 };
                 GoogleMaps.prototype.markerCollectionChange = function (splices) {
@@ -406,12 +446,12 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     if (typeof force === 'undefined') {
                         force = false;
                     }
-                    if (!force && (!this.markers.length || !this.autoUpdateBounds)) {
+                    if (!force && (!this.validMarkers.length || !this.autoUpdateBounds)) {
                         return;
                     }
                     this._mapPromise.then(function () {
                         var bounds = new window.google.maps.LatLngBounds();
-                        for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
+                        for (var _i = 0, _a = _this.validMarkers; _i < _a.length; _i++) {
                             var marker = _a[_i];
                             var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
                             bounds.extend(markerLatLng);
