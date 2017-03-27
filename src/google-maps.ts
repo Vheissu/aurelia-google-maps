@@ -579,7 +579,7 @@ export class GoogleMaps {
 
             // Add the new markers to the map
             if (splice.addedCount) {
-                let addedMarkers = this.markers.slice(splice.index, splice.addedCount);
+                let addedMarkers = this.markers.slice(-splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
                     this.renderMarker(addedMarker);
