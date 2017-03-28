@@ -373,7 +373,7 @@ export class GoogleMaps {
         return Promise.reject('Browser Geolocation not supported or found.');
     }
 
-    setOptions(options) {
+    setOptions(options: any) {
         if (!this.map) {
             return;
         }
