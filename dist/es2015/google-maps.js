@@ -36,6 +36,9 @@ var logger = getLogger('aurelia-google-maps');
 var isAddressMarker = function (marker) {
     return marker.address !== undefined;
 };
+var isLatLongMarker = function (marker) {
+    return marker.latitude !== undefined && marker.longitude !== undefined;
+};
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
         this.address = null;
@@ -337,7 +340,7 @@ var GoogleMaps = (function () {
             .subscribe(function (splices) { _this.markerCollectionChange(splices); });
         this._mapPromise.then(function () {
             Promise.all(newValue.map(function (marker) {
-                if (isAddressMarker(marker)) {
+                if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                     return _this.addressMarkerToMarker(marker);
                 }
                 else {

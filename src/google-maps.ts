@@ -43,6 +43,10 @@ const isAddressMarker = (marker: Marker): marker is AddressMarker => {
     return (<AddressMarker>marker).address !== undefined;
 }
 
+const isLatLongMarker = (marker: Marker): marker is LatLongMarker => {
+    return (<LatLongMarker>marker).latitude !== undefined && (<LatLongMarker>marker).longitude !== undefined;
+}
+
 export type Marker = AddressMarker | LatLongMarker;
 
 @noView()
@@ -470,7 +474,7 @@ export class GoogleMaps {
         this._mapPromise.then(() => {
             Promise.all<LatLongMarker>(
                 newValue.map(marker => {
-                    if (isAddressMarker(marker)) {
+                    if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                         return this.addressMarkerToMarker(marker);
                     } else {
                         return marker;
