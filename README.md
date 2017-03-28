@@ -215,6 +215,30 @@ var myMarkers = [
 *   `custom` (optional) - store arbitrary data (e.g. an `id` field) in this object, retrieve it from the `googlemap:marker:click` event payload
 *   `infoWindow` (optional) - object - If set, the `googlemap:marker:click` evetn will not be called, instead an infowindow containing the given content will show up - see [docs](https://developers.google.com/maps/documentation/javascript/infowindows)
 
+### Drawing Mode
+
+Allows usage of Google Maps' Drawing API to add Markers, Polylines, Polygons, Rectangles and Circles to the map instance. To allow this, simply set the defaults as below:
+
+``` html
+<google-map draw-enable.bind="true" draw-mode="polygon"></google-map>
+```
+
+The `draw-mode` can take the same values as defined [here](https://developers.google.com/maps/documentation/javascript/reference#OverlayType)
+
+#### Drawing Events
+
+One of the drawing events has been exposed to the element as a `CustomEvent` and a callback can be set as below:
+
+``` html
+<google-map map-overlay-complete.delegate="callback($event)"></google-map>
+```
+
+The event object is the same as given [here](https://developers.google.com/maps/documentation/javascript/reference#OverlayCompleteEvent) with the addition of the `encoded` variable. This is the encoded polyline (you can play around with it [here](https://developers.google.com/maps/documentation/utilities/polylineutility)).
+
+In addition to the `map-overlay-complete` event, an event is also propagated through Aurelia's Event Aggregator:
+
+* `googlemap:draw:overlaycomplete` - Emitted when an overlay drawing has been completed
+
 ## Supported Properties
 
 *   latitude: A latitude value for the map
@@ -233,6 +257,7 @@ var myMarkers = [
 ## Supported Events
 
 - map-click: Delegate a handler with `map-click.delegate="callback($event)"`
+- map-overlay-complete: Delegate a handler with `map-overlay-complete.delegate="callback($event)"`
 
 ## Todo
 This element still is missing some features, but they are in development.
