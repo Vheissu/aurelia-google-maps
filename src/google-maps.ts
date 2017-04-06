@@ -579,7 +579,7 @@ export class GoogleMaps {
 
             // Add the new markers to the map
             if (splice.addedCount) {
-                let addedMarkers = this.markers.slice(splice.index, splice.addedCount);
+                let addedMarkers = this.markers.slice(-splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
                     this.renderMarker(addedMarker);
@@ -616,7 +616,7 @@ export class GoogleMaps {
             }
 
             this.map.fitBounds(bounds);
-            let listener = google.maps.event.addListener(this.map, 'idle', function() {
+            let listener = google.maps.event.addListener(this.map, 'idle', () => {
                 if (this.map.getZoom() > this.zoom) 
                     this.map.setZoom(this.zoom);
                 google.maps.event.removeListener(listener);

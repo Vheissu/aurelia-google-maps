@@ -403,7 +403,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                     }
                 }
                 if (splice.addedCount) {
-                    var addedMarkers = this.markers.slice(splice.index, splice.addedCount);
+                    var addedMarkers = this.markers.slice(-splice.addedCount);
                     for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
                         var addedMarker = addedMarkers_1[_c];
                         this.renderMarker(addedMarker);
@@ -432,8 +432,8 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 }
                 _this.map.fitBounds(bounds);
                 var listener = google.maps.event.addListener(_this.map, 'idle', function () {
-                    if (this.map.getZoom() > this.zoom)
-                        this.map.setZoom(this.zoom);
+                    if (_this.map.getZoom() > _this.zoom)
+                        _this.map.setZoom(_this.zoom);
                     google.maps.event.removeListener(listener);
                 });
             });
