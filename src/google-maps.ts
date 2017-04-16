@@ -21,33 +21,16 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
-export interface BaseMarker {
+export interface Marker {
     icon?: string;
     label?: string;
     title?: string;
     draggable?: boolean;
     custom?: any;
     infoWindow?: { pixelOffset?: number, content: string, position?: number, maxWidth?: number }
-}
-
-export interface AddressMarker extends BaseMarker {
-    address: string;
-}
-
-export interface LatLongMarker extends BaseMarker {
     latitude: number | string;
     longitude: number | string;
 }
-
-const isAddressMarker = (marker: Marker): marker is AddressMarker => {
-    return (<AddressMarker>marker).address !== undefined;
-}
-
-const isLatLongMarker = (marker: Marker): marker is LatLongMarker => {
-    return (<LatLongMarker>marker).latitude !== undefined && (<LatLongMarker>marker).longitude !== undefined;
-}
-
-export type Marker = AddressMarker | LatLongMarker;
 
 @noView()
 @customElement('google-map')
@@ -59,7 +42,7 @@ export class GoogleMaps {
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
     private googleMapsApi: GoogleMapsAPI;
-    private validMarkers: LatLongMarker[];
+    private validMarkers: Marker[];
     private _geocoder: any;
 
     @bindable address = null;
@@ -146,7 +129,7 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
-        this.element.addEventListener("zoom_to_bounds", () => {
+        this.element.addEventListener('zoom_to_bounds', () => {
             this.zoomToMarkerBounds(true);
         });
 
@@ -225,7 +208,7 @@ export class GoogleMaps {
      * @param marker
      *
      */
-    renderMarker(marker: LatLongMarker): Promise<void> {
+    renderMarker(marker: Marker): Promise<void> {
         let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
 
         return this._mapPromise.then(() => {
@@ -318,22 +301,6 @@ export class GoogleMaps {
                 this._locationByAddressMarkers.push(createdMarker);
                 this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
             });
-        }).catch(console.info);
-    }
-
-    /**
-     * Geocodes Address and returns the coordinates once the google map has been properly initialized
-     *
-     * @param address string
-     *
-     */
-    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker> {
-        return this.geocode(marker.address).then(firstResults => {
-            return {
-                ... marker,
-                latitude: firstResults.geometry.location.lat(),
-                longitude: firstResults.geometry.location.lng(),
-            };
         }).catch(console.info);
     }
 
@@ -465,33 +432,23 @@ export class GoogleMaps {
             this._renderedMarkers = [];
         }
 
-        // Add the subcription to markers
+        // Add the subscription to markers
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
             .subscribe((splices) => { this.markerCollectionChange(splices); });
 
         // Render all markers again
         this._mapPromise.then(() => {
-            Promise.all<LatLongMarker>(
-                newValue.map(marker => {
-                    if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
-                        return this.addressMarkerToMarker(marker);
-                    } else {
-                        return marker;
-                    }
-                })
-            ).then(validMarkers => {
-                // Addresses that fail to parse return undefined (because the error is caught earlier in the promise chain)
-                this.validMarkers = validMarkers.filter(marker => typeof marker !== 'undefined');
-                return Promise.all(this.validMarkers.map(this.renderMarker.bind(this)));
-            }).then(() => {
-                /**
-                 * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-                 * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-                 */
-                this.taskQueue.queueTask(() => {
-                    this.zoomToMarkerBounds();
-                });
+            // Addresses that fail to parse return undefined (because the error is caught earlier in the promise chain)
+            this.validMarkers = newValue.filter(marker => typeof marker !== 'undefined');
+            return Promise.all(this.validMarkers.map(this.renderMarker.bind(this)));
+        }).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
             });
         });
     }

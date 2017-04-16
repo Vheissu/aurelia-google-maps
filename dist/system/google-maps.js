@@ -1,13 +1,5 @@
 System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure", "./google-maps-api"], function (exports_1, context_1) {
     "use strict";
-    var __assign = (this && this.__assign) || Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
         if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -18,7 +10,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var __moduleName = context_1 && context_1.id;
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, google_maps_api_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, isAddressMarker, isLatLongMarker, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, google_maps_api_1, GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, LOCATIONADDED, logger, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -57,12 +49,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             APILOADED = GM + ":api:loaded";
             LOCATIONADDED = GM + ":marker:added";
             logger = aurelia_logging_1.getLogger('aurelia-google-maps');
-            isAddressMarker = function (marker) {
-                return marker.address !== undefined;
-            };
-            isLatLongMarker = function (marker) {
-                return marker.latitude !== undefined && marker.longitude !== undefined;
-            };
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
                     this.address = null;
@@ -251,11 +237,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         });
                     }).catch(console.info);
                 };
-                GoogleMaps.prototype.addressMarkerToMarker = function (marker) {
-                    return this.geocode(marker.address).then(function (firstResults) {
-                        return __assign({}, marker, { latitude: firstResults.geometry.location.lat(), longitude: firstResults.geometry.location.lng() });
-                    }).catch(console.info);
-                };
                 GoogleMaps.prototype.geocode = function (address) {
                     var _this = this;
                     return this._mapPromise.then(function () {
@@ -363,20 +344,11 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         .collectionObserver(this.markers)
                         .subscribe(function (splices) { _this.markerCollectionChange(splices); });
                     this._mapPromise.then(function () {
-                        Promise.all(newValue.map(function (marker) {
-                            if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
-                                return _this.addressMarkerToMarker(marker);
-                            }
-                            else {
-                                return marker;
-                            }
-                        })).then(function (validMarkers) {
-                            _this.validMarkers = validMarkers.filter(function (marker) { return typeof marker !== 'undefined'; });
-                            return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
-                        }).then(function () {
-                            _this.taskQueue.queueTask(function () {
-                                _this.zoomToMarkerBounds();
-                            });
+                        _this.validMarkers = newValue.filter(function (marker) { return typeof marker !== 'undefined'; });
+                        return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
+                    }).then(function () {
+                        _this.taskQueue.queueTask(function () {
+                            _this.zoomToMarkerBounds();
                         });
                     });
                 };

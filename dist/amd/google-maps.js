@@ -1,11 +1,3 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -28,12 +20,6 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     var APILOADED = GM + ":api:loaded";
     var LOCATIONADDED = GM + ":marker:added";
     var logger = aurelia_logging_1.getLogger('aurelia-google-maps');
-    var isAddressMarker = function (marker) {
-        return marker.address !== undefined;
-    };
-    var isLatLongMarker = function (marker) {
-        return marker.latitude !== undefined && marker.longitude !== undefined;
-    };
     var GoogleMaps = (function () {
         function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
             this.address = null;
@@ -222,11 +208,6 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 });
             }).catch(console.info);
         };
-        GoogleMaps.prototype.addressMarkerToMarker = function (marker) {
-            return this.geocode(marker.address).then(function (firstResults) {
-                return __assign({}, marker, { latitude: firstResults.geometry.location.lat(), longitude: firstResults.geometry.location.lng() });
-            }).catch(console.info);
-        };
         GoogleMaps.prototype.geocode = function (address) {
             var _this = this;
             return this._mapPromise.then(function () {
@@ -334,20 +315,11 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 .collectionObserver(this.markers)
                 .subscribe(function (splices) { _this.markerCollectionChange(splices); });
             this._mapPromise.then(function () {
-                Promise.all(newValue.map(function (marker) {
-                    if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
-                        return _this.addressMarkerToMarker(marker);
-                    }
-                    else {
-                        return marker;
-                    }
-                })).then(function (validMarkers) {
-                    _this.validMarkers = validMarkers.filter(function (marker) { return typeof marker !== 'undefined'; });
-                    return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
-                }).then(function () {
-                    _this.taskQueue.queueTask(function () {
-                        _this.zoomToMarkerBounds();
-                    });
+                _this.validMarkers = newValue.filter(function (marker) { return typeof marker !== 'undefined'; });
+                return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
+            }).then(function () {
+                _this.taskQueue.queueTask(function () {
+                    _this.zoomToMarkerBounds();
                 });
             });
         };

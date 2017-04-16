@@ -7,10 +7,6 @@ describe('configure', () => {
         sut = new Configure();
     });
 
-    it('test passes', () => {
-        expect(true);
-    });
-
     it('default configuration options are set', () => {
         expect(sut._config).toEqual({
             apiScript: 'https://maps.googleapis.com/maps/api/js',
