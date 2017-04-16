@@ -51,7 +51,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             logger = aurelia_logging_1.getLogger('aurelia-google-maps');
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
-                    this.address = null;
                     this.longitude = 0;
                     this.latitude = 0;
                     this.zoom = 8;
@@ -66,7 +65,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this._scriptPromise = null;
                     this._mapPromise = null;
                     this._mapResolve = null;
-                    this._locationByAddressMarkers = [];
                     this.element = element;
                     this.taskQueue = taskQueue;
                     this.config = config;
@@ -104,13 +102,12 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     });
                 }
                 GoogleMaps.prototype.clearMarkers = function () {
-                    if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+                    if (!this._renderedMarkers) {
                         return;
                     }
-                    this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function (marker) {
+                    this._renderedMarkers.forEach(function (marker) {
                         marker.setMap(null);
                     });
-                    this._locationByAddressMarkers = [];
                     this._renderedMarkers = [];
                 };
                 GoogleMaps.prototype.attached = function () {
@@ -118,7 +115,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this.element.addEventListener('dragstart', function (evt) {
                         evt.preventDefault();
                     });
-                    this.element.addEventListener("zoom_to_bounds", function () {
+                    this.element.addEventListener('zoom_to_bounds', function () {
                         _this.zoomToMarkerBounds(true);
                     });
                     this._scriptPromise.then(function () {
@@ -170,6 +167,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 GoogleMaps.prototype.renderMarker = function (marker) {
                     var _this = this;
                     var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                    console.log(marker, markerLatLng.lat(), markerLatLng.lng());
                     return this._mapPromise.then(function () {
                         _this.createMarker({
                             map: _this.map,
@@ -224,42 +222,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         });
                     });
                 };
-                GoogleMaps.prototype.geocodeAddress = function (address) {
-                    var _this = this;
-                    this.geocode(address).then(function (firstResult) {
-                        _this.setCenter(firstResult.geometry.location);
-                        _this.createMarker({
-                            map: _this.map,
-                            position: firstResult.geometry.location
-                        }).then(function (createdMarker) {
-                            _this._locationByAddressMarkers.push(createdMarker);
-                            _this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
-                        });
-                    }).catch(console.info);
-                };
-                GoogleMaps.prototype.geocode = function (address) {
-                    var _this = this;
-                    return this._mapPromise.then(function () {
-                        return new Promise(function (resolve, reject) {
-                            _this.geocoder.geocode({ 'address': address }, function (results, status) {
-                                if (status !== window.google.maps.GeocoderStatus.OK) {
-                                    reject(new Error("Failed to geocode address '" + address + "' with status: " + status));
-                                }
-                                resolve(results[0]);
-                            });
-                        });
-                    });
-                };
-                Object.defineProperty(GoogleMaps.prototype, "geocoder", {
-                    get: function () {
-                        if (!this._geocoder) {
-                            this._geocoder = new window.google.maps.Geocoder;
-                        }
-                        return this._geocoder;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
                 GoogleMaps.prototype.getCurrentPosition = function () {
                     if (navigator.geolocation) {
                         return navigator.geolocation.getCurrentPosition(function (position) { return Promise.resolve(position); }, function (evt) { return Promise.reject(evt); });
@@ -295,14 +257,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this._mapPromise.then(function () {
                         var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
                         _this.setCenter(latLng);
-                    });
-                };
-                GoogleMaps.prototype.addressChanged = function (newValue) {
-                    var _this = this;
-                    this._mapPromise.then(function () {
-                        _this.taskQueue.queueMicroTask(function () {
-                            _this.geocodeAddress(newValue);
-                        });
                     });
                 };
                 GoogleMaps.prototype.latitudeChanged = function () {
@@ -344,8 +298,10 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         .collectionObserver(this.markers)
                         .subscribe(function (splices) { _this.markerCollectionChange(splices); });
                     this._mapPromise.then(function () {
-                        _this.validMarkers = newValue.filter(function (marker) { return typeof marker !== 'undefined'; });
-                        return Promise.all(_this.validMarkers.map(_this.renderMarker.bind(_this)));
+                        var markerPromises = newValue.map(function (marker) {
+                            return _this.renderMarker(marker);
+                        });
+                        return Promise.all(markerPromises);
                     }).then(function () {
                         _this.taskQueue.queueTask(function () {
                             _this.zoomToMarkerBounds();
@@ -357,6 +313,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     if (!splices.length) {
                         return;
                     }
+                    var renderPromises = [];
                     for (var _i = 0, splices_1 = splices; _i < splices_1.length; _i++) {
                         var splice = splices_1[_i];
                         if (splice.removed.length) {
@@ -379,12 +336,14 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             var addedMarkers = this.markers.slice(-splice.addedCount);
                             for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
                                 var addedMarker = addedMarkers_1[_c];
-                                this.renderMarker(addedMarker);
+                                renderPromises.push(this.renderMarker(addedMarker));
                             }
                         }
                     }
-                    this.taskQueue.queueTask(function () {
-                        _this.zoomToMarkerBounds();
+                    Promise.all(renderPromises).then(function () {
+                        _this.taskQueue.queueTask(function () {
+                            _this.zoomToMarkerBounds();
+                        });
                     });
                 };
                 GoogleMaps.prototype.zoomToMarkerBounds = function (force) {
@@ -393,14 +352,14 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     if (typeof force === 'undefined') {
                         force = false;
                     }
-                    if (!force && (!this.validMarkers.length || !this.autoUpdateBounds)) {
+                    if (!force && (!this._renderedMarkers || !this.autoUpdateBounds)) {
                         return;
                     }
                     this._mapPromise.then(function () {
                         var bounds = new window.google.maps.LatLngBounds();
-                        for (var _i = 0, _a = _this.validMarkers; _i < _a.length; _i++) {
+                        for (var _i = 0, _a = _this._renderedMarkers; _i < _a.length; _i++) {
                             var marker = _a[_i];
-                            var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
+                            var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.position.lat()), parseFloat(marker.position.lng()));
                             bounds.extend(markerLatLng);
                         }
                         _this.map.fitBounds(bounds);
@@ -437,10 +396,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 };
                 return GoogleMaps;
             }());
-            __decorate([
-                aurelia_templating_1.bindable,
-                __metadata("design:type", Object)
-            ], GoogleMaps.prototype, "address", void 0);
             __decorate([
                 aurelia_templating_1.bindable,
                 __metadata("design:type", Number)

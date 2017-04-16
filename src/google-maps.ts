@@ -42,10 +42,8 @@ export class GoogleMaps {
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
     private googleMapsApi: GoogleMapsAPI;
-    private validMarkers: Marker[];
     private _geocoder: any;
 
-    @bindable address = null;
     @bindable longitude: number = 0;
     @bindable latitude: number = 0;
     @bindable zoom: number = 8;
@@ -57,12 +55,11 @@ export class GoogleMaps {
     @bindable mapLoaded: any;
 
     public map: any = null;
-    public _renderedMarkers: any = [];
+    public _renderedMarkers: any[] = [];
     public _markersSubscription: any = null;
     public _scriptPromise: Promise<any> | any = null;
     public _mapPromise: Promise<any> | any = null;
     public _mapResolve: Promise<any> | any = null;
-    public _locationByAddressMarkers: any = [];
 
     constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI) {
         this.element = element;
@@ -112,15 +109,14 @@ export class GoogleMaps {
     }
 
     clearMarkers() {
-        if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+        if (!this._renderedMarkers) {
             return;
         }
 
-        this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function(marker: any) {
+        this._renderedMarkers.forEach(function(marker: any) {
             marker.setMap(null);
         });
 
-        this._locationByAddressMarkers = [];
         this._renderedMarkers = [];
     }
 
@@ -284,53 +280,6 @@ export class GoogleMaps {
     }
 
     /**
-     * Geocodes an address, once the Google Map script
-     * has been properly loaded and promise instantiated.
-     *
-     * @param address string
-     * @param geocoder any
-     *
-     */
-    geocodeAddress(address: string) {
-        this.geocode(address).then(firstResult => {
-            this.setCenter(firstResult.geometry.location);
-            this.createMarker({
-                map: this.map,
-                position: firstResult.geometry.location
-            }).then((createdMarker: any) => {
-                this._locationByAddressMarkers.push(createdMarker);
-                this.eventAggregator.publish(LOCATIONADDED, Object.assign(createdMarker, { placeId: firstResult.place_id }));
-            });
-        }).catch(console.info);
-    }
-
-    /**
-     * Geocodes Address and returns the firstresults object after google maps has initialized
-     *
-     * @param address string
-     *
-     */
-    private geocode(address: string): Promise<any> {
-        return this._mapPromise.then(() => {
-            return new Promise((resolve, reject) => {
-                this.geocoder.geocode({ 'address': address }, (results: any, status: string) => {
-                    if (status !== (<any>window).google.maps.GeocoderStatus.OK) {
-                        reject(new Error(`Failed to geocode address '${address}' with status: ${status}`));
-                    }
-                    resolve(results[0]);
-                });
-            });
-        });
-    }
-
-    private get geocoder() {
-        if (!this._geocoder) {
-            this._geocoder = new (<any>window).google.maps.Geocoder;
-        }
-        return this._geocoder;
-    }
-
-    /**
      * Get Current Position
      *
      * Get the users current coordinate info from their browser
@@ -375,14 +324,6 @@ export class GoogleMaps {
         this._mapPromise.then(() => {
             let latLng = new (<any>window).google.maps.LatLng(parseFloat((<any>this.latitude)), parseFloat((<any>this.longitude)));
             this.setCenter(latLng);
-        });
-    }
-
-    addressChanged(newValue: any) {
-        this._mapPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                this.geocodeAddress(newValue);
-            });
         });
     }
 
@@ -439,9 +380,12 @@ export class GoogleMaps {
 
         // Render all markers again
         this._mapPromise.then(() => {
-            // Addresses that fail to parse return undefined (because the error is caught earlier in the promise chain)
-            this.validMarkers = newValue.filter(marker => typeof marker !== 'undefined');
-            return Promise.all(this.validMarkers.map(this.renderMarker.bind(this)));
+            let markerPromises = newValue.map(marker => {
+                return this.renderMarker(marker);
+            });
+
+            // Wait until all of the renderMarker calls have been resolved
+            return Promise.all(markerPromises);
         }).then(() => {
             /**
              * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
@@ -464,6 +408,8 @@ export class GoogleMaps {
             // Collection changed but the splices didn't
             return;
         }
+
+        let renderPromises = [];
 
         for (let splice of splices) {
             if (splice.removed.length) {
@@ -494,17 +440,22 @@ export class GoogleMaps {
                 let addedMarkers = this.markers.slice(-splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
-                    this.renderMarker(addedMarker);
+                    renderPromises.push(this.renderMarker(addedMarker));
                 }
             }
         }
 
         /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+         * Wait for all of the promises to resolve for rendering markers
          */
-        this.taskQueue.queueTask(() => {
-            this.zoomToMarkerBounds();
+        Promise.all(renderPromises).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
+            });
         });
     }
 
@@ -514,16 +465,17 @@ export class GoogleMaps {
         }
 
         // Unless forced, if there's no markers, or not auto update bounds
-        if (!force && (!this.validMarkers.length || !this.autoUpdateBounds)) {
+        if (!force && (!this._renderedMarkers || !this.autoUpdateBounds)) {
             return;
         }
 
         this._mapPromise.then(() => {
             let bounds = new (<any>window).google.maps.LatLngBounds();
 
-            for (let marker of this.validMarkers) {
+            for (let marker of this._renderedMarkers) {
                 // extend the bounds to include each marker's position
-                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+
+                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.position.lat()), parseFloat(<string>marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
 
