@@ -6,6 +6,7 @@ import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 
 import { Configure } from './configure';
+import {GoogleMapsAPI} from './google-maps-api'
 
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
@@ -42,17 +43,22 @@ const isAddressMarker = (marker: Marker): marker is AddressMarker => {
     return (<AddressMarker>marker).address !== undefined;
 }
 
+const isLatLongMarker = (marker: Marker): marker is LatLongMarker => {
+    return (<LatLongMarker>marker).latitude !== undefined && (<LatLongMarker>marker).longitude !== undefined;
+}
+
 export type Marker = AddressMarker | LatLongMarker;
 
 @noView()
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator)
+@inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI)
 export class GoogleMaps {
     private element: Element;
     private taskQueue: TaskQueue;
     private config: any;
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
+    private googleMapsApi: GoogleMapsAPI;
     private validMarkers: LatLongMarker[];
     private _geocoder: any;
 
@@ -75,12 +81,13 @@ export class GoogleMaps {
     public _mapResolve: Promise<any> | any = null;
     public _locationByAddressMarkers: any = [];
 
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator) {
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
         this.bindingEngine = bindingEngine;
         this.eventAggregator = eventAggregator;
+        this.googleMapsApi = googleMapsApi;
 
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
@@ -90,7 +97,7 @@ export class GoogleMaps {
             logger.error('No API key has been specified.');
         }
 
-        this.loadApiScript();
+        this._scriptPromise = this.googleMapsApi.getMapsInstance();
 
         let self: GoogleMaps = this;
         this._mapPromise = this._scriptPromise.then(() => {
@@ -139,7 +146,7 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
-        this.element.addEventListener('zoom_to_bounds', () => {
+        this.element.addEventListener("zoom_to_bounds", () => {
             this.zoomToMarkerBounds(true);
         });
 
@@ -322,7 +329,7 @@ export class GoogleMaps {
      */
     addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker> {
         return this.geocode(marker.address).then(firstResults => {
-            return { 
+            return {
                 ... marker,
                 latitude: firstResults.geometry.location.lat(),
                 longitude: firstResults.geometry.location.lng(),
@@ -368,58 +375,6 @@ export class GoogleMaps {
         }
 
         return Promise.reject('Browser Geolocation not supported or found.');
-    }
-
-    /**
-     * Load API Script
-     *
-     * Loads the Google Maps Javascript and then resolves a promise
-     * if loaded. If Google Maps is already loaded, we just return
-     * an immediately resolved promise.
-     *
-     * @return Promise
-     *
-     */
-    loadApiScript() {
-        if (this._scriptPromise) {
-            return this._scriptPromise;
-        }
-
-        if ((<any>window).google === undefined || (<any>window).google.maps === undefined) {
-            // google has not been defined yet
-            let script = document.createElement('script');
-            let apiScript = this.config.get('apiScript');
-            let apiKey = this.config.get('apiKey') || '';
-            let apiLibraries = this.config.get('apiLibraries');
-
-            script.type = 'text/javascript';
-            script.async = true;
-            script.defer = true;
-            script.src = `${apiScript}?key=${apiKey}&libraries=${apiLibraries}&callback=myGoogleMapsCallback`;
-            document.body.appendChild(script);
-
-            this._scriptPromise = new Promise((resolve, reject) => {
-                (<any>window).myGoogleMapsCallback = () => {
-                    this.sendApiLoadedEvent();
-                    resolve();
-                };
-
-                script.onerror = error => {
-                    reject(error);
-                };
-            });
-
-            return this._scriptPromise;
-        }
-
-        if ((<any>window).google && (<any>window).google.maps) {
-            // google has been defined already, so return an immediately resolved Promise that has scope
-            this._scriptPromise = new Promise(resolve => { resolve(); });
-
-            return this._scriptPromise;
-        }
-
-        return false;
     }
 
     setOptions(options: any) {
@@ -519,7 +474,7 @@ export class GoogleMaps {
         this._mapPromise.then(() => {
             Promise.all<LatLongMarker>(
                 newValue.map(marker => {
-                    if (isAddressMarker(marker)) {
+                    if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                         return this.addressMarkerToMarker(marker);
                     } else {
                         return marker;
@@ -617,8 +572,10 @@ export class GoogleMaps {
 
             this.map.fitBounds(bounds);
             let listener = google.maps.event.addListener(this.map, 'idle', () => {
-                if (this.map.getZoom() > this.zoom) 
+                if (this.map.getZoom() > this.zoom) {
                     this.map.setZoom(this.zoom);
+                }
+
                 google.maps.event.removeListener(listener);
             });
         });

@@ -15,7 +15,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1) {
+define(["require", "exports", "aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-event-aggregator", "aurelia-logging", "./configure", "./google-maps-api"], function (require, exports, aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, aurelia_logging_1, configure_1, google_maps_api_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var GM = 'googlemap';
@@ -31,8 +31,11 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     var isAddressMarker = function (marker) {
         return marker.address !== undefined;
     };
+    var isLatLongMarker = function (marker) {
+        return marker.latitude !== undefined && marker.longitude !== undefined;
+    };
     var GoogleMaps = (function () {
-        function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
+        function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
             this.address = null;
             this.longitude = 0;
             this.latitude = 0;
@@ -54,13 +57,14 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             this.config = config;
             this.bindingEngine = bindingEngine;
             this.eventAggregator = eventAggregator;
+            this.googleMapsApi = googleMapsApi;
             if (!config.get('apiScript')) {
                 logger.error('No API script is defined.');
             }
             if (!config.get('apiKey') && config.get('apiKey') !== false) {
                 logger.error('No API key has been specified.');
             }
-            this.loadApiScript();
+            this._scriptPromise = this.googleMapsApi.getMapsInstance();
             var self = this;
             this._mapPromise = this._scriptPromise.then(function () {
                 return new Promise(function (resolve) {
@@ -99,7 +103,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             this.element.addEventListener('dragstart', function (evt) {
                 evt.preventDefault();
             });
-            this.element.addEventListener('zoom_to_bounds', function () {
+            this.element.addEventListener("zoom_to_bounds", function () {
                 _this.zoomToMarkerBounds(true);
             });
             this._scriptPromise.then(function () {
@@ -252,38 +256,6 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             }
             return Promise.reject('Browser Geolocation not supported or found.');
         };
-        GoogleMaps.prototype.loadApiScript = function () {
-            var _this = this;
-            if (this._scriptPromise) {
-                return this._scriptPromise;
-            }
-            if (window.google === undefined || window.google.maps === undefined) {
-                var script_1 = document.createElement('script');
-                var apiScript = this.config.get('apiScript');
-                var apiKey = this.config.get('apiKey') || '';
-                var apiLibraries = this.config.get('apiLibraries');
-                script_1.type = 'text/javascript';
-                script_1.async = true;
-                script_1.defer = true;
-                script_1.src = apiScript + "?key=" + apiKey + "&libraries=" + apiLibraries + "&callback=myGoogleMapsCallback";
-                document.body.appendChild(script_1);
-                this._scriptPromise = new Promise(function (resolve, reject) {
-                    window.myGoogleMapsCallback = function () {
-                        _this.sendApiLoadedEvent();
-                        resolve();
-                    };
-                    script_1.onerror = function (error) {
-                        reject(error);
-                    };
-                });
-                return this._scriptPromise;
-            }
-            if (window.google && window.google.maps) {
-                this._scriptPromise = new Promise(function (resolve) { resolve(); });
-                return this._scriptPromise;
-            }
-            return false;
-        };
         GoogleMaps.prototype.setOptions = function (options) {
             if (!this.map) {
                 return;
@@ -363,7 +335,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 .subscribe(function (splices) { _this.markerCollectionChange(splices); });
             this._mapPromise.then(function () {
                 Promise.all(newValue.map(function (marker) {
-                    if (isAddressMarker(marker)) {
+                    if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                         return _this.addressMarkerToMarker(marker);
                     }
                     else {
@@ -432,8 +404,9 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 }
                 _this.map.fitBounds(bounds);
                 var listener = google.maps.event.addListener(_this.map, 'idle', function () {
-                    if (_this.map.getZoom() > _this.zoom)
+                    if (_this.map.getZoom() > _this.zoom) {
                         _this.map.setZoom(_this.zoom);
+                    }
                     google.maps.event.removeListener(listener);
                 });
             });
@@ -506,8 +479,8 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     GoogleMaps = __decorate([
         aurelia_templating_1.noView(),
         aurelia_templating_1.customElement('google-map'),
-        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator),
-        __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator])
+        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator, google_maps_api_1.GoogleMapsAPI),
+        __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator, google_maps_api_1.GoogleMapsAPI])
     ], GoogleMaps);
     exports.GoogleMaps = GoogleMaps;
 });

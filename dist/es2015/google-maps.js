@@ -22,6 +22,7 @@ import { BindingEngine } from 'aurelia-binding';
 import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
+import { GoogleMapsAPI } from './google-maps-api';
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
 var CLICK = GM + ":click";
@@ -35,8 +36,11 @@ var logger = getLogger('aurelia-google-maps');
 var isAddressMarker = function (marker) {
     return marker.address !== undefined;
 };
+var isLatLongMarker = function (marker) {
+    return marker.latitude !== undefined && marker.longitude !== undefined;
+};
 var GoogleMaps = (function () {
-    function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
+    function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
         this.address = null;
         this.longitude = 0;
         this.latitude = 0;
@@ -58,13 +62,14 @@ var GoogleMaps = (function () {
         this.config = config;
         this.bindingEngine = bindingEngine;
         this.eventAggregator = eventAggregator;
+        this.googleMapsApi = googleMapsApi;
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
         }
         if (!config.get('apiKey') && config.get('apiKey') !== false) {
             logger.error('No API key has been specified.');
         }
-        this.loadApiScript();
+        this._scriptPromise = this.googleMapsApi.getMapsInstance();
         var self = this;
         this._mapPromise = this._scriptPromise.then(function () {
             return new Promise(function (resolve) {
@@ -103,7 +108,7 @@ var GoogleMaps = (function () {
         this.element.addEventListener('dragstart', function (evt) {
             evt.preventDefault();
         });
-        this.element.addEventListener('zoom_to_bounds', function () {
+        this.element.addEventListener("zoom_to_bounds", function () {
             _this.zoomToMarkerBounds(true);
         });
         this._scriptPromise.then(function () {
@@ -256,38 +261,6 @@ var GoogleMaps = (function () {
         }
         return Promise.reject('Browser Geolocation not supported or found.');
     };
-    GoogleMaps.prototype.loadApiScript = function () {
-        var _this = this;
-        if (this._scriptPromise) {
-            return this._scriptPromise;
-        }
-        if (window.google === undefined || window.google.maps === undefined) {
-            var script_1 = document.createElement('script');
-            var apiScript = this.config.get('apiScript');
-            var apiKey = this.config.get('apiKey') || '';
-            var apiLibraries = this.config.get('apiLibraries');
-            script_1.type = 'text/javascript';
-            script_1.async = true;
-            script_1.defer = true;
-            script_1.src = apiScript + "?key=" + apiKey + "&libraries=" + apiLibraries + "&callback=myGoogleMapsCallback";
-            document.body.appendChild(script_1);
-            this._scriptPromise = new Promise(function (resolve, reject) {
-                window.myGoogleMapsCallback = function () {
-                    _this.sendApiLoadedEvent();
-                    resolve();
-                };
-                script_1.onerror = function (error) {
-                    reject(error);
-                };
-            });
-            return this._scriptPromise;
-        }
-        if (window.google && window.google.maps) {
-            this._scriptPromise = new Promise(function (resolve) { resolve(); });
-            return this._scriptPromise;
-        }
-        return false;
-    };
     GoogleMaps.prototype.setOptions = function (options) {
         if (!this.map) {
             return;
@@ -367,7 +340,7 @@ var GoogleMaps = (function () {
             .subscribe(function (splices) { _this.markerCollectionChange(splices); });
         this._mapPromise.then(function () {
             Promise.all(newValue.map(function (marker) {
-                if (isAddressMarker(marker)) {
+                if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                     return _this.addressMarkerToMarker(marker);
                 }
                 else {
@@ -436,8 +409,9 @@ var GoogleMaps = (function () {
             }
             _this.map.fitBounds(bounds);
             var listener = google.maps.event.addListener(_this.map, 'idle', function () {
-                if (_this.map.getZoom() > _this.zoom)
+                if (_this.map.getZoom() > _this.zoom) {
                     _this.map.setZoom(_this.zoom);
+                }
                 google.maps.event.removeListener(listener);
             });
         });
@@ -510,8 +484,8 @@ __decorate([
 GoogleMaps = __decorate([
     noView(),
     customElement('google-map'),
-    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator),
-    __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, EventAggregator])
+    inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI),
+    __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI])
 ], GoogleMaps);
 export { GoogleMaps };
 //# sourceMappingURL=google-maps.js.map

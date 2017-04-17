@@ -1,8 +1,9 @@
-define(["require", "exports", "aurelia-pal", "./configure", "./google-maps"], function (require, exports, aurelia_pal_1, configure_1, google_maps_1) {
+define(["require", "exports", "aurelia-pal", "./configure", "./google-maps", "./google-maps-api"], function (require, exports, aurelia_pal_1, configure_1, google_maps_1, google_maps_api_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Configure = configure_1.Configure;
     exports.GoogleMaps = google_maps_1.GoogleMaps;
+    exports.GoogleMapsAPI = google_maps_api_1.GoogleMapsAPI;
     function configure(aurelia, configCallback) {
         var instance = aurelia.container.get(configure_1.Configure);
         aurelia_pal_1.DOM.injectStyles("google-map { display: block; height: 350px; }");
