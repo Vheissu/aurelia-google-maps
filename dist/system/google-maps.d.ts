@@ -57,7 +57,7 @@ export declare class GoogleMaps {
     sendApiLoadedEvent(): void;
     renderMarker(marker: LatLongMarker): Promise<void>;
     geocodeAddress(address: string): void;
-    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker>;
+    addressMarkerToMarker(marker: AddressMarker): Promise<void | BaseMarker>;
     private geocode(address);
     private readonly geocoder;
     getCurrentPosition(): any;

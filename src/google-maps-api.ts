@@ -23,7 +23,7 @@ export class GoogleMapsAPI {
             script.type = 'text/javascript';
             script.async = true;
             script.defer = true;
-            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&libraries=${this.config.get('apiLibraries')}&callback=aureliaGoogleMapsCallback`;
+            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&libraries=${this.config.get('apiLibraries')}&language=${this.config.get('language')}&region=${this.config.get('region')}&callback=aureliaGoogleMapsCallback`;
             document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {

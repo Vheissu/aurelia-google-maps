@@ -324,10 +324,10 @@ export class GoogleMaps {
     /**
      * Geocodes Address and returns the coordinates once the google map has been properly initialized
      *
-     * @param address string
+     * @param marker string
      *
      */
-    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker> {
+    addressMarkerToMarker(marker: AddressMarker): Promise<void | BaseMarker> {
         return this.geocode(marker.address).then(firstResults => {
             return {
                 ... marker,
