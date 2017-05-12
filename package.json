@@ -1,7 +1,7 @@
 {
-  "name": "aurelia-google-maps",
+  "name": "casion/aurelia-google-maps",
   "version": "1.0.21",
-  "description": "A plugin for working with Google Maps within Aurelia",
+  "description": "A plugin for working with Google Maps within Aurelia (forked from aurelia-google-maps)",
   "keywords": [
     "aurelia",
     "plugin",
