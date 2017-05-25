@@ -221,7 +221,12 @@ var myMarkers = [
 *   longitude: A longitude value for the map
 *   address: Provide an address that gets geocoded into latitude and longitude coordinates
 *   zoom: A zoom value, default is 8
-*   disableDefaultUI: A boolean of true or false. Default is false.
+*   disableDefaultUi: A boolean of true or false. Default is false. (use disable-default-ui="true")
+##### Example:
+``` html
+<google-map disable-default-ui="true"></google-map>
+```
+
 *   markers: An array of objects with key/value pairs as described above.
 *   options: A Google Maps options object specified [here](https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
 

@@ -40,7 +40,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
             this.longitude = 0;
             this.latitude = 0;
             this.zoom = 8;
-            this.disableDefaultUI = false;
+            this.disableDefaultUi = false;
             this.markers = [];
             this.autoUpdateBounds = false;
             this.mapType = 'ROADMAP';
@@ -112,7 +112,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 var options = Object.assign({}, _this.options, _this.config.get('options'), {
                     center: latLng,
                     zoom: parseInt(_this.zoom, 10),
-                    disableDefaultUI: _this.disableDefaultUI,
+                    disableDefaultUI: _this.disableDefaultUi,
                     mapTypeId: mapTypeId
                 });
                 _this.map = new window.google.maps.Map(_this.element, options);
@@ -455,7 +455,7 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
     __decorate([
         aurelia_templating_1.bindable,
         __metadata("design:type", Boolean)
-    ], GoogleMaps.prototype, "disableDefaultUI", void 0);
+    ], GoogleMaps.prototype, "disableDefaultUi", void 0);
     __decorate([
         aurelia_templating_1.bindable,
         __metadata("design:type", Object)
