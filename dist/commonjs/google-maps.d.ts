@@ -37,7 +37,7 @@ export declare class GoogleMaps {
     longitude: number;
     latitude: number;
     zoom: number;
-    disableDefaultUI: boolean;
+    disableDefaultUi: boolean;
     markers: any;
     autoUpdateBounds: boolean;
     mapType: string;
