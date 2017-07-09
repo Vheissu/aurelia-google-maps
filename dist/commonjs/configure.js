@@ -6,6 +6,8 @@ var Configure = (function () {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
             apiLibraries: '',
+            region: '',
+            language: '',
             options: {}
         };
     }

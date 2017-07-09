@@ -24,7 +24,7 @@ define(["require", "exports", "aurelia-dependency-injection", "./configure"], fu
                 script_1.type = 'text/javascript';
                 script_1.async = true;
                 script_1.defer = true;
-                script_1.src = this.config.get('apiScript') + "?key=" + this.config.get('apiKey') + "&libraries=" + this.config.get('apiLibraries') + "&callback=aureliaGoogleMapsCallback";
+                script_1.src = this.config.get('apiScript') + "?key=" + this.config.get('apiKey') + "&libraries=" + this.config.get('apiLibraries') + "&language=" + this.config.get('language') + "&region=" + this.config.get('region') + "&callback=aureliaGoogleMapsCallback";
                 document.body.appendChild(script_1);
                 this._scriptPromise = new Promise(function (resolve, reject) {
                     window.aureliaGoogleMapsCallback = function () {

@@ -66,7 +66,7 @@ export class GoogleMaps {
     @bindable longitude: number = 0;
     @bindable latitude: number = 0;
     @bindable zoom: number = 8;
-    @bindable disableDefaultUI: boolean = false;
+    @bindable disableDefaultUi: boolean = false;
     @bindable markers: any = [];
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
@@ -157,9 +157,10 @@ export class GoogleMaps {
             let options: any = Object.assign({}, this.options, this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt((<any>this.zoom), 10),
-                disableDefaultUI: this.disableDefaultUI,
+                disableDefaultUI: this.disableDefaultUi,
                 mapTypeId: mapTypeId
             });
+
 
             this.map = new (<any>window).google.maps.Map(this.element, options);
             if (this.mapLoaded) {
@@ -324,10 +325,10 @@ export class GoogleMaps {
     /**
      * Geocodes Address and returns the coordinates once the google map has been properly initialized
      *
-     * @param address string
+     * @param marker string
      *
      */
-    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker> {
+    addressMarkerToMarker(marker: AddressMarker): Promise<void | BaseMarker> {
         return this.geocode(marker.address).then(firstResults => {
             return {
                 ... marker,

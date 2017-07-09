@@ -37,7 +37,7 @@ export declare class GoogleMaps {
     longitude: number;
     latitude: number;
     zoom: number;
-    disableDefaultUI: boolean;
+    disableDefaultUi: boolean;
     markers: any;
     autoUpdateBounds: boolean;
     mapType: string;
@@ -57,7 +57,7 @@ export declare class GoogleMaps {
     sendApiLoadedEvent(): void;
     renderMarker(marker: LatLongMarker): Promise<void>;
     geocodeAddress(address: string): void;
-    addressMarkerToMarker(marker: AddressMarker): Promise<LatLongMarker>;
+    addressMarkerToMarker(marker: AddressMarker): Promise<void | BaseMarker>;
     private geocode(address);
     private readonly geocoder;
     getCurrentPosition(): any;

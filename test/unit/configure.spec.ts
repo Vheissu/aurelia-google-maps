@@ -15,6 +15,8 @@ describe('configure', () => {
         expect(sut._config).toEqual({
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
+            region:'',
+            language:'',
             apiLibraries: '',
             options: {}
         });

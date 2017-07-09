@@ -41,7 +41,9 @@ export function configure(aurelia) {
             config.options({
                 apiKey: 'myapiKey', // use `false` to disable the key
                 apiLibraries: 'drawing,geometry', //get optional libraries like drawing, geometry, ... - comma seperated list
-                options: { panControl: true, panControlOptions: { position: 9 } } //add google.maps.MapOptions on construct (https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
+                options: { panControl: true, panControlOptions: { position: 9 } }, //add google.maps.MapOptions on construct (https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
+                language:'' | 'en', // default: uses browser configuration (recommended). Set this parameter to set another language (https://developers.google.com/maps/documentation/javascript/localization)
+                region: '' | 'US' // default: it applies a default bias for application behavior towards the United States. (https://developers.google.com/maps/documentation/javascript/localization)
             });
         })
 }
@@ -219,7 +221,12 @@ var myMarkers = [
 *   longitude: A longitude value for the map
 *   address: Provide an address that gets geocoded into latitude and longitude coordinates
 *   zoom: A zoom value, default is 8
-*   disableDefaultUI: A boolean of true or false. Default is false.
+*   disableDefaultUi: A boolean of true or false. Default is false. (use disable-default-ui="true")
+##### Example:
+``` html
+<google-map disable-default-ui="true"></google-map>
+```
+
 *   markers: An array of objects with key/value pairs as described above.
 *   options: A Google Maps options object specified [here](https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
 
