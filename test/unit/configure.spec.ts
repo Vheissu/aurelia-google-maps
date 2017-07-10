@@ -11,8 +11,8 @@ describe('configure', () => {
         expect(sut._config).toEqual({
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
-            region:'',
-            language:'',
+            region: '',
+            language: '',
             apiLibraries: '',
             options: {}
         });
@@ -20,8 +20,8 @@ describe('configure', () => {
 
     it('set a new option using options', () => {
         expect(sut.get('test-option')).toBeUndefined();
-        
-        sut.options({'test-option': 'test value123'});
+
+        sut.options({ 'test-option': 'test value123' });
 
         expect(sut.get('test-option')).toEqual('test value123');
     });
@@ -29,8 +29,8 @@ describe('configure', () => {
 
     it('override default option using options', () => {
         expect(sut.get('apiScript')).toEqual('https://maps.googleapis.com/maps/api/js');
-        
-        sut.options({'apiScript': 'http://facebook.com/123'});
+
+        sut.options({ 'apiScript': 'http://facebook.com/123' });
 
         expect(sut.get('apiScript')).toEqual('http://facebook.com/123');
     });

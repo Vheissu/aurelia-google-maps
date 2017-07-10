@@ -1,14 +1,14 @@
-import {configure} from '../../src/index';
+import { configure } from '../../src/index';
 import { Configure } from '../../src/configure';
-import {FrameworkConfiguration} from 'aurelia-framework';
+import { FrameworkConfiguration } from 'aurelia-framework';
 
 let mockFrameWorkConfiguration = {
     container: {
-        get: function(instance: string) {
+        get: function (instance: string) {
             return instance;
         }
     },
-    globalResources: function(resources: any): FrameworkConfiguration {
+    globalResources: function (resources: any): FrameworkConfiguration {
         return resources;
     }
 } as FrameworkConfiguration;
@@ -24,7 +24,7 @@ describe('index', () => {
     });
 
     it('configure options callback', () => {
-        let configureCallback = function(instance: any) {
+        let configureCallback = function (instance: any) {
             return instance;
         }
 
