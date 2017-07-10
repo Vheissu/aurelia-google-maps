@@ -53,12 +53,12 @@ System.register(["aurelia-dependency-injection", "./configure"], function (expor
                     }
                     return false;
                 };
+                GoogleMapsAPI = __decorate([
+                    aurelia_dependency_injection_1.inject(configure_1.Configure),
+                    __metadata("design:paramtypes", [Object])
+                ], GoogleMapsAPI);
                 return GoogleMapsAPI;
             }());
-            GoogleMapsAPI = __decorate([
-                aurelia_dependency_injection_1.inject(configure_1.Configure),
-                __metadata("design:paramtypes", [Object])
-            ], GoogleMapsAPI);
             exports_1("GoogleMapsAPI", GoogleMapsAPI);
         }
     };

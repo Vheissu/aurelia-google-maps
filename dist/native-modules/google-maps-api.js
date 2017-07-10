@@ -41,11 +41,11 @@ var GoogleMapsAPI = (function () {
         }
         return false;
     };
+    GoogleMapsAPI = __decorate([
+        inject(Configure),
+        __metadata("design:paramtypes", [Object])
+    ], GoogleMapsAPI);
     return GoogleMapsAPI;
 }());
-GoogleMapsAPI = __decorate([
-    inject(Configure),
-    __metadata("design:paramtypes", [Object])
-], GoogleMapsAPI);
 export { GoogleMapsAPI };
 //# sourceMappingURL=google-maps-api.js.map

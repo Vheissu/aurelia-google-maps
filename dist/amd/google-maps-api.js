@@ -42,12 +42,12 @@ define(["require", "exports", "aurelia-dependency-injection", "./configure"], fu
             }
             return false;
         };
+        GoogleMapsAPI = __decorate([
+            aurelia_dependency_injection_1.inject(configure_1.Configure),
+            __metadata("design:paramtypes", [Object])
+        ], GoogleMapsAPI);
         return GoogleMapsAPI;
     }());
-    GoogleMapsAPI = __decorate([
-        aurelia_dependency_injection_1.inject(configure_1.Configure),
-        __metadata("design:paramtypes", [Object])
-    ], GoogleMapsAPI);
     exports.GoogleMapsAPI = GoogleMapsAPI;
 });
 //# sourceMappingURL=google-maps-api.js.map
