@@ -30,8 +30,8 @@ export class GoogleMapsAPI {
                 (<any>window).aureliaGoogleMapsCallback = () => {
                     resolve();
                 };
-
                 script.onerror = error => {
+
                     reject(error);
                 };
             });
