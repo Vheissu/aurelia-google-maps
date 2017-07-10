@@ -6,7 +6,7 @@ import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 
 import { Configure } from './configure';
-import {GoogleMapsAPI} from './google-maps-api'
+import { GoogleMapsAPI } from './google-maps-api'
 
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
@@ -21,13 +21,20 @@ const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
 
-export interface Marker {
+export interface BaseMarker {
     icon?: string;
     label?: string;
     title?: string;
     draggable?: boolean;
     custom?: any;
     infoWindow?: { pixelOffset?: number, content: string, position?: number, maxWidth?: number }
+}
+
+export interface AddressMarker extends BaseMarker {
+    address: string;
+}
+
+export interface LatLongMarker extends BaseMarker {
     latitude: number | string;
     longitude: number | string;
 }
@@ -136,7 +143,7 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
-        this.element.addEventListener("zoom_to_bounds", () => {
+        this.element.addEventListener('zoom_to_bounds', () => {
             this.zoomToMarkerBounds(true);
         });
 
@@ -217,7 +224,7 @@ export class GoogleMaps {
      *
      */
     renderMarker(marker: Marker): Promise<void> {
-        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>(<LatLongMarker>marker).latitude), parseFloat(<string>(<LatLongMarker>marker).longitude));
 
         return this._mapPromise.then(() => {
             // Create the marker
