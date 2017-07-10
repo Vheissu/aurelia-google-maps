@@ -6,7 +6,7 @@ import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 
 import { Configure } from './configure';
-import {GoogleMapsAPI} from './google-maps-api'
+import { GoogleMapsAPI } from './google-maps-api'
 
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
@@ -62,7 +62,6 @@ export class GoogleMaps {
     private validMarkers: LatLongMarker[];
     private _geocoder: any;
 
-    @bindable address = null;
     @bindable longitude: number = 0;
     @bindable latitude: number = 0;
     @bindable zoom: number = 8;
@@ -74,12 +73,11 @@ export class GoogleMaps {
     @bindable mapLoaded: any;
 
     public map: any = null;
-    public _renderedMarkers: any = [];
+    public _renderedMarkers: any[] = [];
     public _markersSubscription: any = null;
     public _scriptPromise: Promise<any> | any = null;
     public _mapPromise: Promise<any> | any = null;
     public _mapResolve: Promise<any> | any = null;
-    public _locationByAddressMarkers: any = [];
 
     constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI) {
         this.element = element;
@@ -129,15 +127,14 @@ export class GoogleMaps {
     }
 
     clearMarkers() {
-        if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+        if (!this._renderedMarkers) {
             return;
         }
 
-        this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function(marker: any) {
+        this._renderedMarkers.forEach(function(marker: any) {
             marker.setMap(null);
         });
 
-        this._locationByAddressMarkers = [];
         this._renderedMarkers = [];
     }
 
@@ -146,7 +143,7 @@ export class GoogleMaps {
             evt.preventDefault();
         });
 
-        this.element.addEventListener("zoom_to_bounds", () => {
+        this.element.addEventListener('zoom_to_bounds', () => {
             this.zoomToMarkerBounds(true);
         });
 
@@ -226,8 +223,8 @@ export class GoogleMaps {
      * @param marker
      *
      */
-    renderMarker(marker: LatLongMarker): Promise<void> {
-        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+    renderMarker(marker: Marker): Promise<void> {
+        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>(<LatLongMarker>marker).latitude), parseFloat(<string>(<LatLongMarker>marker).longitude));
 
         return this._mapPromise.then(() => {
             // Create the marker
@@ -412,14 +409,6 @@ export class GoogleMaps {
         });
     }
 
-    addressChanged(newValue: any) {
-        this._mapPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                this.geocodeAddress(newValue);
-            });
-        });
-    }
-
     latitudeChanged() {
         this._mapPromise.then(() => {
             this.taskQueue.queueMicroTask(() => {
@@ -466,7 +455,7 @@ export class GoogleMaps {
             this._renderedMarkers = [];
         }
 
-        // Add the subcription to markers
+        // Add the subscription to markers
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
             .subscribe((splices) => { this.markerCollectionChange(splices); });
@@ -478,8 +467,8 @@ export class GoogleMaps {
                     if (isAddressMarker(marker) && !isLatLongMarker(marker)) {
                         return this.addressMarkerToMarker(marker);
                     } else {
-                        return marker;
                     }
+                        return marker;
                 })
             ).then(validMarkers => {
                 // Addresses that fail to parse return undefined (because the error is caught earlier in the promise chain)
@@ -493,6 +482,17 @@ export class GoogleMaps {
                 this.taskQueue.queueTask(() => {
                     this.zoomToMarkerBounds();
                 });
+            });
+
+            // Wait until all of the renderMarker calls have been resolved
+            return Promise.all(markerPromises);
+        }).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
             });
         });
     }
@@ -508,6 +508,8 @@ export class GoogleMaps {
             // Collection changed but the splices didn't
             return;
         }
+
+        let renderPromises = [];
 
         for (let splice of splices) {
             if (splice.removed.length) {
@@ -538,17 +540,22 @@ export class GoogleMaps {
                 let addedMarkers = this.markers.slice(-splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
-                    this.renderMarker(addedMarker);
+                    renderPromises.push(this.renderMarker(addedMarker));
                 }
             }
         }
 
         /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+         * Wait for all of the promises to resolve for rendering markers
          */
-        this.taskQueue.queueTask(() => {
-            this.zoomToMarkerBounds();
+        Promise.all(renderPromises).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
+            });
         });
     }
 
@@ -558,16 +565,17 @@ export class GoogleMaps {
         }
 
         // Unless forced, if there's no markers, or not auto update bounds
-        if (!force && (!this.validMarkers.length || !this.autoUpdateBounds)) {
+        if (!force && (!this._renderedMarkers || !this.autoUpdateBounds)) {
             return;
         }
 
         this._mapPromise.then(() => {
             let bounds = new (<any>window).google.maps.LatLngBounds();
 
-            for (let marker of this.validMarkers) {
+            for (let marker of this._renderedMarkers) {
                 // extend the bounds to include each marker's position
-                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+
+                let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.position.lat()), parseFloat(<string>marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
 
