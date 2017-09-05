@@ -411,12 +411,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             });
                         }
                         _this.map.fitBounds(bounds);
-                        var listener = google.maps.event.addListener(_this.map, 'idle', function () {
-                            if (_this.map.getZoom() > _this.zoom) {
-                                _this.map.setZoom(_this.zoom);
-                            }
-                            google.maps.event.removeListener(listener);
-                        });
                     });
                 };
                 GoogleMaps.prototype.getMapTypeId = function () {

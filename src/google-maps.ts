@@ -533,13 +533,6 @@ export class GoogleMaps {
             }
 
             this.map.fitBounds(bounds);
-            let listener = google.maps.event.addListener(this.map, 'idle', () => {
-                if (this.map.getZoom() > this.zoom) {
-                    this.map.setZoom(this.zoom);
-                }
-
-                google.maps.event.removeListener(listener);
-            });
         });
     }
 
