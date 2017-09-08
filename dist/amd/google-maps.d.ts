@@ -26,6 +26,7 @@ export declare class GoogleMaps {
     private eventAggregator;
     private googleMapsApi;
     private _geocoder;
+    private _currentInfoWindow;
     longitude: number;
     latitude: number;
     zoom: number;
@@ -35,12 +36,21 @@ export declare class GoogleMaps {
     mapType: string;
     options: {};
     mapLoaded: any;
+    drawEnabled: boolean;
+    drawMode: string;
+    drawOverlayCompleteEvent: any;
+    polygons: any;
+    drawingControl: true;
+    drawingControlOptions: {};
     map: any;
     _renderedMarkers: any[];
     _markersSubscription: any;
     _scriptPromise: Promise<any> | any;
     _mapPromise: Promise<any> | any;
     _mapResolve: Promise<any> | any;
+    drawingManager: any;
+    _renderedPolygons: any;
+    _polygonsSubscription: any;
     constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI);
     clearMarkers(): void;
     attached(): void;
@@ -62,4 +72,14 @@ export declare class GoogleMaps {
     getMapTypeId(): any;
     error(): void;
     resize(): void;
+    initDrawingManager(options?: any): any;
+    destroyDrawingManager(): void;
+    getOverlayType(type?: any): any;
+    drawEnabledChanged(newval: any, oldval: any): void;
+    drawModeChanged(newval?: any): void;
+    encodePath(path?: any): any;
+    decodePath(polyline: string): any;
+    renderPolygon(polygonObject?: any): void;
+    polygonsChanged(newValue: any): void;
+    polygonCollectionChange(splices: any): void;
 }

@@ -26,9 +26,11 @@ var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
 var APILOADED = GM + ":api:loaded";
 var LOCATIONADDED = GM + ":marker:added";
+var OVERLAYCOMPLETE = GM + ":draw:overlaycomplete";
 var logger = aurelia_logging_1.getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
+        this._currentInfoWindow = null;
         this.longitude = 0;
         this.latitude = 0;
         this.zoom = 8;
@@ -37,12 +39,19 @@ var GoogleMaps = (function () {
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
         this.options = {};
+        this.drawEnabled = false;
+        this.drawMode = 'MARKER';
+        this.drawOverlayCompleteEvent = null;
+        this.polygons = [];
         this.map = null;
         this._renderedMarkers = [];
         this._markersSubscription = null;
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this.drawingManager = null;
+        this._renderedPolygons = [];
+        this._polygonsSubscription = null;
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -124,6 +133,9 @@ var GoogleMaps = (function () {
                 }
                 _this.element.dispatchEvent(changeEvent);
                 _this.eventAggregator.publish(CLICK, e);
+                if (_this._currentInfoWindow) {
+                    _this._currentInfoWindow.close();
+                }
             });
             _this.map.addListener('dragend', function () {
                 _this.sendBoundsEvent();
@@ -151,10 +163,15 @@ var GoogleMaps = (function () {
                 position: markerLatLng
             }).then(function (createdMarker) {
                 createdMarker.addListener('click', function () {
+                    if (_this._currentInfoWindow) {
+                        _this._currentInfoWindow.close();
+                    }
                     if (!createdMarker.infoWindow) {
+                        _this._currentInfoWindow = null;
                         _this.eventAggregator.publish(MARKERCLICK, createdMarker);
                     }
                     else {
+                        _this._currentInfoWindow = createdMarker.infoWindow;
                         createdMarker.infoWindow.open(_this.map, createdMarker);
                     }
                 });
@@ -190,12 +207,38 @@ var GoogleMaps = (function () {
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
                         _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
+                        var changeEvent;
+                        if (window.CustomEvent) {
+                            changeEvent = new CustomEvent('info-window-show', {
+                                detail: createdMarker.infoWindow,
+                                bubbles: true
+                            });
+                        }
+                        else {
+                            changeEvent = document.createEvent('CustomEvent');
+                            changeEvent.initCustomEvent('info-window-show', true, true, { data: createdMarker.infoWindow });
+                        }
+                        _this.element.dispatchEvent(changeEvent);
                     });
                 }
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
                 _this._renderedMarkers.push(createdMarker);
+                var newMarkerEvent;
+                if (window.CustomEvent) {
+                    newMarkerEvent = new CustomEvent('marker-rendered', {
+                        detail: {
+                            createdMarker: createdMarker, marker: marker
+                        },
+                        bubbles: true
+                    });
+                }
+                else {
+                    newMarkerEvent = document.createEvent('CustomEvent');
+                    newMarkerEvent.initCustomEvent('marker-rendered', true, true, { data: { createdMarker: createdMarker, marker: marker } });
+                }
+                _this.element.dispatchEvent(newMarkerEvent);
             });
         });
     };
@@ -339,13 +382,13 @@ var GoogleMaps = (function () {
                 var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.position.lat()), parseFloat(marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
+            for (var _b = 0, _c = _this._renderedPolygons; _b < _c.length; _b++) {
+                var polygon = _c[_b];
+                polygon.getPath().forEach(function (element) {
+                    bounds.extend(element);
+                });
+            }
             _this.map.fitBounds(bounds);
-            var listener = google.maps.event.addListener(_this.map, 'idle', function () {
-                if (_this.map.getZoom() > _this.zoom) {
-                    _this.map.setZoom(_this.zoom);
-                }
-                google.maps.event.removeListener(listener);
-            });
         });
     };
     GoogleMaps.prototype.getMapTypeId = function () {
@@ -369,6 +412,174 @@ var GoogleMaps = (function () {
             _this.taskQueue.queueMicroTask(function () {
                 window.google.maps.event.trigger(_this.map, 'resize');
             });
+        });
+    };
+    GoogleMaps.prototype.initDrawingManager = function (options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        return this._mapPromise.then(function () {
+            if (_this.drawingManager)
+                return Promise.resolve();
+            var config = Object.assign({}, {
+                drawingMode: _this.getOverlayType(_this.drawMode),
+                drawingControl: _this.drawingControl,
+                drawingControlOptions: _this.drawingControlOptions
+            }, options);
+            _this.drawingManager = new window.google.maps.drawing.DrawingManager(config);
+            _this.drawingManager.addListener('overlaycomplete', function (evt) {
+                var changeEvent;
+                Object.assign(evt, {
+                    path: evt.overlay.getPath().getArray().map(function (x) { return { latitude: x.lat(), longitude: x.lng() }; }),
+                    encode: _this.encodePath(evt.overlay.getPath())
+                });
+                if (window.CustomEvent) {
+                    changeEvent = new CustomEvent('map-overlay-complete', {
+                        detail: evt,
+                        bubbles: true
+                    });
+                }
+                else {
+                    changeEvent = document.createEvent('CustomEvent');
+                    changeEvent.initCustomEvent('map-overlay-complete', true, true, { data: evt });
+                }
+                _this.element.dispatchEvent(changeEvent);
+                _this.eventAggregator.publish(OVERLAYCOMPLETE, evt);
+            });
+            return Promise.resolve();
+        });
+    };
+    GoogleMaps.prototype.destroyDrawingManager = function () {
+        if (!this.drawingManager)
+            return;
+        this.drawingManager.setMap(null);
+        this.drawingManager = null;
+    };
+    GoogleMaps.prototype.getOverlayType = function (type) {
+        if (type === void 0) { type = ''; }
+        switch (type.toUpperCase()) {
+            case 'POLYGON':
+                return window.google.maps.drawing.OverlayType.POLYGON;
+            case 'POLYLINE':
+                return window.google.maps.drawing.OverlayType.POLYLINE;
+            case 'RECTANGLE':
+                return window.google.maps.drawing.OverlayType.RECTANGLE;
+            case 'CIRCLE':
+                return window.google.maps.drawing.OverlayType.CIRCLE;
+            case 'MARKER':
+                return window.google.maps.drawing.OverlayType.MARKER;
+            default:
+                return null;
+        }
+    };
+    GoogleMaps.prototype.drawEnabledChanged = function (newval, oldval) {
+        var _this = this;
+        this.initDrawingManager()
+            .then(function () {
+            if (newval && !oldval) {
+                _this.drawingManager.setMap(_this.map);
+            }
+            else if (oldval && !newval) {
+                _this.destroyDrawingManager();
+            }
+        });
+    };
+    GoogleMaps.prototype.drawModeChanged = function (newval) {
+        var _this = this;
+        if (newval === void 0) { newval = ''; }
+        this.initDrawingManager()
+            .then(function () {
+            _this.drawingManager.setOptions({
+                drawingMode: _this.getOverlayType(newval)
+            });
+        });
+    };
+    GoogleMaps.prototype.encodePath = function (path) {
+        if (path === void 0) { path = []; }
+        return window.google.maps.geometry.encoding.encodePath(path);
+    };
+    GoogleMaps.prototype.decodePath = function (polyline) {
+        return window.google.maps.geometry.encoding.decodePath(polyline);
+    };
+    GoogleMaps.prototype.renderPolygon = function (polygonObject) {
+        if (polygonObject === void 0) { polygonObject = []; }
+        var paths = polygonObject.paths;
+        if (!paths)
+            return;
+        if (Array.isArray(paths)) {
+            paths = paths.map(function (x) {
+                return new window.google.maps.LatLng(x.latitude, x.longitude);
+            });
+        }
+        var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
+        polygon.setMap(this.map);
+        this._renderedPolygons.push(polygon);
+    };
+    GoogleMaps.prototype.polygonsChanged = function (newValue) {
+        var _this = this;
+        if (this._polygonsSubscription !== null) {
+            this._polygonsSubscription.dispose();
+            for (var _i = 0, _a = this._renderedPolygons; _i < _a.length; _i++) {
+                var polygon = _a[_i];
+                polygon.setMap(null);
+            }
+            this._renderedPolygons = [];
+        }
+        this._polygonsSubscription = this.bindingEngine
+            .collectionObserver(this.polygons)
+            .subscribe(function (splices) { _this.polygonCollectionChange(splices); });
+        this._mapPromise.then(function () {
+            Promise.all(newValue.map(function (polygon) {
+                if (typeof polygon === 'string') {
+                    return _this.decodePath(polygon);
+                }
+                return polygon;
+            })).then(function (polygons) {
+                return Promise.all(polygons.map(_this.renderPolygon.bind(_this)));
+            }).then(function () {
+                _this.taskQueue.queueTask(function () {
+                    _this.zoomToMarkerBounds();
+                });
+            });
+        });
+    };
+    GoogleMaps.prototype.polygonCollectionChange = function (splices) {
+        var _this = this;
+        if (!splices.length) {
+            return;
+        }
+        for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
+            var splice = splices_2[_i];
+            if (splice.removed.length) {
+                for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
+                    var removedObj = _b[_a];
+                    for (var polygonIndex in this._renderedPolygons) {
+                        if (this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                            var renderedPolygon = this._renderedPolygons[polygonIndex];
+                            var strRendered = void 0, strRemoved = void 0;
+                            strRendered = this.encodePath(renderedPolygon.getPath());
+                            var removedPaths = removedObj.paths.map(function (x) {
+                                return new window.google.maps.LatLng(x.latitude, x.longitude);
+                            });
+                            strRemoved = this.encodePath(removedPaths);
+                            if (strRendered === strRemoved) {
+                                renderedPolygon.setMap(null);
+                                this._renderedPolygons.splice(polygonIndex, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (splice.addedCount) {
+                var addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
+                for (var _c = 0, addedPolygons_1 = addedPolygons; _c < addedPolygons_1.length; _c++) {
+                    var addedPolygon = addedPolygons_1[_c];
+                    this.renderPolygon(addedPolygon);
+                }
+            }
+        }
+        this.taskQueue.queueTask(function () {
+            _this.zoomToMarkerBounds();
         });
     };
     __decorate([
@@ -407,6 +618,30 @@ var GoogleMaps = (function () {
         aurelia_templating_1.bindable,
         __metadata("design:type", Object)
     ], GoogleMaps.prototype, "mapLoaded", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Boolean)
+    ], GoogleMaps.prototype, "drawEnabled", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Object)
+    ], GoogleMaps.prototype, "drawMode", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Object)
+    ], GoogleMaps.prototype, "drawOverlayCompleteEvent", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Object)
+    ], GoogleMaps.prototype, "polygons", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Boolean)
+    ], GoogleMaps.prototype, "drawingControl", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
+        __metadata("design:type", Object)
+    ], GoogleMaps.prototype, "drawingControlOptions", void 0);
     GoogleMaps = __decorate([
         aurelia_templating_1.noView(),
         aurelia_templating_1.customElement('google-map'),

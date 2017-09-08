@@ -1,3 +1,5 @@
 node_modules
 _BACKUP/
 dist/test/
+.DS_Store
+.idea
