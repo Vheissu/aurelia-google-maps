@@ -66,14 +66,7 @@ Provide standard latitude and longitude values.
 
 ### Address
 
-Provide a string as an address which then gets geocoded and the map is
-centred on this particular address.
-
-``` html
-<template>
-    <google-map address="1600 Amphitheatre Parkway. Mountain View, CA 94043"></google-map>
-</template>
-```
+In prior versions, it was possible to bind a property named `address` to the map. This was removed in favor of importing the GoogleMapsAPI service and geocoding the address. In many cases, you'll receive multiple results back from the geocoding service and you may wish to allow the user to select the option.
 
 ### Zooming A Map
 
