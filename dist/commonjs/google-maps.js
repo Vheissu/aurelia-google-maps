@@ -24,6 +24,8 @@ var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
 var MARKERCLICK = GM + ":marker:click";
 var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
+var POLYGONCLICK = GM + ":polygon:click";
+var POLYGONCLICKEVENT = 'polygon-click';
 var APILOADED = GM + ":api:loaded";
 var LOCATIONADDED = GM + ":marker:added";
 var OVERLAYCOMPLETE = GM + ":draw:overlaycomplete";
@@ -37,6 +39,7 @@ var GoogleMaps = (function () {
         this.disableDefaultUi = false;
         this.markers = [];
         this.autoUpdateBounds = false;
+        this.autoInfoWindow = true;
         this.mapType = 'ROADMAP';
         this.options = {};
         this.drawEnabled = false;
@@ -120,19 +123,10 @@ var GoogleMaps = (function () {
             }
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
-                var changeEvent;
-                if (window.CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
-                }
-                else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
-                }
-                _this.element.dispatchEvent(changeEvent);
+                dispatchEvent('map-click', e, _this.element);
                 _this.eventAggregator.publish(CLICK, e);
+                if (!_this.autoInfoWindow)
+                    return;
                 if (_this._currentInfoWindow) {
                     _this._currentInfoWindow.close();
                 }
@@ -163,17 +157,18 @@ var GoogleMaps = (function () {
                 position: markerLatLng
             }).then(function (createdMarker) {
                 createdMarker.addListener('click', function () {
+                    _this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                    if (!_this.autoInfoWindow)
+                        return;
                     if (_this._currentInfoWindow) {
                         _this._currentInfoWindow.close();
                     }
                     if (!createdMarker.infoWindow) {
                         _this._currentInfoWindow = null;
-                        _this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                        return;
                     }
-                    else {
-                        _this._currentInfoWindow = createdMarker.infoWindow;
-                        createdMarker.infoWindow.open(_this.map, createdMarker);
-                    }
+                    _this._currentInfoWindow = createdMarker.infoWindow;
+                    createdMarker.infoWindow.open(_this.map, createdMarker);
                 });
                 createdMarker.addListener('mouseover', function () {
                     _this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
@@ -206,39 +201,15 @@ var GoogleMaps = (function () {
                         maxWidth: marker.infoWindow.maxWidth
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
+                        dispatchEvent('info-window-show', createdMarker.infoWindow, _this.element);
                         _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
-                        var changeEvent;
-                        if (window.CustomEvent) {
-                            changeEvent = new CustomEvent('info-window-show', {
-                                detail: createdMarker.infoWindow,
-                                bubbles: true
-                            });
-                        }
-                        else {
-                            changeEvent = document.createEvent('CustomEvent');
-                            changeEvent.initCustomEvent('info-window-show', true, true, { data: createdMarker.infoWindow });
-                        }
-                        _this.element.dispatchEvent(changeEvent);
                     });
                 }
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
                 _this._renderedMarkers.push(createdMarker);
-                var newMarkerEvent;
-                if (window.CustomEvent) {
-                    newMarkerEvent = new CustomEvent('marker-rendered', {
-                        detail: {
-                            createdMarker: createdMarker, marker: marker
-                        },
-                        bubbles: true
-                    });
-                }
-                else {
-                    newMarkerEvent = document.createEvent('CustomEvent');
-                    newMarkerEvent.initCustomEvent('marker-rendered', true, true, { data: { createdMarker: createdMarker, marker: marker } });
-                }
-                _this.element.dispatchEvent(newMarkerEvent);
+                dispatchEvent('marker-rendered', { createdMarker: createdMarker, marker: marker }, _this.element);
             });
         });
     };
@@ -427,22 +398,11 @@ var GoogleMaps = (function () {
             }, options);
             _this.drawingManager = new window.google.maps.drawing.DrawingManager(config);
             _this.drawingManager.addListener('overlaycomplete', function (evt) {
-                var changeEvent;
                 Object.assign(evt, {
                     path: evt.overlay.getPath().getArray().map(function (x) { return { latitude: x.lat(), longitude: x.lng() }; }),
                     encode: _this.encodePath(evt.overlay.getPath())
                 });
-                if (window.CustomEvent) {
-                    changeEvent = new CustomEvent('map-overlay-complete', {
-                        detail: evt,
-                        bubbles: true
-                    });
-                }
-                else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-overlay-complete', true, true, { data: evt });
-                }
-                _this.element.dispatchEvent(changeEvent);
+                dispatchEvent('map-overlay-complete', evt, _this.element);
                 _this.eventAggregator.publish(OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
@@ -501,6 +461,7 @@ var GoogleMaps = (function () {
         return window.google.maps.geometry.encoding.decodePath(polyline);
     };
     GoogleMaps.prototype.renderPolygon = function (polygonObject) {
+        var _this = this;
         if (polygonObject === void 0) { polygonObject = []; }
         var paths = polygonObject.paths;
         if (!paths)
@@ -511,6 +472,10 @@ var GoogleMaps = (function () {
             });
         }
         var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
+        polygon.addListener('click', function () {
+            console.log('hi');
+            dispatchEvent(POLYGONCLICKEVENT, { polygon: polygon }, _this.element);
+        });
         polygon.setMap(this.map);
         this._renderedPolygons.push(polygon);
     };
@@ -608,6 +573,10 @@ var GoogleMaps = (function () {
     ], GoogleMaps.prototype, "autoUpdateBounds", void 0);
     __decorate([
         aurelia_templating_1.bindable,
+        __metadata("design:type", Boolean)
+    ], GoogleMaps.prototype, "autoInfoWindow", void 0);
+    __decorate([
+        aurelia_templating_1.bindable,
         __metadata("design:type", Object)
     ], GoogleMaps.prototype, "mapType", void 0);
     __decorate([
@@ -651,4 +620,16 @@ var GoogleMaps = (function () {
     return GoogleMaps;
 }());
 exports.GoogleMaps = GoogleMaps;
+function dispatchEvent(name, detail, target, bubbles) {
+    if (bubbles === void 0) { bubbles = true; }
+    var changeEvent;
+    if (window.CustomEvent) {
+        changeEvent = new CustomEvent(name, { detail: detail, bubbles: bubbles });
+    }
+    else {
+        changeEvent = document.createEvent('CustomEvent');
+        changeEvent.initCustomEvent(name, bubbles, true, { data: detail });
+    }
+    target.dispatchEvent(changeEvent);
+}
 //# sourceMappingURL=google-maps.js.map

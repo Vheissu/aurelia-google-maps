@@ -33,6 +33,7 @@ export declare class GoogleMaps {
     disableDefaultUi: boolean;
     markers: any;
     autoUpdateBounds: boolean;
+    autoInfoWindow: boolean;
     mapType: string;
     options: {};
     mapLoaded: any;

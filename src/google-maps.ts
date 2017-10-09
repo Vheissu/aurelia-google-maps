@@ -8,6 +8,11 @@ import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
 
+
+// TODO: Tidy this config up
+
+// TODO: New map config parameters to disable auto infoWindow
+
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
@@ -15,6 +20,10 @@ const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
+
+const POLYGONCLICK = `${GM}:polygon:click`;
+const POLYGONCLICKEVENT = 'polygon-click';
+
 const APILOADED = `${GM}:api:loaded`;
 const LOCATIONADDED = `${GM}:marker:added`;
 const OVERLAYCOMPLETE = `${GM}:draw:overlaycomplete`;
@@ -52,6 +61,7 @@ export class GoogleMaps {
     @bindable disableDefaultUi: boolean = false;
     @bindable markers: any = [];
     @bindable autoUpdateBounds: boolean = false;
+    @bindable autoInfoWindow: boolean = true;
     @bindable mapType = 'ROADMAP';
     @bindable options = {};
     @bindable mapLoaded: any;
@@ -159,21 +169,13 @@ export class GoogleMaps {
 
             // Add event listener for click event
             this.map.addListener('click', (e: Event) => {
-                let changeEvent;
-                if ((<any>window).CustomEvent) {
-                    changeEvent = new CustomEvent('map-click', {
-                        detail: e,
-                        bubbles: true
-                    });
-                } else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-click', true, true, { data: e });
-                }
-
-                this.element.dispatchEvent(changeEvent);
+                // TODO: make event a const
+                dispatchEvent('map-click', e, this.element);
                 this.eventAggregator.publish(CLICK, e);
 
                 // If there is an infoWindow open, close it
+                if (!this.autoInfoWindow) return;
+
                 if (this._currentInfoWindow) {
                     this._currentInfoWindow.close();
                 }
@@ -232,16 +234,23 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
+                    this.eventAggregator.publish(MARKERCLICK, createdMarker);
+
+                    // Only continue if there autoInfoWindow is enabled
+                    if (!this.autoInfoWindow) return;
+
                     if (this._currentInfoWindow) {
                         this._currentInfoWindow.close();
                     }
+
                     if (!createdMarker.infoWindow) {
                         this._currentInfoWindow = null;
-                        this.eventAggregator.publish(MARKERCLICK, createdMarker);
-                    } else {
-                        this._currentInfoWindow = createdMarker.infoWindow;
-                        createdMarker.infoWindow.open(this.map, createdMarker);
+
+                        return;
                     }
+
+                    this._currentInfoWindow = createdMarker.infoWindow;
+                    createdMarker.infoWindow.open(this.map, createdMarker);
                 });
 
                 /*add event listener for hover over the marker,
@@ -285,18 +294,8 @@ export class GoogleMaps {
                         maxWidth: marker.infoWindow.maxWidth
                     });
                     createdMarker.infoWindow.addListener('domready', () => {
+                        dispatchEvent('info-window-show', createdMarker.infoWindow, this.element);
                         this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
-                        let changeEvent;
-                        if ((<any>window).CustomEvent) {
-                            changeEvent = new CustomEvent('info-window-show', {
-                                detail: createdMarker.infoWindow,
-                                bubbles: true
-                            });
-                        } else {
-                            changeEvent = document.createEvent('CustomEvent');
-                            changeEvent.initCustomEvent('info-window-show', true, true, { data: createdMarker.infoWindow });
-                        }
-                        this.element.dispatchEvent(changeEvent);
                     });
                 }
 
@@ -309,19 +308,7 @@ export class GoogleMaps {
                 this._renderedMarkers.push(createdMarker);
 
                 // Send up and event to let the parent know a new marker has been rendered
-                let newMarkerEvent;
-                if ((<any>window).CustomEvent) {
-                    newMarkerEvent = new CustomEvent('marker-rendered', {
-                        detail: {
-                            createdMarker, marker
-                        },
-                        bubbles: true
-                    });
-                } else {
-                    newMarkerEvent = document.createEvent('CustomEvent');
-                    newMarkerEvent.initCustomEvent('marker-rendered', true, true, { data: { createdMarker, marker } });
-                }
-                this.element.dispatchEvent(newMarkerEvent);
+                dispatchEvent('marker-rendered', { createdMarker, marker }, this.element);
             });
         });
     }
@@ -585,23 +572,13 @@ export class GoogleMaps {
             // Add Event listeners and forward them to as a custom event on the
             // element and to the Event Aggregator
             this.drawingManager.addListener('overlaycomplete', evt => {
-                let changeEvent;
                 // Add the encoded polyline to the event
                 Object.assign(evt, {
                     path: evt.overlay.getPath().getArray().map(x => { return { latitude: x.lat(), longitude: x.lng() }}),
                     encode: this.encodePath(evt.overlay.getPath())
                 });
-                if ((<any>window).CustomEvent) {
-                    changeEvent = new CustomEvent('map-overlay-complete', {
-                        detail: evt,
-                        bubbles: true
-                    });
-                } else {
-                    changeEvent = document.createEvent('CustomEvent');
-                    changeEvent.initCustomEvent('map-overlay-complete', true, true, { data: evt });
-                }
 
-                this.element.dispatchEvent(changeEvent);
+                dispatchEvent('map-overlay-complete', evt, this.element);
                 this.eventAggregator.publish(OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
@@ -713,6 +690,11 @@ export class GoogleMaps {
         let polygon = new (<any>window).google.maps.Polygon(
             Object.assign({}, polygonObject, { paths })
         );
+
+        polygon.addListener('click', () => {
+            console.log('hi')
+            dispatchEvent(POLYGONCLICKEVENT, { polygon }, this.element);
+        });
 
         polygon.setMap(this.map);
         this._renderedPolygons.push(polygon);
@@ -831,4 +813,17 @@ export class GoogleMaps {
             this.zoomToMarkerBounds();
         });
     }
+}
+
+function dispatchEvent(name: string, detail: any, target: Element, bubbles = true) {
+    let changeEvent;
+
+    if ((<any>window).CustomEvent) {
+        changeEvent = new CustomEvent(name, { detail, bubbles });
+    } else {
+        changeEvent = document.createEvent('CustomEvent');
+        changeEvent.initCustomEvent(name, bubbles, true, { data: detail });
+    }
+
+    target.dispatchEvent(changeEvent);
 }
