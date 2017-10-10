@@ -16,17 +16,27 @@ import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
 var GM = 'googlemap';
-var BOUNDSCHANGED = GM + ":bounds_changed";
-var CLICK = GM + ":click";
-var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
-var MARKERCLICK = GM + ":marker:click";
-var MARKERMOUSEOVER = GM + ":marker:mouse_over";
-var MARKERMOUSEOUT = GM + ":marker:mouse_out";
-var POLYGONCLICK = GM + ":polygon:click";
-var POLYGONCLICKEVENT = 'polygon-click';
-var APILOADED = GM + ":api:loaded";
-var LOCATIONADDED = GM + ":marker:added";
-var OVERLAYCOMPLETE = GM + ":draw:overlaycomplete";
+var Events = (function () {
+    function Events() {
+    }
+    Events.BOUNDSCHANGED = GM + ":bounds_changed";
+    Events.CLICK = GM + ":click";
+    Events.INFOWINDOWDOMREADY = GM + ":infowindow:domready";
+    Events.MARKERCLICK = GM + ":marker:click";
+    Events.MARKERMOUSEOVER = GM + ":marker:mouse_over";
+    Events.MARKERMOUSEOUT = GM + ":marker:mouse_out";
+    Events.POLYGONCLICK = GM + ":polygon:click";
+    Events.POLYGONCLICKEVENT = 'polygon-click';
+    Events.APILOADED = GM + ":api:loaded";
+    Events.LOCATIONADDED = GM + ":marker:added";
+    Events.OVERLAYCOMPLETE = GM + ":draw:overlaycomplete";
+    Events.MAPCLICK = 'map-click';
+    Events.INFOWINDOWSHOW = 'info-window-show';
+    Events.MARKERRENDERED = 'marker-rendered';
+    Events.MAPOVERLAYCOMPLETE = 'map-overlay-complete';
+    return Events;
+}());
+export { Events };
 var logger = getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
@@ -121,8 +131,8 @@ var GoogleMaps = (function () {
             }
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
-                dispatchEvent('map-click', e, _this.element);
-                _this.eventAggregator.publish(CLICK, e);
+                dispatchEvent(Events.MAPCLICK, e, _this.element);
+                _this.eventAggregator.publish(Events.CLICK, e);
                 if (!_this.autoInfoWindow)
                     return;
                 if (_this._currentInfoWindow) {
@@ -140,11 +150,11 @@ var GoogleMaps = (function () {
     GoogleMaps.prototype.sendBoundsEvent = function () {
         var bounds = this.map.getBounds();
         if (bounds) {
-            this.eventAggregator.publish(BOUNDSCHANGED, bounds);
+            this.eventAggregator.publish(Events.BOUNDSCHANGED, bounds);
         }
     };
     GoogleMaps.prototype.sendApiLoadedEvent = function () {
-        this.eventAggregator.publish(APILOADED, this._scriptPromise);
+        this.eventAggregator.publish(Events.APILOADED, this._scriptPromise);
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
         var _this = this;
@@ -155,7 +165,7 @@ var GoogleMaps = (function () {
                 position: markerLatLng
             }).then(function (createdMarker) {
                 createdMarker.addListener('click', function () {
-                    _this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                    _this.eventAggregator.publish(Events.MARKERCLICK, createdMarker);
                     if (!_this.autoInfoWindow)
                         return;
                     if (_this._currentInfoWindow) {
@@ -169,11 +179,11 @@ var GoogleMaps = (function () {
                     createdMarker.infoWindow.open(_this.map, createdMarker);
                 });
                 createdMarker.addListener('mouseover', function () {
-                    _this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                    _this.eventAggregator.publish(Events.MARKERMOUSEOVER, createdMarker);
                     createdMarker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
                 });
                 createdMarker.addListener('mouseout', function () {
-                    _this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                    _this.eventAggregator.publish(Events.MARKERMOUSEOUT, createdMarker);
                 });
                 createdMarker.addListener('dblclick', function () {
                     _this.map.setZoom(15);
@@ -199,15 +209,15 @@ var GoogleMaps = (function () {
                         maxWidth: marker.infoWindow.maxWidth
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
-                        dispatchEvent('info-window-show', createdMarker.infoWindow, _this.element);
-                        _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
+                        dispatchEvent(Events.INFOWINDOWSHOW, createdMarker.infoWindow, _this.element);
+                        _this.eventAggregator.publish(Events.INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
                 if (marker.custom) {
                     createdMarker.custom = marker.custom;
                 }
                 _this._renderedMarkers.push(createdMarker);
-                dispatchEvent('marker-rendered', { createdMarker: createdMarker, marker: marker }, _this.element);
+                dispatchEvent(Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
             });
         });
     };
@@ -400,8 +410,8 @@ var GoogleMaps = (function () {
                     path: evt.overlay.getPath().getArray().map(function (x) { return { latitude: x.lat(), longitude: x.lng() }; }),
                     encode: _this.encodePath(evt.overlay.getPath())
                 });
-                dispatchEvent('map-overlay-complete', evt, _this.element);
-                _this.eventAggregator.publish(OVERLAYCOMPLETE, evt);
+                dispatchEvent(Events.MAPOVERLAYCOMPLETE, evt, _this.element);
+                _this.eventAggregator.publish(Events.OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
         });
@@ -471,8 +481,7 @@ var GoogleMaps = (function () {
         }
         var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
         polygon.addListener('click', function () {
-            console.log('hi');
-            dispatchEvent(POLYGONCLICKEVENT, { polygon: polygon }, _this.element);
+            dispatchEvent(Events.POLYGONCLICKEVENT, { polygon: polygon }, _this.element);
         });
         polygon.setMap(this.map);
         this._renderedPolygons.push(polygon);

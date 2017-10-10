@@ -8,25 +8,29 @@ import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
 
-
-// TODO: Tidy this config up
-
 // TODO: New map config parameters to disable auto infoWindow
-
 const GM = 'googlemap';
-const BOUNDSCHANGED = `${GM}:bounds_changed`;
-const CLICK = `${GM}:click`;
-const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
-const MARKERCLICK = `${GM}:marker:click`;
-const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
-const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 
-const POLYGONCLICK = `${GM}:polygon:click`;
-const POLYGONCLICKEVENT = 'polygon-click';
+export class Events {
+    static BOUNDSCHANGED = `${GM}:bounds_changed`;
+    static CLICK = `${GM}:click`;
+    static INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
+    static MARKERCLICK = `${GM}:marker:click`;
+    static MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
+    static MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
 
-const APILOADED = `${GM}:api:loaded`;
-const LOCATIONADDED = `${GM}:marker:added`;
-const OVERLAYCOMPLETE = `${GM}:draw:overlaycomplete`;
+    static POLYGONCLICK = `${GM}:polygon:click`;
+    static POLYGONCLICKEVENT = 'polygon-click';
+
+    static APILOADED = `${GM}:api:loaded`;
+    static LOCATIONADDED = `${GM}:marker:added`;
+    static OVERLAYCOMPLETE = `${GM}:draw:overlaycomplete`;
+    static MAPCLICK = 'map-click';
+    static INFOWINDOWSHOW = 'info-window-show';
+    static MARKERRENDERED = 'marker-rendered';
+    static MAPOVERLAYCOMPLETE = 'map-overlay-complete';
+}
+
 const logger = getLogger('aurelia-google-maps');
 
 declare let google: any;
@@ -169,9 +173,8 @@ export class GoogleMaps {
 
             // Add event listener for click event
             this.map.addListener('click', (e: Event) => {
-                // TODO: make event a const
-                dispatchEvent('map-click', e, this.element);
-                this.eventAggregator.publish(CLICK, e);
+                dispatchEvent(Events.MAPCLICK, e, this.element);
+                this.eventAggregator.publish(Events.CLICK, e);
 
                 // If there is an infoWindow open, close it
                 if (!this.autoInfoWindow) return;
@@ -205,7 +208,7 @@ export class GoogleMaps {
     sendBoundsEvent() {
         let bounds = this.map.getBounds();
         if (bounds) {
-            this.eventAggregator.publish(BOUNDSCHANGED, bounds);
+            this.eventAggregator.publish(Events.BOUNDSCHANGED, bounds);
         }
     }
 
@@ -213,7 +216,7 @@ export class GoogleMaps {
      * Send after the api is loaded
      * */
     sendApiLoadedEvent() {
-        this.eventAggregator.publish(APILOADED, this._scriptPromise);
+        this.eventAggregator.publish(Events.APILOADED, this._scriptPromise);
     }
 
     /**
@@ -234,7 +237,7 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
-                    this.eventAggregator.publish(MARKERCLICK, createdMarker);
+                    this.eventAggregator.publish(Events.MARKERCLICK, createdMarker);
 
                     // Only continue if there autoInfoWindow is enabled
                     if (!this.autoInfoWindow) return;
@@ -256,12 +259,12 @@ export class GoogleMaps {
                 /*add event listener for hover over the marker,
                  *the event payload is the marker itself*/
                 createdMarker.addListener('mouseover', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOVER, createdMarker);
+                    this.eventAggregator.publish(Events.MARKERMOUSEOVER, createdMarker);
                     createdMarker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
                 });
 
                 createdMarker.addListener('mouseout', () => {
-                    this.eventAggregator.publish(MARKERMOUSEOUT, createdMarker);
+                    this.eventAggregator.publish(Events.MARKERMOUSEOUT, createdMarker);
                 });
 
                 createdMarker.addListener('dblclick', () => {
@@ -294,8 +297,8 @@ export class GoogleMaps {
                         maxWidth: marker.infoWindow.maxWidth
                     });
                     createdMarker.infoWindow.addListener('domready', () => {
-                        dispatchEvent('info-window-show', createdMarker.infoWindow, this.element);
-                        this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
+                        dispatchEvent(Events.INFOWINDOWSHOW, createdMarker.infoWindow, this.element);
+                        this.eventAggregator.publish(Events.INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
 
@@ -308,7 +311,7 @@ export class GoogleMaps {
                 this._renderedMarkers.push(createdMarker);
 
                 // Send up and event to let the parent know a new marker has been rendered
-                dispatchEvent('marker-rendered', { createdMarker, marker }, this.element);
+                dispatchEvent(Events.MARKERRENDERED, { createdMarker, marker }, this.element);
             });
         });
     }
@@ -578,8 +581,8 @@ export class GoogleMaps {
                     encode: this.encodePath(evt.overlay.getPath())
                 });
 
-                dispatchEvent('map-overlay-complete', evt, this.element);
-                this.eventAggregator.publish(OVERLAYCOMPLETE, evt);
+                dispatchEvent(Events.MAPOVERLAYCOMPLETE, evt, this.element);
+                this.eventAggregator.publish(Events.OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
         });
@@ -692,8 +695,7 @@ export class GoogleMaps {
         );
 
         polygon.addListener('click', () => {
-            console.log('hi')
-            dispatchEvent(POLYGONCLICKEVENT, { polygon }, this.element);
+            dispatchEvent(Events.POLYGONCLICKEVENT, { polygon }, this.element);
         });
 
         polygon.setMap(this.map);
