@@ -3,6 +3,23 @@ import { BindingEngine } from 'aurelia-binding';
 import { EventAggregator } from 'aurelia-event-aggregator';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
+export declare class Events {
+    static BOUNDSCHANGED: string;
+    static CLICK: string;
+    static INFOWINDOWDOMREADY: string;
+    static MARKERCLICK: string;
+    static MARKERMOUSEOVER: string;
+    static MARKERMOUSEOUT: string;
+    static POLYGONCLICK: string;
+    static POLYGONCLICKEVENT: string;
+    static APILOADED: string;
+    static LOCATIONADDED: string;
+    static OVERLAYCOMPLETE: string;
+    static MAPCLICK: string;
+    static INFOWINDOWSHOW: string;
+    static MARKERRENDERED: string;
+    static MAPOVERLAYCOMPLETE: string;
+}
 export interface Marker {
     icon?: string;
     label?: string;
@@ -33,6 +50,7 @@ export declare class GoogleMaps {
     disableDefaultUi: boolean;
     markers: any;
     autoUpdateBounds: boolean;
+    autoInfoWindow: boolean;
     mapType: string;
     options: {};
     mapLoaded: any;
