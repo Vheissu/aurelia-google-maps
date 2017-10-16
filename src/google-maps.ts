@@ -7,32 +7,7 @@ import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
 
-//const GM = 'googlemap';
-
-export class Events {
-    static BOUNDSCHANGED = `bounds-change`;
-
-    static MAPCLICK = 'map-click';
-    static MAPOVERLAYCOMPLETE = 'map-overlay-complete';
-    static OVERLAYCOMPLETE = 'draw-overlay-complete';
-
-    static MARKERRENDERED = 'marker-render';
-    static MARKERCLICK = 'marker-click';
-    static MARKERMOUSEOVER = 'marker-mouse-over';
-    static MARKERMOUSEOUT = 'marker-mouse-out';
-
-    static POLYGONCLICK = 'polygon-click';
-
-    static INFOWINDOWSHOW = 'info-window-show';
-    static INFOWINDOWDOMREADY = 'info-window-dom-ready';
-
-    static APILOADED = 'api-loaded';
-
-    //
-    // static APILOADED = `${GM}:api:loaded`;
-    // static OVERLAYCOMPLETE = `${GM}:draw:overlaycomplete`;
-    // static INFOWINDOWSHOW = 'info-window-show';
-}
+import { Events } from './events';
 
 const logger = getLogger('aurelia-google-maps');
 
