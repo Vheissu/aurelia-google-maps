@@ -142,22 +142,9 @@ myEventHandler(event) {
 
 ### Event Aggregation
 
-In addition to the `map-click` event mentioned above, there are several events
-propagated via the Aurelia Event Aggregator framework:
+In 2.0 of this plugin, there were several events propagated via the Aurelia Event Aggregator.
 
-*   `googlemap:click` - The equivalent of the `map-click` above
-
-*   `googlemap:bounds_changed` - emitted when the map is dragged or zoomed,
-payload is the new map bounds as a `LatLngBounds` object.
-
-*   `googlemap:marker:click` - emitted when a map marker is clicked, payload
-is the `Marker` object for the clicked marker
-
-*   `googlemap:marker:mouse_over`- emitted when the mouse enters the marker, payload is the `Marker`object for the entered marker
-
-*   `googlemap:marker:mouse_out` - emitted when the mouse exits the marker, payload is the `Marker` object for the exited marker
-
-*   `googlemap:infowindow:domready` - emitted when the infoWindow is fully loaded, payload is the `InfoWindow` object for the related marker
+These events are now handled as DOM events.
 
 ### Render array of markers
 
