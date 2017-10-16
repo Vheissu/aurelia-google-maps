@@ -54,6 +54,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             logger = aurelia_logging_1.getLogger('aurelia-google-maps');
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi) {
+                    var _this = this;
                     this._currentInfoWindow = null;
                     this.longitude = 0;
                     this.latitude = 0;
@@ -66,7 +67,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this.options = {};
                     this.drawEnabled = false;
                     this.drawMode = 'MARKER';
-                    this.drawOverlayCompleteEvent = null;
                     this.polygons = [];
                     this.map = null;
                     this._renderedMarkers = [];
@@ -94,6 +94,22 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         return new Promise(function (resolve) {
                             self._mapResolve = resolve;
                         });
+                    });
+                    this.element.addEventListener(events_1.Events.START_MARKER_HIGHLIGHT, function (data) {
+                        var marker = self._renderedMarkers[data.index];
+                        marker.setIcon(marker.custom.altIcon);
+                        marker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
+                    });
+                    this.element.addEventListener(events_1.Events.STOP_MARKER_HIGHLIGHT, function (data) {
+                        var marker = self._renderedMarkers[data.index];
+                        marker.setIcon(marker.custom.defaultIcon);
+                    });
+                    this.element.addEventListener(events_1.Events.PAN_TO_MARKER, function (data) {
+                        self.map.panTo(self._renderedMarkers[data.index].position);
+                        self.map.setZoom(17);
+                    });
+                    this.element.addEventListener(events_1.Events.CLEAR_MARKERS, function () {
+                        _this.clearMarkers();
                     });
                 }
                 GoogleMaps.prototype.clearMarkers = function () {
@@ -305,14 +321,15 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
                                 var removedObj = _b[_a];
                                 for (var markerIndex in this._renderedMarkers) {
-                                    if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
-                                        var renderedMarker = this._renderedMarkers[markerIndex];
-                                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                                            renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                                            renderedMarker.setMap(null);
-                                            this._renderedMarkers.splice(markerIndex, 1);
-                                            break;
-                                        }
+                                    if (!this._renderedMarkers.hasOwnProperty(markerIndex)) {
+                                        continue;
+                                    }
+                                    var renderedMarker = this._renderedMarkers[markerIndex];
+                                    if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
+                                        renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
+                                        renderedMarker.setMap(null);
+                                        this._renderedMarkers.splice(markerIndex, 1);
+                                        break;
                                     }
                                 }
                             }
@@ -576,10 +593,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     aurelia_templating_1.bindable,
                     __metadata("design:type", Object)
                 ], GoogleMaps.prototype, "drawMode", void 0);
-                __decorate([
-                    aurelia_templating_1.bindable,
-                    __metadata("design:type", Object)
-                ], GoogleMaps.prototype, "drawOverlayCompleteEvent", void 0);
                 __decorate([
                     aurelia_templating_1.bindable,
                     __metadata("design:type", Object)

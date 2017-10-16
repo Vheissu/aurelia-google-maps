@@ -1,4 +1,5 @@
 export class Events {
+    // Dispatches
     static BOUNDSCHANGED = `bounds-change`;
 
     static MAPCLICK = 'map-click';
@@ -12,4 +13,11 @@ export class Events {
     static POLYGONCLICK = 'polygon-click';
 
     static INFOWINDOWSHOW = 'info-window-show';
+
+    // Listens
+
+    static START_MARKER_HIGHLIGHT = 'start-marker-highlight';
+    static STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
+    static PAN_TO_MARKER = 'pan-to-marker';
+    static CLEAR_MARKERS = 'clear-markers';
 }

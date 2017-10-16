@@ -23,7 +23,6 @@ export declare class GoogleMaps {
     private config;
     private bindingEngine;
     private googleMapsApi;
-    private _geocoder;
     private _currentInfoWindow;
     longitude: number;
     latitude: number;
@@ -37,7 +36,6 @@ export declare class GoogleMaps {
     mapLoaded: any;
     drawEnabled: boolean;
     drawMode: string;
-    drawOverlayCompleteEvent: any;
     polygons: any;
     drawingControl: true;
     drawingControlOptions: {};

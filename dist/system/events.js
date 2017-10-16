@@ -17,6 +17,10 @@ System.register([], function (exports_1, context_1) {
                 Events.MARKERMOUSEOUT = 'marker-mouse-out';
                 Events.POLYGONCLICK = 'polygon-click';
                 Events.INFOWINDOWSHOW = 'info-window-show';
+                Events.START_MARKER_HIGHLIGHT = 'start-marker-highlight';
+                Events.STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
+                Events.PAN_TO_MARKER = 'pan-to-marker';
+                Events.CLEAR_MARKERS = 'clear-markers';
                 return Events;
             }());
             exports_1("Events", Events);

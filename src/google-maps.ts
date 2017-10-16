@@ -33,7 +33,6 @@ export class GoogleMaps {
     private config: any;
     private bindingEngine: BindingEngine;
     private googleMapsApi: GoogleMapsAPI;
-    private _geocoder: any;
     private _currentInfoWindow: any = null;
 
     @bindable longitude: number = 0;
@@ -48,7 +47,6 @@ export class GoogleMaps {
     @bindable mapLoaded: any;
     @bindable drawEnabled: boolean = false;
     @bindable drawMode = 'MARKER';
-    @bindable drawOverlayCompleteEvent = null;
     @bindable polygons: any = [];
     @bindable drawingControl: true;
     @bindable drawingControlOptions: {};
@@ -88,27 +86,28 @@ export class GoogleMaps {
             });
         });
 
-        // TODO: Replace this with listening for dispatched DOM events on self
+        /**
+         * Events which the element listens to
+         */
+        this.element.addEventListener(Events.START_MARKER_HIGHLIGHT, (data: any) => {
+                let marker: any = self._renderedMarkers[data.index];
+                marker.setIcon(marker.custom.altIcon);
+                marker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
+        });
 
-        // this.eventAggregator.subscribe('startMarkerHighlight', function (data: any) {
-        //     let mrkr: any = self._renderedMarkers[data.index];
-        //     mrkr.setIcon(mrkr.custom.altIcon);
-        //     mrkr.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
-        // });
-        //
-        // this.eventAggregator.subscribe('stopMarkerHighLight', function (data: any) {
-        //     let mrkr: any = self._renderedMarkers[data.index];
-        //     mrkr.setIcon(mrkr.custom.defaultIcon);
-        // });
-        //
-        // this.eventAggregator.subscribe('panToMarker', function (data: any) {
-        //     self.map.panTo(self._renderedMarkers[data.index].position);
-        //     self.map.setZoom(17);
-        // });
-        //
-        // this.eventAggregator.subscribe(`clearMarkers`, function () {
-        //     this.clearMarkers();
-        // });
+        this.element.addEventListener(Events.STOP_MARKER_HIGHLIGHT, (data: any) => {
+            let marker: any = self._renderedMarkers[data.index];
+            marker.setIcon(marker.custom.defaultIcon);
+        });
+
+        this.element.addEventListener(Events.PAN_TO_MARKER, (data: any) => {
+            self.map.panTo(self._renderedMarkers[data.index].position);
+            self.map.setZoom(17);
+        });
+
+        this.element.addEventListener(Events.CLEAR_MARKERS, () => {
+            this.clearMarkers();
+        });
     }
 
     clearMarkers() {
@@ -410,19 +409,21 @@ export class GoogleMaps {
                 for (let removedObj of splice.removed) {
                     // Iterate over all the rendered markers to find the one to remove
                     for (let markerIndex in this._renderedMarkers) {
-                        if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
-                            let renderedMarker = this._renderedMarkers[markerIndex];
+                        if (!this._renderedMarkers.hasOwnProperty(markerIndex)) {
+                            continue
+                        }
 
-                            // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
-                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                                renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                                // Set the map to null;
-                                renderedMarker.setMap(null);
+                        let renderedMarker = this._renderedMarkers[markerIndex];
 
-                                // Splice out this rendered marker as well
-                                this._renderedMarkers.splice((<any>markerIndex), 1);
-                                break;
-                            }
+                        // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
+                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
+                            renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
+                            // Set the map to null;
+                            renderedMarker.setMap(null);
+
+                            // Splice out this rendered marker as well
+                            this._renderedMarkers.splice((<any>markerIndex), 1);
+                            break;
                         }
                     }
                 }

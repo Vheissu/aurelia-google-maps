@@ -8,4 +8,8 @@ export declare class Events {
     static MARKERMOUSEOUT: string;
     static POLYGONCLICK: string;
     static INFOWINDOWSHOW: string;
+    static START_MARKER_HIGHLIGHT: string;
+    static STOP_MARKER_HIGHLIGHT: string;
+    static PAN_TO_MARKER: string;
+    static CLEAR_MARKERS: string;
 }
