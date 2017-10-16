@@ -289,12 +289,13 @@ var GoogleMaps = (function () {
                             continue;
                         }
                         var renderedMarker = this._renderedMarkers[markerIndex];
-                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                            renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                            renderedMarker.setMap(null);
-                            this._renderedMarkers.splice(markerIndex, 1);
-                            break;
+                        if (renderedMarker.position.lat().toFixed(12) !== removedObj.latitude.toFixed(12) ||
+                            renderedMarker.position.lng().toFixed(12) !== removedObj.longitude.toFixed(12)) {
+                            continue;
                         }
+                        renderedMarker.setMap(null);
+                        this._renderedMarkers.splice(markerIndex, 1);
+                        break;
                     }
                 }
             }
@@ -480,20 +481,22 @@ var GoogleMaps = (function () {
                 for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
                     var removedObj = _b[_a];
                     for (var polygonIndex in this._renderedPolygons) {
-                        if (this._renderedPolygons.hasOwnProperty(polygonIndex)) {
-                            var renderedPolygon = this._renderedPolygons[polygonIndex];
-                            var strRendered = void 0, strRemoved = void 0;
-                            strRendered = this.encodePath(renderedPolygon.getPath());
-                            var removedPaths = removedObj.paths.map(function (x) {
-                                return new window.google.maps.LatLng(x.latitude, x.longitude);
-                            });
-                            strRemoved = this.encodePath(removedPaths);
-                            if (strRendered === strRemoved) {
-                                renderedPolygon.setMap(null);
-                                this._renderedPolygons.splice(polygonIndex, 1);
-                                break;
-                            }
+                        if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                            continue;
                         }
+                        var renderedPolygon = this._renderedPolygons[polygonIndex];
+                        var strRendered = void 0, strRemoved = void 0;
+                        strRendered = this.encodePath(renderedPolygon.getPath());
+                        var removedPaths = removedObj.paths.map(function (x) {
+                            return new window.google.maps.LatLng(x.latitude, x.longitude);
+                        });
+                        strRemoved = this.encodePath(removedPaths);
+                        if (strRendered !== strRemoved) {
+                            continue;
+                        }
+                        renderedPolygon.setMap(null);
+                        this._renderedPolygons.splice(polygonIndex, 1);
+                        break;
                     }
                 }
             }

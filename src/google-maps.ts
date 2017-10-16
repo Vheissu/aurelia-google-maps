@@ -416,15 +416,19 @@ export class GoogleMaps {
                         let renderedMarker = this._renderedMarkers[markerIndex];
 
                         // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
-                        if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                            renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                            // Set the map to null;
-                            renderedMarker.setMap(null);
-
-                            // Splice out this rendered marker as well
-                            this._renderedMarkers.splice((<any>markerIndex), 1);
-                            break;
+                        if (renderedMarker.position.lat().toFixed(12) !== removedObj.latitude.toFixed(12) ||
+                            renderedMarker.position.lng().toFixed(12) !== removedObj.longitude.toFixed(12)) {
+                            continue;
                         }
+
+                        // Set the map to null;
+                        renderedMarker.setMap(null);
+
+                        // Splice out this rendered marker as well
+                        this._renderedMarkers.splice((<any>markerIndex), 1);
+
+                        // We found the marker, so break from the first level for-loop
+                        break;
                     }
                 }
             }
@@ -567,7 +571,8 @@ export class GoogleMaps {
 
     /**
      * Update the editing state, called by aurelia binding
-     * @param newval 
+     * @param newval
+     * @param oldval
      */
     drawEnabledChanged(newval: any, oldval: any) {
         this.initDrawingManager()
@@ -715,30 +720,34 @@ export class GoogleMaps {
                 for (let removedObj of splice.removed) {
                     // Iterate over all the rendered markers to find the one to remove
                     for (let polygonIndex in this._renderedPolygons) {
-                        if (this._renderedPolygons.hasOwnProperty(polygonIndex)) {
-                            let renderedPolygon = this._renderedPolygons[polygonIndex];
-
-                            // Get string representation
-                            let strRendered, strRemoved;
-
-                            strRendered = this.encodePath(renderedPolygon.getPath());
-
-                            let removedPaths = removedObj.paths.map(x => {
-                                return new (<any>window).google.maps.LatLng(x.latitude, x.longitude);
-                            });
-
-                            strRemoved = this.encodePath(removedPaths);
-
-                            // Check based on string representation
-                            if (strRendered === strRemoved) {
-                                // Set the map to null;
-                                renderedPolygon.setMap(null);
-
-                                // Splice out this rendered marker as well
-                                this._renderedPolygons.splice((<any>polygonIndex), 1);
-                                break;
-                            }
+                        if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                            continue
                         }
+
+                        let renderedPolygon = this._renderedPolygons[polygonIndex];
+
+                        // Get string representation
+                        let strRendered, strRemoved;
+
+                        strRendered = this.encodePath(renderedPolygon.getPath());
+
+                        let removedPaths = removedObj.paths.map(x => {
+                            return new (<any>window).google.maps.LatLng(x.latitude, x.longitude);
+                        });
+
+                        strRemoved = this.encodePath(removedPaths);
+
+                        // Check based on string representation
+                        if (strRendered !== strRemoved) {
+                            continue
+                        }
+
+                        // Set the map to null;
+                        renderedPolygon.setMap(null);
+
+                        // Splice out this rendered marker as well
+                        this._renderedPolygons.splice((<any>polygonIndex), 1);
+                        break;
                     }
                 }
             }
