@@ -195,9 +195,9 @@ export class GoogleMaps {
      *
      */
     renderMarker(marker: Marker): Promise<void> {
-        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
-
         return this._mapPromise.then(() => {
+            let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+
             // Create the marker
             this.createMarker({
                 map: this.map,
@@ -206,7 +206,7 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
-                    dispatchEvent(Events.MARKERCLICK, { marker: createdMarker }, this.element);
+                    dispatchEvent(Events.MARKERCLICK, { marker, createdMarker }, this.element);
 
                     // Only continue if there autoInfoWindow is enabled
                     if (!this.autoInfoWindow) return;
@@ -370,6 +370,8 @@ export class GoogleMaps {
             .collectionObserver(this.markers)
             .subscribe((splices) => { this.markerCollectionChange(splices); });
 
+        if (!newValue.length) return;
+
         // Render all markers again
         this._mapPromise.then(() => {
             let markerPromises = newValue.map(marker => {
@@ -435,7 +437,7 @@ export class GoogleMaps {
 
             // Add the new markers to the map
             if (splice.addedCount) {
-                let addedMarkers = this.markers.slice(-splice.addedCount);
+                let addedMarkers = this.markers.slice(splice.index, splice.index + splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
                     renderPromises.push(this.renderMarker(addedMarker));
@@ -645,10 +647,27 @@ export class GoogleMaps {
         );
 
         polygon.addListener('click', () => {
+            console.log('click polygon');
             dispatchEvent(Events.POLYGONCLICK, { polygon }, this.element);
         });
 
         polygon.setMap(this.map);
+
+        if (polygonObject.infoWindow) {
+            polygon.infoWindow = new (<any>window).google.maps.InfoWindow({
+                content: polygonObject.infoWindow.content,
+                pixelOffset: polygonObject.infoWindow.pixelOffset,
+                position: polygonObject.infoWindow.position,
+                maxWidth: polygonObject.infoWindow.maxWidth
+            });
+
+            // polygonObject.infoWindow.addListener('domready', () => {
+            //     dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: polygonObject.infoWindow }, this.element);
+            // });
+        }
+
+        dispatchEvent(Events.POLYGONRENDERED, { polygon, polygonObject }, this.element);
+
         this._renderedPolygons.push(polygon);
     }
 
@@ -674,10 +693,12 @@ export class GoogleMaps {
             this._renderedPolygons = [];
         }
 
-        // Add the subcription to markers
+        // Add the subscription to markers
         this._polygonsSubscription = this.bindingEngine
             .collectionObserver(this.polygons)
             .subscribe((splices) => { this.polygonCollectionChange(splices); });
+
+        if (!newValue.length) return;
 
         // Render all markers again
         this._mapPromise.then(() => {
@@ -714,60 +735,62 @@ export class GoogleMaps {
             return;
         }
 
-        for (let splice of splices) {
-            if (splice.removed.length) {
-                // Iterate over all the removed markers
-                for (let removedObj of splice.removed) {
-                    // Iterate over all the rendered markers to find the one to remove
-                    for (let polygonIndex in this._renderedPolygons) {
-                        if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
-                            continue
+        this._mapPromise.then(() => {
+            for (let splice of splices) {
+                if (splice.removed.length) {
+                    // Iterate over all the removed markers
+                    for (let removedObj of splice.removed) {
+                        // Iterate over all the rendered markers to find the one to remove
+                        for (let polygonIndex in this._renderedPolygons) {
+                            if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                                continue
+                            }
+
+                            let renderedPolygon = this._renderedPolygons[polygonIndex];
+
+                            // Get string representation
+                            let strRendered, strRemoved;
+
+                            strRendered = this.encodePath(renderedPolygon.getPath());
+
+                            let removedPaths = removedObj.paths.map(x => {
+                                return new (<any>window).google.maps.LatLng(x.latitude, x.longitude);
+                            });
+
+                            strRemoved = this.encodePath(removedPaths);
+
+                            // Check based on string representation
+                            if (strRendered !== strRemoved) {
+                                continue
+                            }
+
+                            // Set the map to null;
+                            renderedPolygon.setMap(null);
+
+                            // Splice out this rendered marker as well
+                            this._renderedPolygons.splice((<any>polygonIndex), 1);
+                            break;
                         }
+                    }
+                }
 
-                        let renderedPolygon = this._renderedPolygons[polygonIndex];
-
-                        // Get string representation
-                        let strRendered, strRemoved;
-
-                        strRendered = this.encodePath(renderedPolygon.getPath());
-
-                        let removedPaths = removedObj.paths.map(x => {
-                            return new (<any>window).google.maps.LatLng(x.latitude, x.longitude);
-                        });
-
-                        strRemoved = this.encodePath(removedPaths);
-
-                        // Check based on string representation
-                        if (strRendered !== strRemoved) {
-                            continue
-                        }
-
-                        // Set the map to null;
-                        renderedPolygon.setMap(null);
-
-                        // Splice out this rendered marker as well
-                        this._renderedPolygons.splice((<any>polygonIndex), 1);
-                        break;
+                // Add the new polygons to the map
+                if (splice.addedCount) {
+                    let addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
+                    for (let addedPolygon of addedPolygons) {
+                        this.renderPolygon(addedPolygon);
                     }
                 }
             }
-
-            // Add the new polygons to the map
-            if (splice.addedCount) {
-                let addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
-                for (let addedPolygon of addedPolygons) {
-                    this.renderPolygon(addedPolygon);
-                }
-            }
-        }
-
-        /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-         */
-        this.taskQueue.queueTask(() => {
-            this.zoomToMarkerBounds();
-        });
+        }).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
+            });
+        })
     }
 }
 

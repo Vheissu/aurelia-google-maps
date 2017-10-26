@@ -133,14 +133,14 @@ var GoogleMaps = (function () {
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
         var _this = this;
-        var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
         return this._mapPromise.then(function () {
+            var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
             _this.createMarker({
                 map: _this.map,
                 position: markerLatLng
             }).then(function (createdMarker) {
                 createdMarker.addListener('click', function () {
-                    dispatchEvent(events_1.Events.MARKERCLICK, { marker: createdMarker }, _this.element);
+                    dispatchEvent(events_1.Events.MARKERCLICK, { marker: marker, createdMarker: createdMarker }, _this.element);
                     if (!_this.autoInfoWindow)
                         return;
                     if (_this._currentInfoWindow) {
@@ -264,6 +264,8 @@ var GoogleMaps = (function () {
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
             .subscribe(function (splices) { _this.markerCollectionChange(splices); });
+        if (!newValue.length)
+            return;
         this._mapPromise.then(function () {
             var markerPromises = newValue.map(function (marker) {
                 return _this.renderMarker(marker);
@@ -302,7 +304,7 @@ var GoogleMaps = (function () {
                 }
             }
             if (splice.addedCount) {
-                var addedMarkers = this.markers.slice(-splice.addedCount);
+                var addedMarkers = this.markers.slice(splice.index, splice.index + splice.addedCount);
                 for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
                     var addedMarker = addedMarkers_1[_c];
                     renderPromises.push(this.renderMarker(addedMarker));
@@ -439,9 +441,19 @@ var GoogleMaps = (function () {
         }
         var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
         polygon.addListener('click', function () {
+            console.log('click polygon');
             dispatchEvent(events_1.Events.POLYGONCLICK, { polygon: polygon }, _this.element);
         });
         polygon.setMap(this.map);
+        if (polygonObject.infoWindow) {
+            polygon.infoWindow = new window.google.maps.InfoWindow({
+                content: polygonObject.infoWindow.content,
+                pixelOffset: polygonObject.infoWindow.pixelOffset,
+                position: polygonObject.infoWindow.position,
+                maxWidth: polygonObject.infoWindow.maxWidth
+            });
+        }
+        dispatchEvent(events_1.Events.POLYGONRENDERED, { polygon: polygon, polygonObject: polygonObject }, this.element);
         this._renderedPolygons.push(polygon);
     };
     GoogleMaps.prototype.polygonsChanged = function (newValue) {
@@ -457,6 +469,8 @@ var GoogleMaps = (function () {
         this._polygonsSubscription = this.bindingEngine
             .collectionObserver(this.polygons)
             .subscribe(function (splices) { _this.polygonCollectionChange(splices); });
+        if (!newValue.length)
+            return;
         this._mapPromise.then(function () {
             Promise.all(newValue.map(function (polygon) {
                 if (typeof polygon === 'string') {
@@ -477,41 +491,44 @@ var GoogleMaps = (function () {
         if (!splices.length) {
             return;
         }
-        for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
-            var splice = splices_2[_i];
-            if (splice.removed.length) {
-                for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
-                    var removedObj = _b[_a];
-                    for (var polygonIndex in this._renderedPolygons) {
-                        if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
-                            continue;
+        this._mapPromise.then(function () {
+            for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
+                var splice = splices_2[_i];
+                if (splice.removed.length) {
+                    for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
+                        var removedObj = _b[_a];
+                        for (var polygonIndex in _this._renderedPolygons) {
+                            if (!_this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                                continue;
+                            }
+                            var renderedPolygon = _this._renderedPolygons[polygonIndex];
+                            var strRendered = void 0, strRemoved = void 0;
+                            strRendered = _this.encodePath(renderedPolygon.getPath());
+                            var removedPaths = removedObj.paths.map(function (x) {
+                                return new window.google.maps.LatLng(x.latitude, x.longitude);
+                            });
+                            strRemoved = _this.encodePath(removedPaths);
+                            if (strRendered !== strRemoved) {
+                                continue;
+                            }
+                            renderedPolygon.setMap(null);
+                            _this._renderedPolygons.splice(polygonIndex, 1);
+                            break;
                         }
-                        var renderedPolygon = this._renderedPolygons[polygonIndex];
-                        var strRendered = void 0, strRemoved = void 0;
-                        strRendered = this.encodePath(renderedPolygon.getPath());
-                        var removedPaths = removedObj.paths.map(function (x) {
-                            return new window.google.maps.LatLng(x.latitude, x.longitude);
-                        });
-                        strRemoved = this.encodePath(removedPaths);
-                        if (strRendered !== strRemoved) {
-                            continue;
-                        }
-                        renderedPolygon.setMap(null);
-                        this._renderedPolygons.splice(polygonIndex, 1);
-                        break;
+                    }
+                }
+                if (splice.addedCount) {
+                    var addedPolygons = _this.polygons.slice(splice.index, splice.index + splice.addedCount);
+                    for (var _c = 0, addedPolygons_1 = addedPolygons; _c < addedPolygons_1.length; _c++) {
+                        var addedPolygon = addedPolygons_1[_c];
+                        _this.renderPolygon(addedPolygon);
                     }
                 }
             }
-            if (splice.addedCount) {
-                var addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
-                for (var _c = 0, addedPolygons_1 = addedPolygons; _c < addedPolygons_1.length; _c++) {
-                    var addedPolygon = addedPolygons_1[_c];
-                    this.renderPolygon(addedPolygon);
-                }
-            }
-        }
-        this.taskQueue.queueTask(function () {
-            _this.zoomToMarkerBounds();
+        }).then(function () {
+            _this.taskQueue.queueTask(function () {
+                _this.zoomToMarkerBounds();
+            });
         });
     };
     __decorate([

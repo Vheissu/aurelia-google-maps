@@ -11,6 +11,7 @@ export class Events {
     static MARKERMOUSEOUT = 'marker-mouse-out';
 
     static POLYGONCLICK = 'polygon-click';
+    static POLYGONRENDERED = 'polygon-render';
 
     static INFOWINDOWSHOW = 'info-window-show';
 

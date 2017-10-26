@@ -12,6 +12,7 @@ define(["require", "exports"], function (require, exports) {
         Events.MARKERMOUSEOVER = 'marker-mouse-over';
         Events.MARKERMOUSEOUT = 'marker-mouse-out';
         Events.POLYGONCLICK = 'polygon-click';
+        Events.POLYGONRENDERED = 'polygon-render';
         Events.INFOWINDOWSHOW = 'info-window-show';
         Events.START_MARKER_HIGHLIGHT = 'start-marker-highlight';
         Events.STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
