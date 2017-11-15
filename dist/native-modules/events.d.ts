@@ -9,6 +9,7 @@ export declare class Events {
     static POLYGONCLICK: string;
     static POLYGONRENDERED: string;
     static INFOWINDOWSHOW: string;
+    static INFOWINDOWCLOSE: string;
     static START_MARKER_HIGHLIGHT: string;
     static STOP_MARKER_HIGHLIGHT: string;
     static PAN_TO_MARKER: string;

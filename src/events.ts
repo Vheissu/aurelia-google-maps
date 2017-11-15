@@ -14,6 +14,7 @@ export class Events {
     static POLYGONRENDERED = 'polygon-render';
 
     static INFOWINDOWSHOW = 'info-window-show';
+    static INFOWINDOWCLOSE = 'info-window-close';
 
     // Listens
 

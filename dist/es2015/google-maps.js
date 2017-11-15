@@ -113,6 +113,7 @@ var GoogleMaps = (function () {
                     return;
                 if (_this._currentInfoWindow) {
                     _this._currentInfoWindow.close();
+                    dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: _this._currentInfoWindow }, _this.element);
                 }
             });
             _this.map.addListener('dragend', function () {
@@ -183,6 +184,9 @@ var GoogleMaps = (function () {
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
                         dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: createdMarker.infoWindow }, _this.element);
+                    });
+                    createdMarker.infoWindow.addListener('closeclick', function () {
+                        dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: createdMarker.infoWindow }, _this.element);
                     });
                 }
                 if (marker.custom) {

@@ -14,6 +14,7 @@ define(["require", "exports"], function (require, exports) {
         Events.POLYGONCLICK = 'polygon-click';
         Events.POLYGONRENDERED = 'polygon-render';
         Events.INFOWINDOWSHOW = 'info-window-show';
+        Events.INFOWINDOWCLOSE = 'info-window-close';
         Events.START_MARKER_HIGHLIGHT = 'start-marker-highlight';
         Events.STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
         Events.PAN_TO_MARKER = 'pan-to-marker';

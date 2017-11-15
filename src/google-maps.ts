@@ -157,6 +157,9 @@ export class GoogleMaps {
 
                 if (this._currentInfoWindow) {
                     this._currentInfoWindow.close();
+
+                    // Dispatch and event that the info window has been closed
+                    dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: this._currentInfoWindow }, this.element);
                 }
             });
 
@@ -268,6 +271,10 @@ export class GoogleMaps {
 
                     createdMarker.infoWindow.addListener('domready', () => {
                         dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: createdMarker.infoWindow }, this.element);
+                    });
+
+                    createdMarker.infoWindow.addListener('closeclick', () => {
+                        dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: createdMarker.infoWindow }, this.element);
                     });
                 }
 
