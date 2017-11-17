@@ -1,3 +1,11 @@
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -180,7 +188,8 @@ var GoogleMaps = (function () {
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
-                        maxWidth: marker.infoWindow.maxWidth
+                        maxWidth: marker.infoWindow.maxWidth,
+                        parentMarker: __assign({}, marker)
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
                         dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: createdMarker.infoWindow }, _this.element);
@@ -443,7 +452,6 @@ var GoogleMaps = (function () {
         }
         var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
         polygon.addListener('click', function () {
-            console.log('click polygon');
             dispatchEvent(Events.POLYGONCLICK, { polygon: polygon }, _this.element);
         });
         polygon.setMap(this.map);
@@ -452,7 +460,8 @@ var GoogleMaps = (function () {
                 content: polygonObject.infoWindow.content,
                 pixelOffset: polygonObject.infoWindow.pixelOffset,
                 position: polygonObject.infoWindow.position,
-                maxWidth: polygonObject.infoWindow.maxWidth
+                maxWidth: polygonObject.infoWindow.maxWidth,
+                parentPolygon: __assign({}, polygonObject)
             });
         }
         dispatchEvent(Events.POLYGONRENDERED, { polygon: polygon, polygonObject: polygonObject }, this.element);

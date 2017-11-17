@@ -266,7 +266,8 @@ export class GoogleMaps {
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
-                        maxWidth: marker.infoWindow.maxWidth
+                        maxWidth: marker.infoWindow.maxWidth,
+                        parentMarker: { ...marker }
                     });
 
                     createdMarker.infoWindow.addListener('domready', () => {
@@ -654,7 +655,6 @@ export class GoogleMaps {
         );
 
         polygon.addListener('click', () => {
-            console.log('click polygon');
             dispatchEvent(Events.POLYGONCLICK, { polygon }, this.element);
         });
 
@@ -665,7 +665,8 @@ export class GoogleMaps {
                 content: polygonObject.infoWindow.content,
                 pixelOffset: polygonObject.infoWindow.pixelOffset,
                 position: polygonObject.infoWindow.position,
-                maxWidth: polygonObject.infoWindow.maxWidth
+                maxWidth: polygonObject.infoWindow.maxWidth,
+                parentPolygon: { ...polygonObject }
             });
 
             // polygonObject.infoWindow.addListener('domready', () => {
