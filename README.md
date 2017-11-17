@@ -144,7 +144,7 @@ myEventHandler(event) {
 
 In 2.0 of this plugin, there were several events propagated via the Aurelia Event Aggregator.
 
-These events are now handled as DOM events.
+These events are now handled as DOM events. [See here](#supported-events)
 
 ### Render array of markers
 
@@ -195,7 +195,7 @@ var myMarkers = [
 *   `custom` (optional) - store arbitrary data (e.g. an `id` field) in this object, retrieve it from the `googlemap:marker:click` event payload
 *   `infoWindow` (optional) - object - If set, the `googlemap:marker:click` evetn will not be called, instead an infowindow containing the given content will show up - see [docs](https://developers.google.com/maps/documentation/javascript/infowindows)
 
-### Drawing Mode
+### <a name="drawing-mode"></a>Drawing Mode
 
 Allows usage of Google Maps' Drawing API to add Markers, Polylines, Polygons, Rectangles and Circles to the map instance. To allow this, simply set the defaults as below:
 
@@ -221,23 +221,38 @@ In addition to the `map-overlay-complete` event, an event is also propagated thr
 
 ## Supported Properties
 
-*   latitude: A latitude value for the map
-*   longitude: A longitude value for the map
-*   address: Provide an address that gets geocoded into latitude and longitude coordinates
-*   zoom: A zoom value, default is 8
-*   disableDefaultUi: A boolean of true or false. Default is false. (use disable-default-ui="true")
+* latitude: A latitude value for the map
+* longitude: A longitude value for the map
+* address: Provide an address that gets geocoded into latitude and longitude coordinates
+* zoom: A zoom value, default is 8
+* disableDefaultUi: A boolean of true or false. Default is false. (use disable-default-ui="true")
+
 ##### Example:
 ``` html
 <google-map disable-default-ui="true"></google-map>
 ```
 
-*   markers: An array of objects with key/value pairs as described above.
-*   options: A Google Maps options object specified [here](https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
+* markers: An array of objects with key/value pairs as described above.
+* polygons: An array of polygon objects
+* options: A Google Maps options object specified [here](https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
+* auto-update-bounds: Specifies whether the bounds should automatically update when the markers/polygons given changes
+* auto-info-window: Specifies whether to automatically popup the info window on a marker/polygon when the marker/polygon is clicked (only works when an infowindow was set on that marker/polygon)
+* Drawing mode options see [above](#drawing-mode)
 
-## Supported Events
+## <a name="supported-events"></a>Supported Events
 
-- map-click: Delegate a handler with `map-click.delegate="callback($event)"`
-- map-overlay-complete: Delegate a handler with `map-overlay-complete.delegate="callback($event)"`
+* map-click: Delegate a handler with `map-click.delegate="callback($event)"`
+* map-overlay-complete: Delegate a handler with `map-overlay-complete.delegate="callback($event)"`
+* marker-render: Delegate a handler with `marker-render.delegate="callback($event)"`
+* marker-click: Delegate a handler with `marker-click.delegate="callback($event)"`
+* marker-mouse-over: Delegate a handler with `marker-mouse-over.delegate="callback($event)"`
+* marker-mouse-out: Delegate a handler with `marker-mouse-out.delegate="callback($event)"`
+* polygon-click: Delegate a handler with `polygon-click.delegate="callback($event)"`
+* polygon-render: Delegate a handler with `polygon-render.delegate="callback($event)"`
+* info-window-show: Delegate a handler with `info-window-show.delegate="callback($event)"`
+* info-window-close: Delegate a handler with `info-window-close.delegate="callback($event)"`
+* map-loaded: A function handler that handles when the map is loaded. `map-loaded.bind="handler"`
+* Drawing mode events see [above](#drawing-mode)
 
 ## Todo
 This element still is missing some features, but they are in development.
