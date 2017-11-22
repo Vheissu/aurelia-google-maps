@@ -1,3 +1,11 @@
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11,35 +19,14 @@ import { inject } from 'aurelia-dependency-injection';
 import { bindable, customElement, noView } from 'aurelia-templating';
 import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
-import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
-var GM = 'googlemap';
-var Events = (function () {
-    function Events() {
-    }
-    Events.BOUNDSCHANGED = GM + ":bounds_changed";
-    Events.CLICK = GM + ":click";
-    Events.INFOWINDOWDOMREADY = GM + ":infowindow:domready";
-    Events.MARKERCLICK = GM + ":marker:click";
-    Events.MARKERMOUSEOVER = GM + ":marker:mouse_over";
-    Events.MARKERMOUSEOUT = GM + ":marker:mouse_out";
-    Events.POLYGONCLICK = GM + ":polygon:click";
-    Events.POLYGONCLICKEVENT = 'polygon-click';
-    Events.APILOADED = GM + ":api:loaded";
-    Events.LOCATIONADDED = GM + ":marker:added";
-    Events.OVERLAYCOMPLETE = GM + ":draw:overlaycomplete";
-    Events.MAPCLICK = 'map-click';
-    Events.INFOWINDOWSHOW = 'info-window-show';
-    Events.MARKERRENDERED = 'marker-rendered';
-    Events.MAPOVERLAYCOMPLETE = 'map-overlay-complete';
-    return Events;
-}());
-export { Events };
+import { Events } from './events';
 var logger = getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
-    function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator, googleMapsApi) {
+    function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi) {
+        var _this = this;
         this._currentInfoWindow = null;
         this.longitude = 0;
         this.latitude = 0;
@@ -52,7 +39,6 @@ var GoogleMaps = (function () {
         this.options = {};
         this.drawEnabled = false;
         this.drawMode = 'MARKER';
-        this.drawOverlayCompleteEvent = null;
         this.polygons = [];
         this.map = null;
         this._renderedMarkers = [];
@@ -67,7 +53,6 @@ var GoogleMaps = (function () {
         this.taskQueue = taskQueue;
         this.config = config;
         this.bindingEngine = bindingEngine;
-        this.eventAggregator = eventAggregator;
         this.googleMapsApi = googleMapsApi;
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
@@ -82,21 +67,21 @@ var GoogleMaps = (function () {
                 self._mapResolve = resolve;
             });
         });
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
-            var mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
+        this.element.addEventListener(Events.START_MARKER_HIGHLIGHT, function (data) {
+            var marker = self._renderedMarkers[data.index];
+            marker.setIcon(marker.custom.altIcon);
+            marker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
         });
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data) {
-            var mrkr = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.defaultIcon);
+        this.element.addEventListener(Events.STOP_MARKER_HIGHLIGHT, function (data) {
+            var marker = self._renderedMarkers[data.index];
+            marker.setIcon(marker.custom.defaultIcon);
         });
-        this.eventAggregator.subscribe('panToMarker', function (data) {
+        this.element.addEventListener(Events.PAN_TO_MARKER, function (data) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
         });
-        this.eventAggregator.subscribe("clearMarkers", function () {
-            this.clearMarkers();
+        this.element.addEventListener(Events.CLEAR_MARKERS, function () {
+            _this.clearMarkers();
         });
     }
     GoogleMaps.prototype.clearMarkers = function () {
@@ -132,11 +117,11 @@ var GoogleMaps = (function () {
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
                 dispatchEvent(Events.MAPCLICK, e, _this.element);
-                _this.eventAggregator.publish(Events.CLICK, e);
                 if (!_this.autoInfoWindow)
                     return;
                 if (_this._currentInfoWindow) {
                     _this._currentInfoWindow.close();
+                    dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: _this._currentInfoWindow }, _this.element);
                 }
             });
             _this.map.addListener('dragend', function () {
@@ -149,23 +134,21 @@ var GoogleMaps = (function () {
     };
     GoogleMaps.prototype.sendBoundsEvent = function () {
         var bounds = this.map.getBounds();
-        if (bounds) {
-            this.eventAggregator.publish(Events.BOUNDSCHANGED, bounds);
-        }
-    };
-    GoogleMaps.prototype.sendApiLoadedEvent = function () {
-        this.eventAggregator.publish(Events.APILOADED, this._scriptPromise);
+        if (!bounds)
+            return;
+        console.log('sending bounds');
+        dispatchEvent(Events.BOUNDSCHANGED, { bounds: bounds }, this.element);
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
         var _this = this;
-        var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
         return this._mapPromise.then(function () {
+            var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
             _this.createMarker({
                 map: _this.map,
                 position: markerLatLng
             }).then(function (createdMarker) {
                 createdMarker.addListener('click', function () {
-                    _this.eventAggregator.publish(Events.MARKERCLICK, createdMarker);
+                    dispatchEvent(Events.MARKERCLICK, { marker: marker, createdMarker: createdMarker }, _this.element);
                     if (!_this.autoInfoWindow)
                         return;
                     if (_this._currentInfoWindow) {
@@ -179,11 +162,11 @@ var GoogleMaps = (function () {
                     createdMarker.infoWindow.open(_this.map, createdMarker);
                 });
                 createdMarker.addListener('mouseover', function () {
-                    _this.eventAggregator.publish(Events.MARKERMOUSEOVER, createdMarker);
+                    dispatchEvent(Events.MARKERMOUSEOVER, { marker: createdMarker }, _this.element);
                     createdMarker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
                 });
                 createdMarker.addListener('mouseout', function () {
-                    _this.eventAggregator.publish(Events.MARKERMOUSEOUT, createdMarker);
+                    dispatchEvent(Events.MARKERMOUSEOUT, { marker: createdMarker }, _this.element);
                 });
                 createdMarker.addListener('dblclick', function () {
                     _this.map.setZoom(15);
@@ -206,11 +189,14 @@ var GoogleMaps = (function () {
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
-                        maxWidth: marker.infoWindow.maxWidth
+                        maxWidth: marker.infoWindow.maxWidth,
+                        parentMarker: __assign({}, marker)
                     });
                     createdMarker.infoWindow.addListener('domready', function () {
-                        dispatchEvent(Events.INFOWINDOWSHOW, createdMarker.infoWindow, _this.element);
-                        _this.eventAggregator.publish(Events.INFOWINDOWDOMREADY, createdMarker.infoWindow);
+                        dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: createdMarker.infoWindow }, _this.element);
+                    });
+                    createdMarker.infoWindow.addListener('closeclick', function () {
+                        dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: createdMarker.infoWindow }, _this.element);
                     });
                 }
                 if (marker.custom) {
@@ -220,12 +206,6 @@ var GoogleMaps = (function () {
                 dispatchEvent(Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
             });
         });
-    };
-    GoogleMaps.prototype.getCurrentPosition = function () {
-        if (navigator.geolocation) {
-            return navigator.geolocation.getCurrentPosition(function (position) { return Promise.resolve(position); }, function (evt) { return Promise.reject(evt); });
-        }
-        return Promise.reject('Browser Geolocation not supported or found.');
     };
     GoogleMaps.prototype.setOptions = function (options) {
         if (!this.map) {
@@ -296,6 +276,8 @@ var GoogleMaps = (function () {
         this._markersSubscription = this.bindingEngine
             .collectionObserver(this.markers)
             .subscribe(function (splices) { _this.markerCollectionChange(splices); });
+        if (!newValue.length)
+            return;
         this._mapPromise.then(function () {
             var markerPromises = newValue.map(function (marker) {
                 return _this.renderMarker(marker);
@@ -319,20 +301,22 @@ var GoogleMaps = (function () {
                 for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
                     var removedObj = _b[_a];
                     for (var markerIndex in this._renderedMarkers) {
-                        if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
-                            var renderedMarker = this._renderedMarkers[markerIndex];
-                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                                renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                                renderedMarker.setMap(null);
-                                this._renderedMarkers.splice(markerIndex, 1);
-                                break;
-                            }
+                        if (!this._renderedMarkers.hasOwnProperty(markerIndex)) {
+                            continue;
                         }
+                        var renderedMarker = this._renderedMarkers[markerIndex];
+                        if (renderedMarker.position.lat().toFixed(12) !== removedObj.latitude.toFixed(12) ||
+                            renderedMarker.position.lng().toFixed(12) !== removedObj.longitude.toFixed(12)) {
+                            continue;
+                        }
+                        renderedMarker.setMap(null);
+                        this._renderedMarkers.splice(markerIndex, 1);
+                        break;
                     }
                 }
             }
             if (splice.addedCount) {
-                var addedMarkers = this.markers.slice(-splice.addedCount);
+                var addedMarkers = this.markers.slice(splice.index, splice.index + splice.addedCount);
                 for (var _c = 0, addedMarkers_1 = addedMarkers; _c < addedMarkers_1.length; _c++) {
                     var addedMarker = addedMarkers_1[_c];
                     renderPromises.push(this.renderMarker(addedMarker));
@@ -358,6 +342,12 @@ var GoogleMaps = (function () {
             var bounds = new window.google.maps.LatLngBounds();
             for (var _i = 0, _a = _this._renderedMarkers; _i < _a.length; _i++) {
                 var marker = _a[_i];
+                var lat = parseFloat(marker.position.lat());
+                var lng = parseFloat(marker.position.lng());
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn("Marker returned NaN for lat/lng", { marker: marker, lat: lat, lng: lng });
+                    return;
+                }
                 var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.position.lat()), parseFloat(marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
@@ -382,17 +372,6 @@ var GoogleMaps = (function () {
         }
         return window.google.maps.MapTypeId.ROADMAP;
     };
-    GoogleMaps.prototype.error = function () {
-        logger.error.apply(logger, arguments);
-    };
-    GoogleMaps.prototype.resize = function () {
-        var _this = this;
-        this._mapPromise.then(function () {
-            _this.taskQueue.queueMicroTask(function () {
-                window.google.maps.event.trigger(_this.map, 'resize');
-            });
-        });
-    };
     GoogleMaps.prototype.initDrawingManager = function (options) {
         var _this = this;
         if (options === void 0) { options = {}; }
@@ -411,7 +390,6 @@ var GoogleMaps = (function () {
                     encode: _this.encodePath(evt.overlay.getPath())
                 });
                 dispatchEvent(Events.MAPOVERLAYCOMPLETE, evt, _this.element);
-                _this.eventAggregator.publish(Events.OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
         });
@@ -481,9 +459,19 @@ var GoogleMaps = (function () {
         }
         var polygon = new window.google.maps.Polygon(Object.assign({}, polygonObject, { paths: paths }));
         polygon.addListener('click', function () {
-            dispatchEvent(Events.POLYGONCLICKEVENT, { polygon: polygon }, _this.element);
+            dispatchEvent(Events.POLYGONCLICK, { polygon: polygon }, _this.element);
         });
         polygon.setMap(this.map);
+        if (polygonObject.infoWindow) {
+            polygon.infoWindow = new window.google.maps.InfoWindow({
+                content: polygonObject.infoWindow.content,
+                pixelOffset: polygonObject.infoWindow.pixelOffset,
+                position: polygonObject.infoWindow.position,
+                maxWidth: polygonObject.infoWindow.maxWidth,
+                parentPolygon: __assign({}, polygonObject)
+            });
+        }
+        dispatchEvent(Events.POLYGONRENDERED, { polygon: polygon, polygonObject: polygonObject }, this.element);
         this._renderedPolygons.push(polygon);
     };
     GoogleMaps.prototype.polygonsChanged = function (newValue) {
@@ -499,6 +487,8 @@ var GoogleMaps = (function () {
         this._polygonsSubscription = this.bindingEngine
             .collectionObserver(this.polygons)
             .subscribe(function (splices) { _this.polygonCollectionChange(splices); });
+        if (!newValue.length)
+            return;
         this._mapPromise.then(function () {
             Promise.all(newValue.map(function (polygon) {
                 if (typeof polygon === 'string') {
@@ -519,39 +509,44 @@ var GoogleMaps = (function () {
         if (!splices.length) {
             return;
         }
-        for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
-            var splice = splices_2[_i];
-            if (splice.removed.length) {
-                for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
-                    var removedObj = _b[_a];
-                    for (var polygonIndex in this._renderedPolygons) {
-                        if (this._renderedPolygons.hasOwnProperty(polygonIndex)) {
-                            var renderedPolygon = this._renderedPolygons[polygonIndex];
+        this._mapPromise.then(function () {
+            for (var _i = 0, splices_2 = splices; _i < splices_2.length; _i++) {
+                var splice = splices_2[_i];
+                if (splice.removed.length) {
+                    for (var _a = 0, _b = splice.removed; _a < _b.length; _a++) {
+                        var removedObj = _b[_a];
+                        for (var polygonIndex in _this._renderedPolygons) {
+                            if (!_this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                                continue;
+                            }
+                            var renderedPolygon = _this._renderedPolygons[polygonIndex];
                             var strRendered = void 0, strRemoved = void 0;
-                            strRendered = this.encodePath(renderedPolygon.getPath());
+                            strRendered = _this.encodePath(renderedPolygon.getPath());
                             var removedPaths = removedObj.paths.map(function (x) {
                                 return new window.google.maps.LatLng(x.latitude, x.longitude);
                             });
-                            strRemoved = this.encodePath(removedPaths);
-                            if (strRendered === strRemoved) {
-                                renderedPolygon.setMap(null);
-                                this._renderedPolygons.splice(polygonIndex, 1);
-                                break;
+                            strRemoved = _this.encodePath(removedPaths);
+                            if (strRendered !== strRemoved) {
+                                continue;
                             }
+                            renderedPolygon.setMap(null);
+                            _this._renderedPolygons.splice(polygonIndex, 1);
+                            break;
                         }
                     }
                 }
-            }
-            if (splice.addedCount) {
-                var addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
-                for (var _c = 0, addedPolygons_1 = addedPolygons; _c < addedPolygons_1.length; _c++) {
-                    var addedPolygon = addedPolygons_1[_c];
-                    this.renderPolygon(addedPolygon);
+                if (splice.addedCount) {
+                    var addedPolygons = _this.polygons.slice(splice.index, splice.index + splice.addedCount);
+                    for (var _c = 0, addedPolygons_1 = addedPolygons; _c < addedPolygons_1.length; _c++) {
+                        var addedPolygon = addedPolygons_1[_c];
+                        _this.renderPolygon(addedPolygon);
+                    }
                 }
             }
-        }
-        this.taskQueue.queueTask(function () {
-            _this.zoomToMarkerBounds();
+        }).then(function () {
+            _this.taskQueue.queueTask(function () {
+                _this.zoomToMarkerBounds();
+            });
         });
     };
     __decorate([
@@ -605,10 +600,6 @@ var GoogleMaps = (function () {
     __decorate([
         bindable,
         __metadata("design:type", Object)
-    ], GoogleMaps.prototype, "drawOverlayCompleteEvent", void 0);
-    __decorate([
-        bindable,
-        __metadata("design:type", Object)
     ], GoogleMaps.prototype, "polygons", void 0);
     __decorate([
         bindable,
@@ -621,8 +612,8 @@ var GoogleMaps = (function () {
     GoogleMaps = __decorate([
         noView(),
         customElement('google-map'),
-        inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI),
-        __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI])
+        inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI),
+        __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI])
     ], GoogleMaps);
     return GoogleMaps;
 }());

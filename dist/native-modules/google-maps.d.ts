@@ -1,25 +1,7 @@
 import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
-import { EventAggregator } from 'aurelia-event-aggregator';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
-export declare class Events {
-    static BOUNDSCHANGED: string;
-    static CLICK: string;
-    static INFOWINDOWDOMREADY: string;
-    static MARKERCLICK: string;
-    static MARKERMOUSEOVER: string;
-    static MARKERMOUSEOUT: string;
-    static POLYGONCLICK: string;
-    static POLYGONCLICKEVENT: string;
-    static APILOADED: string;
-    static LOCATIONADDED: string;
-    static OVERLAYCOMPLETE: string;
-    static MAPCLICK: string;
-    static INFOWINDOWSHOW: string;
-    static MARKERRENDERED: string;
-    static MAPOVERLAYCOMPLETE: string;
-}
 export interface Marker {
     icon?: string;
     label?: string;
@@ -40,9 +22,7 @@ export declare class GoogleMaps {
     private taskQueue;
     private config;
     private bindingEngine;
-    private eventAggregator;
     private googleMapsApi;
-    private _geocoder;
     private _currentInfoWindow;
     longitude: number;
     latitude: number;
@@ -56,7 +36,6 @@ export declare class GoogleMaps {
     mapLoaded: any;
     drawEnabled: boolean;
     drawMode: string;
-    drawOverlayCompleteEvent: any;
     polygons: any;
     drawingControl: true;
     drawingControlOptions: {};
@@ -69,13 +48,11 @@ export declare class GoogleMaps {
     drawingManager: any;
     _renderedPolygons: any;
     _polygonsSubscription: any;
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI);
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, googleMapsApi: GoogleMapsAPI);
     clearMarkers(): void;
     attached(): void;
     sendBoundsEvent(): void;
-    sendApiLoadedEvent(): void;
     renderMarker(marker: Marker): Promise<void>;
-    getCurrentPosition(): any;
     setOptions(options: any): void;
     createMarker(options: any): any;
     getCenter(): void;
@@ -88,8 +65,6 @@ export declare class GoogleMaps {
     markerCollectionChange(splices: any): void;
     zoomToMarkerBounds(force?: boolean): void;
     getMapTypeId(): any;
-    error(): void;
-    resize(): void;
     initDrawingManager(options?: any): any;
     destroyDrawingManager(): void;
     getOverlayType(type?: any): any;

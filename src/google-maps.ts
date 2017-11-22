@@ -2,34 +2,12 @@ import { inject } from 'aurelia-dependency-injection';
 import { bindable, customElement, noView } from 'aurelia-templating';
 import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
-import { EventAggregator } from 'aurelia-event-aggregator';
 import { getLogger } from 'aurelia-logging';
 
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
 
-// TODO: New map config parameters to disable auto infoWindow
-const GM = 'googlemap';
-
-export class Events {
-    static BOUNDSCHANGED = `${GM}:bounds_changed`;
-    static CLICK = `${GM}:click`;
-    static INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
-    static MARKERCLICK = `${GM}:marker:click`;
-    static MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
-    static MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
-
-    static POLYGONCLICK = `${GM}:polygon:click`;
-    static POLYGONCLICKEVENT = 'polygon-click';
-
-    static APILOADED = `${GM}:api:loaded`;
-    static LOCATIONADDED = `${GM}:marker:added`;
-    static OVERLAYCOMPLETE = `${GM}:draw:overlaycomplete`;
-    static MAPCLICK = 'map-click';
-    static INFOWINDOWSHOW = 'info-window-show';
-    static MARKERRENDERED = 'marker-rendered';
-    static MAPOVERLAYCOMPLETE = 'map-overlay-complete';
-}
+import { Events } from './events';
 
 const logger = getLogger('aurelia-google-maps');
 
@@ -48,15 +26,13 @@ export interface Marker {
 
 @noView()
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator, GoogleMapsAPI)
+@inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI)
 export class GoogleMaps {
     private element: Element;
     private taskQueue: TaskQueue;
     private config: any;
     private bindingEngine: BindingEngine;
-    private eventAggregator: EventAggregator;
     private googleMapsApi: GoogleMapsAPI;
-    private _geocoder: any;
     private _currentInfoWindow: any = null;
 
     @bindable longitude: number = 0;
@@ -71,7 +47,6 @@ export class GoogleMaps {
     @bindable mapLoaded: any;
     @bindable drawEnabled: boolean = false;
     @bindable drawMode = 'MARKER';
-    @bindable drawOverlayCompleteEvent = null;
     @bindable polygons: any = [];
     @bindable drawingControl: true;
     @bindable drawingControlOptions: {};
@@ -86,12 +61,11 @@ export class GoogleMaps {
     public _renderedPolygons: any = [];
     public _polygonsSubscription: any = null;
 
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, eventAggregator: EventAggregator, googleMapsApi: GoogleMapsAPI) {
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, googleMapsApi: GoogleMapsAPI) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
         this.bindingEngine = bindingEngine;
-        this.eventAggregator = eventAggregator;
         this.googleMapsApi = googleMapsApi;
 
         if (!config.get('apiScript')) {
@@ -112,23 +86,26 @@ export class GoogleMaps {
             });
         });
 
-        this.eventAggregator.subscribe('startMarkerHighlight', function (data: any) {
-            let mrkr: any = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.altIcon);
-            mrkr.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
+        /**
+         * Events which the element listens to
+         */
+        this.element.addEventListener(Events.START_MARKER_HIGHLIGHT, (data: any) => {
+                let marker: any = self._renderedMarkers[data.index];
+                marker.setIcon(marker.custom.altIcon);
+                marker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
         });
 
-        this.eventAggregator.subscribe('stopMarkerHighLight', function (data: any) {
-            let mrkr: any = self._renderedMarkers[data.index];
-            mrkr.setIcon(mrkr.custom.defaultIcon);
+        this.element.addEventListener(Events.STOP_MARKER_HIGHLIGHT, (data: any) => {
+            let marker: any = self._renderedMarkers[data.index];
+            marker.setIcon(marker.custom.defaultIcon);
         });
 
-        this.eventAggregator.subscribe('panToMarker', function (data: any) {
+        this.element.addEventListener(Events.PAN_TO_MARKER, (data: any) => {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
         });
 
-        this.eventAggregator.subscribe(`clearMarkers`, function () {
+        this.element.addEventListener(Events.CLEAR_MARKERS, () => {
             this.clearMarkers();
         });
     }
@@ -174,13 +151,15 @@ export class GoogleMaps {
             // Add event listener for click event
             this.map.addListener('click', (e: Event) => {
                 dispatchEvent(Events.MAPCLICK, e, this.element);
-                this.eventAggregator.publish(Events.CLICK, e);
 
                 // If there is an infoWindow open, close it
                 if (!this.autoInfoWindow) return;
 
                 if (this._currentInfoWindow) {
                     this._currentInfoWindow.close();
+
+                    // Dispatch and event that the info window has been closed
+                    dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: this._currentInfoWindow }, this.element);
                 }
             });
 
@@ -200,23 +179,17 @@ export class GoogleMaps {
     }
 
     /**
-     * Send the map bounds as an EA event
+     * Send the map bounds as a DOM Event
      *
      * The `bounds` object is an instance of `LatLngBounds`
      * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
      */
     sendBoundsEvent() {
         let bounds = this.map.getBounds();
-        if (bounds) {
-            this.eventAggregator.publish(Events.BOUNDSCHANGED, bounds);
-        }
-    }
+        if (!bounds) return;
 
-    /**
-     * Send after the api is loaded
-     * */
-    sendApiLoadedEvent() {
-        this.eventAggregator.publish(Events.APILOADED, this._scriptPromise);
+        console.log('sending bounds');
+        dispatchEvent(Events.BOUNDSCHANGED, { bounds }, this.element);
     }
 
     /**
@@ -226,9 +199,9 @@ export class GoogleMaps {
      *
      */
     renderMarker(marker: Marker): Promise<void> {
-        let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
-
         return this._mapPromise.then(() => {
+            let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.latitude), parseFloat(<string>marker.longitude));
+
             // Create the marker
             this.createMarker({
                 map: this.map,
@@ -237,7 +210,7 @@ export class GoogleMaps {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {
-                    this.eventAggregator.publish(Events.MARKERCLICK, createdMarker);
+                    dispatchEvent(Events.MARKERCLICK, { marker, createdMarker }, this.element);
 
                     // Only continue if there autoInfoWindow is enabled
                     if (!this.autoInfoWindow) return;
@@ -259,12 +232,12 @@ export class GoogleMaps {
                 /*add event listener for hover over the marker,
                  *the event payload is the marker itself*/
                 createdMarker.addListener('mouseover', () => {
-                    this.eventAggregator.publish(Events.MARKERMOUSEOVER, createdMarker);
+                    dispatchEvent(Events.MARKERMOUSEOVER, { marker: createdMarker }, this.element);
                     createdMarker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
                 });
 
                 createdMarker.addListener('mouseout', () => {
-                    this.eventAggregator.publish(Events.MARKERMOUSEOUT, createdMarker);
+                    dispatchEvent(Events.MARKERMOUSEOUT, { marker: createdMarker }, this.element);
                 });
 
                 createdMarker.addListener('dblclick', () => {
@@ -294,11 +267,16 @@ export class GoogleMaps {
                         content: marker.infoWindow.content,
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
-                        maxWidth: marker.infoWindow.maxWidth
+                        maxWidth: marker.infoWindow.maxWidth,
+                        parentMarker: { ...marker }
                     });
+
                     createdMarker.infoWindow.addListener('domready', () => {
-                        dispatchEvent(Events.INFOWINDOWSHOW, createdMarker.infoWindow, this.element);
-                        this.eventAggregator.publish(Events.INFOWINDOWDOMREADY, createdMarker.infoWindow);
+                        dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: createdMarker.infoWindow }, this.element);
+                    });
+
+                    createdMarker.infoWindow.addListener('closeclick', () => {
+                        dispatchEvent(Events.INFOWINDOWCLOSE, { infoWindow: createdMarker.infoWindow }, this.element);
                     });
                 }
 
@@ -314,20 +292,6 @@ export class GoogleMaps {
                 dispatchEvent(Events.MARKERRENDERED, { createdMarker, marker }, this.element);
             });
         });
-    }
-
-    /**
-     * Get Current Position
-     *
-     * Get the users current coordinate info from their browser
-     *
-     */
-    getCurrentPosition(): any {
-        if (navigator.geolocation) {
-            return navigator.geolocation.getCurrentPosition(position => Promise.resolve(position), evt => Promise.reject(evt));
-        }
-
-        return Promise.reject('Browser Geolocation not supported or found.');
     }
 
     setOptions(options: any) {
@@ -415,6 +379,8 @@ export class GoogleMaps {
             .collectionObserver(this.markers)
             .subscribe((splices) => { this.markerCollectionChange(splices); });
 
+        if (!newValue.length) return;
+
         // Render all markers again
         this._mapPromise.then(() => {
             let markerPromises = newValue.map(marker => {
@@ -454,27 +420,33 @@ export class GoogleMaps {
                 for (let removedObj of splice.removed) {
                     // Iterate over all the rendered markers to find the one to remove
                     for (let markerIndex in this._renderedMarkers) {
-                        if (this._renderedMarkers.hasOwnProperty(markerIndex)) {
-                            let renderedMarker = this._renderedMarkers[markerIndex];
-
-                            // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
-                            if (renderedMarker.position.lat().toFixed(12) === removedObj.latitude.toFixed(12) &&
-                                renderedMarker.position.lng().toFixed(12) === removedObj.longitude.toFixed(12)) {
-                                // Set the map to null;
-                                renderedMarker.setMap(null);
-
-                                // Splice out this rendered marker as well
-                                this._renderedMarkers.splice((<any>markerIndex), 1);
-                                break;
-                            }
+                        if (!this._renderedMarkers.hasOwnProperty(markerIndex)) {
+                            continue
                         }
+
+                        let renderedMarker = this._renderedMarkers[markerIndex];
+
+                        // Check if the latitude/longitude matches - cast to string of float precision (1e-12)
+                        if (renderedMarker.position.lat().toFixed(12) !== removedObj.latitude.toFixed(12) ||
+                            renderedMarker.position.lng().toFixed(12) !== removedObj.longitude.toFixed(12)) {
+                            continue;
+                        }
+
+                        // Set the map to null;
+                        renderedMarker.setMap(null);
+
+                        // Splice out this rendered marker as well
+                        this._renderedMarkers.splice((<any>markerIndex), 1);
+
+                        // We found the marker, so break from the first level for-loop
+                        break;
                     }
                 }
             }
 
             // Add the new markers to the map
             if (splice.addedCount) {
-                let addedMarkers = this.markers.slice(-splice.addedCount);
+                let addedMarkers = this.markers.slice(splice.index, splice.index + splice.addedCount);
 
                 for (let addedMarker of addedMarkers) {
                     renderPromises.push(this.renderMarker(addedMarker));
@@ -512,6 +484,15 @@ export class GoogleMaps {
             for (let marker of this._renderedMarkers) {
                 // extend the bounds to include each marker's position
 
+                let lat = parseFloat(<string>marker.position.lat());
+                let lng = parseFloat(<string>marker.position.lng());
+
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`Marker returned NaN for lat/lng`, { marker, lat, lng });
+
+                    return;
+                }
+
                 let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.position.lat()), parseFloat(<string>marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
@@ -538,17 +519,6 @@ export class GoogleMaps {
         return (<any>window).google.maps.MapTypeId.ROADMAP;
     }
 
-    error() {
-        logger.error.apply(logger, arguments);
-    }
-
-    resize() {
-        this._mapPromise.then(() => {
-            this.taskQueue.queueMicroTask(() => {
-                (<any>window).google.maps.event.trigger(this.map, 'resize');
-            });
-        });
-    }
     /*************************************************************************
      * Google Maps Drawing Manager
      * The below methods are related to the drawing manager, and exposing some
@@ -572,8 +542,7 @@ export class GoogleMaps {
             }, options);
             this.drawingManager = new (<any>window).google.maps.drawing.DrawingManager(config);
 
-            // Add Event listeners and forward them to as a custom event on the
-            // element and to the Event Aggregator
+            // Add Event listeners and forward them to as a custom event on the element
             this.drawingManager.addListener('overlaycomplete', evt => {
                 // Add the encoded polyline to the event
                 Object.assign(evt, {
@@ -582,7 +551,6 @@ export class GoogleMaps {
                 });
 
                 dispatchEvent(Events.MAPOVERLAYCOMPLETE, evt, this.element);
-                this.eventAggregator.publish(Events.OVERLAYCOMPLETE, evt);
             });
             return Promise.resolve();
         });
@@ -622,7 +590,8 @@ export class GoogleMaps {
 
     /**
      * Update the editing state, called by aurelia binding
-     * @param newval 
+     * @param newval
+     * @param oldval
      */
     drawEnabledChanged(newval: any, oldval: any) {
         this.initDrawingManager()
@@ -695,10 +664,27 @@ export class GoogleMaps {
         );
 
         polygon.addListener('click', () => {
-            dispatchEvent(Events.POLYGONCLICKEVENT, { polygon }, this.element);
+            dispatchEvent(Events.POLYGONCLICK, { polygon }, this.element);
         });
 
         polygon.setMap(this.map);
+
+        if (polygonObject.infoWindow) {
+            polygon.infoWindow = new (<any>window).google.maps.InfoWindow({
+                content: polygonObject.infoWindow.content,
+                pixelOffset: polygonObject.infoWindow.pixelOffset,
+                position: polygonObject.infoWindow.position,
+                maxWidth: polygonObject.infoWindow.maxWidth,
+                parentPolygon: { ...polygonObject }
+            });
+
+            // polygonObject.infoWindow.addListener('domready', () => {
+            //     dispatchEvent(Events.INFOWINDOWSHOW, { infoWindow: polygonObject.infoWindow }, this.element);
+            // });
+        }
+
+        dispatchEvent(Events.POLYGONRENDERED, { polygon, polygonObject }, this.element);
+
         this._renderedPolygons.push(polygon);
     }
 
@@ -724,10 +710,12 @@ export class GoogleMaps {
             this._renderedPolygons = [];
         }
 
-        // Add the subcription to markers
+        // Add the subscription to markers
         this._polygonsSubscription = this.bindingEngine
             .collectionObserver(this.polygons)
             .subscribe((splices) => { this.polygonCollectionChange(splices); });
+
+        if (!newValue.length) return;
 
         // Render all markers again
         this._mapPromise.then(() => {
@@ -764,13 +752,17 @@ export class GoogleMaps {
             return;
         }
 
-        for (let splice of splices) {
-            if (splice.removed.length) {
-                // Iterate over all the removed markers
-                for (let removedObj of splice.removed) {
-                    // Iterate over all the rendered markers to find the one to remove
-                    for (let polygonIndex in this._renderedPolygons) {
-                        if (this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+        this._mapPromise.then(() => {
+            for (let splice of splices) {
+                if (splice.removed.length) {
+                    // Iterate over all the removed markers
+                    for (let removedObj of splice.removed) {
+                        // Iterate over all the rendered markers to find the one to remove
+                        for (let polygonIndex in this._renderedPolygons) {
+                            if (!this._renderedPolygons.hasOwnProperty(polygonIndex)) {
+                                continue
+                            }
+
                             let renderedPolygon = this._renderedPolygons[polygonIndex];
 
                             // Get string representation
@@ -785,35 +777,37 @@ export class GoogleMaps {
                             strRemoved = this.encodePath(removedPaths);
 
                             // Check based on string representation
-                            if (strRendered === strRemoved) {
-                                // Set the map to null;
-                                renderedPolygon.setMap(null);
-
-                                // Splice out this rendered marker as well
-                                this._renderedPolygons.splice((<any>polygonIndex), 1);
-                                break;
+                            if (strRendered !== strRemoved) {
+                                continue
                             }
+
+                            // Set the map to null;
+                            renderedPolygon.setMap(null);
+
+                            // Splice out this rendered marker as well
+                            this._renderedPolygons.splice((<any>polygonIndex), 1);
+                            break;
                         }
                     }
                 }
-            }
 
-            // Add the new polygons to the map
-            if (splice.addedCount) {
-                let addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
-                for (let addedPolygon of addedPolygons) {
-                    this.renderPolygon(addedPolygon);
+                // Add the new polygons to the map
+                if (splice.addedCount) {
+                    let addedPolygons = this.polygons.slice(splice.index, splice.index + splice.addedCount);
+                    for (let addedPolygon of addedPolygons) {
+                        this.renderPolygon(addedPolygon);
+                    }
                 }
             }
-        }
-
-        /**
-         * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-         * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
-         */
-        this.taskQueue.queueTask(() => {
-            this.zoomToMarkerBounds();
-        });
+        }).then(() => {
+            /**
+             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             */
+            this.taskQueue.queueTask(() => {
+                this.zoomToMarkerBounds();
+            });
+        })
     }
 }
 
