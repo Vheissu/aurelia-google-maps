@@ -179,7 +179,7 @@ export class GoogleMaps {
     }
 
     /**
-     * Send the map bounds as an EA event
+     * Send the map bounds as a DOM Event
      *
      * The `bounds` object is an instance of `LatLngBounds`
      * See https://developers.google.com/maps/documentation/javascript/reference#LatLngBounds
@@ -188,6 +188,7 @@ export class GoogleMaps {
         let bounds = this.map.getBounds();
         if (!bounds) return;
 
+        console.log('sending bounds');
         dispatchEvent(Events.BOUNDSCHANGED, { bounds }, this.element);
     }
 
@@ -483,6 +484,15 @@ export class GoogleMaps {
             for (let marker of this._renderedMarkers) {
                 // extend the bounds to include each marker's position
 
+                let lat = parseFloat(<string>marker.position.lat());
+                let lng = parseFloat(<string>marker.position.lng());
+
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`Marker returned NaN for lat/lng`, { marker, lat, lng });
+
+                    return;
+                }
+
                 let markerLatLng = new (<any>window).google.maps.LatLng(parseFloat(<string>marker.position.lat()), parseFloat(<string>marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
@@ -532,8 +542,7 @@ export class GoogleMaps {
             }, options);
             this.drawingManager = new (<any>window).google.maps.drawing.DrawingManager(config);
 
-            // Add Event listeners and forward them to as a custom event on the
-            // element and to the Event Aggregator
+            // Add Event listeners and forward them to as a custom event on the element
             this.drawingManager.addListener('overlaycomplete', evt => {
                 // Add the encoded polyline to the event
                 Object.assign(evt, {

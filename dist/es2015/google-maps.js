@@ -136,6 +136,7 @@ var GoogleMaps = (function () {
         var bounds = this.map.getBounds();
         if (!bounds)
             return;
+        console.log('sending bounds');
         dispatchEvent(Events.BOUNDSCHANGED, { bounds: bounds }, this.element);
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
@@ -341,6 +342,12 @@ var GoogleMaps = (function () {
             var bounds = new window.google.maps.LatLngBounds();
             for (var _i = 0, _a = _this._renderedMarkers; _i < _a.length; _i++) {
                 var marker = _a[_i];
+                var lat = parseFloat(marker.position.lat());
+                var lng = parseFloat(marker.position.lng());
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn("Marker returned NaN for lat/lng", { marker: marker, lat: lat, lng: lng });
+                    return;
+                }
                 var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.position.lat()), parseFloat(marker.position.lng()));
                 bounds.extend(markerLatLng);
             }
