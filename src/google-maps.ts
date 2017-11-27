@@ -188,7 +188,6 @@ export class GoogleMaps {
         let bounds = this.map.getBounds();
         if (!bounds) return;
 
-        console.log('sending bounds');
         dispatchEvent(Events.BOUNDSCHANGED, { bounds }, this.element);
     }
 
