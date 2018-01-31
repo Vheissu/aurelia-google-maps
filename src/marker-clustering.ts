@@ -30,8 +30,6 @@ export class MarkerClustering {
             return;
         }
 
-        new (<any>window).MarkerClusterer(map, markers, {
-            imagePath: this.config.get('markerCluster').imagePath
-        });
+        new (<any>window).MarkerClusterer(map, markers, this.config.get('markerCluster'));
     }
 }
