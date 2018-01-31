@@ -6,6 +6,7 @@ import { getLogger } from 'aurelia-logging';
 
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
+import { MarkerClustering } from './marker-clustering';
 
 import { Events } from './events';
 
@@ -26,13 +27,14 @@ export interface Marker {
 
 @noView()
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI)
+@inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI, MarkerClustering)
 export class GoogleMaps {
     private element: Element;
     private taskQueue: TaskQueue;
     private config: any;
     private bindingEngine: BindingEngine;
     private googleMapsApi: GoogleMapsAPI;
+    private markerClustering: MarkerClustering;
     private _currentInfoWindow: any = null;
 
     @bindable longitude: number = 0;
@@ -61,12 +63,20 @@ export class GoogleMaps {
     public _renderedPolygons: any = [];
     public _polygonsSubscription: any = null;
 
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, googleMapsApi: GoogleMapsAPI) {
+    constructor(
+        element: Element,
+        taskQueue: TaskQueue,
+        config: Configure,
+        bindingEngine: BindingEngine,
+        googleMapsApi: GoogleMapsAPI,
+        markerClustering: MarkerClustering,
+    ) {
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
         this.bindingEngine = bindingEngine;
         this.googleMapsApi = googleMapsApi;
+        this.markerClustering = markerClustering;
 
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
@@ -75,7 +85,8 @@ export class GoogleMaps {
         if (!config.get('apiKey') && config.get('apiKey') !== false) {
             logger.error('No API key has been specified.');
         }
-        
+
+        this.markerClustering.loadScript();
         this._scriptPromise = this.googleMapsApi.getMapsInstance();
 
         let self: GoogleMaps = this;
@@ -120,6 +131,7 @@ export class GoogleMaps {
         });
 
         this._renderedMarkers = [];
+        this.markerClustering.renderClusters(this.map, []);
     }
 
     attached() {
@@ -289,6 +301,8 @@ export class GoogleMaps {
 
                 // Send up and event to let the parent know a new marker has been rendered
                 dispatchEvent(Events.MARKERRENDERED, { createdMarker, marker }, this.element);
+            }).then(() => {
+                this.markerClustering.renderClusters(this.map, this._renderedMarkers);
             });
         });
     }
@@ -389,6 +403,8 @@ export class GoogleMaps {
             // Wait until all of the renderMarker calls have been resolved
             return Promise.all(markerPromises);
         }).then(() => {
+            this.markerClustering.renderClusters(this.map, this._renderedMarkers);
+
             /**
              * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
              * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
@@ -457,6 +473,8 @@ export class GoogleMaps {
          * Wait for all of the promises to resolve for rendering markers
          */
         Promise.all(renderPromises).then(() => {
+            this.markerClustering.renderClusters(this.map, this._renderedMarkers);
+
             /**
              * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
              * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
@@ -568,7 +586,7 @@ export class GoogleMaps {
 
     /**
      * Get the given constant that Google's library uses. Defaults to MARKER
-     * @param type 
+     * @param type
      */
     getOverlayType(type: any = '') {
         switch (type.toUpperCase()) {
@@ -605,7 +623,7 @@ export class GoogleMaps {
 
     /**
      * Update the drawing mode, called by aurelia binding
-     * @param newval 
+     * @param newval
      */
     drawModeChanged(newval: any = '') {
         this.initDrawingManager()
