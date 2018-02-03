@@ -1,4 +1,4 @@
-System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-logging", "./configure", "./google-maps-api", "./events"], function (exports_1, context_1) {
+System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-logging", "./configure", "./google-maps-api", "./marker-clustering", "./events"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -30,7 +30,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         }
         target.dispatchEvent(changeEvent);
     }
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_logging_1, configure_1, google_maps_api_1, events_1, logger, GoogleMaps;
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_logging_1, configure_1, google_maps_api_1, marker_clustering_1, events_1, logger, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -54,6 +54,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
             function (google_maps_api_1_1) {
                 google_maps_api_1 = google_maps_api_1_1;
             },
+            function (marker_clustering_1_1) {
+                marker_clustering_1 = marker_clustering_1_1;
+            },
             function (events_1_1) {
                 events_1 = events_1_1;
             }
@@ -61,7 +64,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         execute: function () {
             logger = aurelia_logging_1.getLogger('aurelia-google-maps');
             GoogleMaps = (function () {
-                function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi) {
+                function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi, markerClustering) {
                     var _this = this;
                     this._currentInfoWindow = null;
                     this.longitude = 0;
@@ -90,12 +93,14 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     this.config = config;
                     this.bindingEngine = bindingEngine;
                     this.googleMapsApi = googleMapsApi;
+                    this.markerClustering = markerClustering;
                     if (!config.get('apiScript')) {
                         logger.error('No API script is defined.');
                     }
                     if (!config.get('apiKey') && config.get('apiKey') !== false) {
                         logger.error('No API key has been specified.');
                     }
+                    this.markerClustering.loadScript();
                     this._scriptPromise = this.googleMapsApi.getMapsInstance();
                     var self = this;
                     this._mapPromise = this._scriptPromise.then(function () {
@@ -128,6 +133,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         marker.setMap(null);
                     });
                     this._renderedMarkers = [];
+                    this.markerClustering.renderClusters(this.map, []);
                 };
                 GoogleMaps.prototype.attached = function () {
                     var _this = this;
@@ -172,7 +178,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     var bounds = this.map.getBounds();
                     if (!bounds)
                         return;
-                    console.log('sending bounds');
                     dispatchEvent(events_1.Events.BOUNDSCHANGED, { bounds: bounds }, this.element);
                 };
                 GoogleMaps.prototype.renderMarker = function (marker) {
@@ -240,6 +245,8 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             }
                             _this._renderedMarkers.push(createdMarker);
                             dispatchEvent(events_1.Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
+                        }).then(function () {
+                            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
                         });
                     });
                 };
@@ -320,6 +327,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         });
                         return Promise.all(markerPromises);
                     }).then(function () {
+                        _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
                         _this.taskQueue.queueTask(function () {
                             _this.zoomToMarkerBounds();
                         });
@@ -360,6 +368,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         }
                     }
                     Promise.all(renderPromises).then(function () {
+                        _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
                         _this.taskQueue.queueTask(function () {
                             _this.zoomToMarkerBounds();
                         });
@@ -648,8 +657,13 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                 GoogleMaps = __decorate([
                     aurelia_templating_1.noView(),
                     aurelia_templating_1.customElement('google-map'),
-                    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI),
-                    __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI])
+                    aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI, marker_clustering_1.MarkerClustering),
+                    __metadata("design:paramtypes", [Element,
+                        aurelia_task_queue_1.TaskQueue,
+                        configure_1.Configure,
+                        aurelia_binding_1.BindingEngine,
+                        google_maps_api_1.GoogleMapsAPI,
+                        marker_clustering_1.MarkerClustering])
                 ], GoogleMaps);
                 return GoogleMaps;
             }());

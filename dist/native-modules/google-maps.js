@@ -22,10 +22,11 @@ import { BindingEngine } from 'aurelia-binding';
 import { getLogger } from 'aurelia-logging';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
+import { MarkerClustering } from './marker-clustering';
 import { Events } from './events';
 var logger = getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
-    function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi) {
+    function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi, markerClustering) {
         var _this = this;
         this._currentInfoWindow = null;
         this.longitude = 0;
@@ -54,12 +55,14 @@ var GoogleMaps = (function () {
         this.config = config;
         this.bindingEngine = bindingEngine;
         this.googleMapsApi = googleMapsApi;
+        this.markerClustering = markerClustering;
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
         }
         if (!config.get('apiKey') && config.get('apiKey') !== false) {
             logger.error('No API key has been specified.');
         }
+        this.markerClustering.loadScript();
         this._scriptPromise = this.googleMapsApi.getMapsInstance();
         var self = this;
         this._mapPromise = this._scriptPromise.then(function () {
@@ -92,6 +95,7 @@ var GoogleMaps = (function () {
             marker.setMap(null);
         });
         this._renderedMarkers = [];
+        this.markerClustering.renderClusters(this.map, []);
     };
     GoogleMaps.prototype.attached = function () {
         var _this = this;
@@ -136,7 +140,6 @@ var GoogleMaps = (function () {
         var bounds = this.map.getBounds();
         if (!bounds)
             return;
-        console.log('sending bounds');
         dispatchEvent(Events.BOUNDSCHANGED, { bounds: bounds }, this.element);
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
@@ -204,6 +207,8 @@ var GoogleMaps = (function () {
                 }
                 _this._renderedMarkers.push(createdMarker);
                 dispatchEvent(Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
+            }).then(function () {
+                _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             });
         });
     };
@@ -284,6 +289,7 @@ var GoogleMaps = (function () {
             });
             return Promise.all(markerPromises);
         }).then(function () {
+            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             _this.taskQueue.queueTask(function () {
                 _this.zoomToMarkerBounds();
             });
@@ -324,6 +330,7 @@ var GoogleMaps = (function () {
             }
         }
         Promise.all(renderPromises).then(function () {
+            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             _this.taskQueue.queueTask(function () {
                 _this.zoomToMarkerBounds();
             });
@@ -612,8 +619,13 @@ var GoogleMaps = (function () {
     GoogleMaps = __decorate([
         noView(),
         customElement('google-map'),
-        inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI),
-        __metadata("design:paramtypes", [Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI])
+        inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI, MarkerClustering),
+        __metadata("design:paramtypes", [Element,
+            TaskQueue,
+            Configure,
+            BindingEngine,
+            GoogleMapsAPI,
+            MarkerClustering])
     ], GoogleMaps);
     return GoogleMaps;
 }());

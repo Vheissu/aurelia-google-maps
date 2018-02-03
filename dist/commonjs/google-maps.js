@@ -24,10 +24,11 @@ var aurelia_binding_1 = require("aurelia-binding");
 var aurelia_logging_1 = require("aurelia-logging");
 var configure_1 = require("./configure");
 var google_maps_api_1 = require("./google-maps-api");
+var marker_clustering_1 = require("./marker-clustering");
 var events_1 = require("./events");
 var logger = aurelia_logging_1.getLogger('aurelia-google-maps');
 var GoogleMaps = (function () {
-    function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi) {
+    function GoogleMaps(element, taskQueue, config, bindingEngine, googleMapsApi, markerClustering) {
         var _this = this;
         this._currentInfoWindow = null;
         this.longitude = 0;
@@ -56,12 +57,14 @@ var GoogleMaps = (function () {
         this.config = config;
         this.bindingEngine = bindingEngine;
         this.googleMapsApi = googleMapsApi;
+        this.markerClustering = markerClustering;
         if (!config.get('apiScript')) {
             logger.error('No API script is defined.');
         }
         if (!config.get('apiKey') && config.get('apiKey') !== false) {
             logger.error('No API key has been specified.');
         }
+        this.markerClustering.loadScript();
         this._scriptPromise = this.googleMapsApi.getMapsInstance();
         var self = this;
         this._mapPromise = this._scriptPromise.then(function () {
@@ -94,6 +97,7 @@ var GoogleMaps = (function () {
             marker.setMap(null);
         });
         this._renderedMarkers = [];
+        this.markerClustering.renderClusters(this.map, []);
     };
     GoogleMaps.prototype.attached = function () {
         var _this = this;
@@ -138,7 +142,6 @@ var GoogleMaps = (function () {
         var bounds = this.map.getBounds();
         if (!bounds)
             return;
-        console.log('sending bounds');
         dispatchEvent(events_1.Events.BOUNDSCHANGED, { bounds: bounds }, this.element);
     };
     GoogleMaps.prototype.renderMarker = function (marker) {
@@ -206,6 +209,8 @@ var GoogleMaps = (function () {
                 }
                 _this._renderedMarkers.push(createdMarker);
                 dispatchEvent(events_1.Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
+            }).then(function () {
+                _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             });
         });
     };
@@ -286,6 +291,7 @@ var GoogleMaps = (function () {
             });
             return Promise.all(markerPromises);
         }).then(function () {
+            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             _this.taskQueue.queueTask(function () {
                 _this.zoomToMarkerBounds();
             });
@@ -326,6 +332,7 @@ var GoogleMaps = (function () {
             }
         }
         Promise.all(renderPromises).then(function () {
+            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
             _this.taskQueue.queueTask(function () {
                 _this.zoomToMarkerBounds();
             });
@@ -614,8 +621,13 @@ var GoogleMaps = (function () {
     GoogleMaps = __decorate([
         aurelia_templating_1.noView(),
         aurelia_templating_1.customElement('google-map'),
-        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI),
-        __metadata("design:paramtypes", [Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI])
+        aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, google_maps_api_1.GoogleMapsAPI, marker_clustering_1.MarkerClustering),
+        __metadata("design:paramtypes", [Element,
+            aurelia_task_queue_1.TaskQueue,
+            configure_1.Configure,
+            aurelia_binding_1.BindingEngine,
+            google_maps_api_1.GoogleMapsAPI,
+            marker_clustering_1.MarkerClustering])
     ], GoogleMaps);
     return GoogleMaps;
 }());

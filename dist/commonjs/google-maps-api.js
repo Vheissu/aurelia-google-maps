@@ -22,10 +22,17 @@ var GoogleMapsAPI = (function () {
         }
         if (window.google === undefined || window.google.maps === undefined) {
             var script_1 = document.createElement('script');
+            var params = [
+                this.config.get('apiKey') ? "key=" + this.config.get('apiKey') + "&" : '',
+                this.config.get('apiLibraries') ? "libraries=" + this.config.get('apiLibraries') : '',
+                this.config.get('language') ? "language=" + this.config.get('language') : '',
+                this.config.get('region') ? "region=" + this.config.get('region') : '',
+                'callback=aureliaGoogleMapsCallback',
+            ];
             script_1.type = 'text/javascript';
             script_1.async = true;
             script_1.defer = true;
-            script_1.src = this.config.get('apiScript') + "?key=" + this.config.get('apiKey') + "&libraries=" + this.config.get('apiLibraries') + "&language=" + this.config.get('language') + "&region=" + this.config.get('region') + "&callback=aureliaGoogleMapsCallback";
+            script_1.src = this.config.get('apiScript') + "?" + params.join('&');
             document.body.appendChild(script_1);
             this._scriptPromise = new Promise(function (resolve, reject) {
                 window.aureliaGoogleMapsCallback = function () {

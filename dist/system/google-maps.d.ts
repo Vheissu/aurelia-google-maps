@@ -2,6 +2,7 @@ import { TaskQueue } from 'aurelia-task-queue';
 import { BindingEngine } from 'aurelia-binding';
 import { Configure } from './configure';
 import { GoogleMapsAPI } from './google-maps-api';
+import { MarkerClustering } from './marker-clustering';
 export interface Marker {
     icon?: string;
     label?: string;
@@ -23,6 +24,7 @@ export declare class GoogleMaps {
     private config;
     private bindingEngine;
     private googleMapsApi;
+    private markerClustering;
     private _currentInfoWindow;
     longitude: number;
     latitude: number;
@@ -48,7 +50,7 @@ export declare class GoogleMaps {
     drawingManager: any;
     _renderedPolygons: any;
     _polygonsSubscription: any;
-    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, googleMapsApi: GoogleMapsAPI);
+    constructor(element: Element, taskQueue: TaskQueue, config: Configure, bindingEngine: BindingEngine, googleMapsApi: GoogleMapsAPI, markerClustering: MarkerClustering);
     clearMarkers(): void;
     attached(): void;
     sendBoundsEvent(): void;
