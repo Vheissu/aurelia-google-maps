@@ -20,10 +20,18 @@ export class GoogleMapsAPI {
             // google has not been defined yet
             let script = document.createElement('script');
 
+            let params = [
+                this.config.get('apiKey') ? `key=${this.config.get('apiKey')}&` : '',
+                this.config.get('apiLibraries') ? `libraries=${this.config.get('apiLibraries')}` : '',
+                this.config.get('language') ? `language=${this.config.get('language')}` : '',
+                this.config.get('region') ? `region=${this.config.get('region')}` : '',
+                'callback=aureliaGoogleMapsCallback',
+            ];
+
             script.type = 'text/javascript';
             script.async = true;
             script.defer = true;
-            script.src = `${this.config.get('apiScript')}?key=${this.config.get('apiKey')}&libraries=${this.config.get('apiLibraries')}&language=${this.config.get('language')}&region=${this.config.get('region')}&callback=aureliaGoogleMapsCallback`;
+            script.src = `${this.config.get('apiScript')}?${params.join('&')}`;
             document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {

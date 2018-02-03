@@ -44,6 +44,12 @@ export function configure(aurelia) {
                 options: { panControl: true, panControlOptions: { position: 9 } }, //add google.maps.MapOptions on construct (https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions)
                 language:'' | 'en', // default: uses browser configuration (recommended). Set this parameter to set another language (https://developers.google.com/maps/documentation/javascript/localization)
                 region: '' | 'US' // default: it applies a default bias for application behavior towards the United States. (https://developers.google.com/maps/documentation/javascript/localization)
+                markerCluster: {
+                    enable: false,
+                    src: 'https://cdn.rawgit.com/googlemaps/v3-utility-library/99a385c1/markerclusterer/src/markerclusterer.js', // self-hosting this file is highly recommended. (https://developers.google.com/maps/documentation/javascript/marker-clustering)
+                    imagePath: 'https://cdn.rawgit.com/googlemaps/v3-utility-library/tree/master/markerclusterer/images/m', // the base URL where the images representing the clusters will be found. The full URL will be: `{imagePath}{[1-5]}`.`{imageExtension}` e.g. `foo/1.png`. Self-hosting these images is highly recommended. (https://developers.google.com/maps/documentation/javascript/marker-clustering)
+                    imageExtension: 'png',
+                }
             });
         })
 }
@@ -194,6 +200,12 @@ var myMarkers = [
 *   `title` (optional) - string - Rollover text, see [docs](<https://developers.google.com/maps/documentation/javascript/reference#MarkerOptions>)
 *   `custom` (optional) - store arbitrary data (e.g. an `id` field) in this object, retrieve it from the `googlemap:marker:click` event payload
 *   `infoWindow` (optional) - object - If set, the `googlemap:marker:click` evetn will not be called, instead an infowindow containing the given content will show up - see [docs](https://developers.google.com/maps/documentation/javascript/infowindows)
+
+
+### Marker clustering
+
+This options allows the clustering of markers that are near each other.
+All the config and styling options can be found [here](https://github.com/googlemaps/v3-utility-library/blob/master/markerclusterer/src/markerclusterer.js#L40).
 
 ### <a name="drawing-mode"></a>Drawing Mode
 
