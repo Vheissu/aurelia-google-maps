@@ -562,11 +562,14 @@ export class GoogleMaps {
             // Add Event listeners and forward them to as a custom event on the element
             this.drawingManager.addListener('overlaycomplete', evt => {
                 // Add the encoded polyline to the event
-                Object.assign(evt, {
-                    path: evt.overlay.getPath().getArray().map(x => { return { latitude: x.lat(), longitude: x.lng() }}),
-                    encode: this.encodePath(evt.overlay.getPath())
-                });
-
+                if (evt.type.toUpperCase() == 'POLYGON' || evt.type.toUpperCase() == 'POLYLINE')
+                {
+                    Object.assign(evt, {
+                        path: evt.overlay.getPath().getArray().map(x => { return { latitude: x.lat(), longitude: x.lng() }}),
+                        encode: this.encodePath(evt.overlay.getPath())
+                    });
+                }
+                
                 dispatchEvent(Events.MAPOVERLAYCOMPLETE, evt, this.element);
             });
             return Promise.resolve();
