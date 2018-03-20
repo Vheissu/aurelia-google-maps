@@ -37,7 +37,7 @@ the configure method using `.plugin()`
 ``` javascript
 export function configure(aurelia) {
     aurelia.use
-        .plugin('aurelia-google-maps', config => {
+        .plugin(PLATFORM.moduleName('aurelia-google-maps'), config => {
             config.options({
                 apiKey: 'myapiKey', // use `false` to disable the key
                 apiLibraries: 'drawing,geometry', //get optional libraries like drawing, geometry, ... - comma seperated list
