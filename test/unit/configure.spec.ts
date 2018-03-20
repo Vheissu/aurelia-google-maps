@@ -1,5 +1,12 @@
 import { Configure } from '../../src/configure';
 
+const markerCluster = {
+    enable: false,
+    src: 'https://cdn.rawgit.com/googlemaps/v3-utility-library/99a385c1/markerclusterer/src/markerclusterer.js',
+    imagePath: 'https://raw.githubusercontent.com/googlemaps/v3-utility-library/99a385c1/markerclusterer/images/m',
+    imageExtension: 'png',
+}
+
 describe('configure', () => {
     let sut: any;
 
@@ -14,7 +21,8 @@ describe('configure', () => {
             region: '',
             language: '',
             apiLibraries: '',
-            options: {}
+            options: {},
+            markerCluster
         });
     });
 

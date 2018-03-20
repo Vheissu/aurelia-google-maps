@@ -386,10 +386,12 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 }, options);
                 _this.drawingManager = new window.google.maps.drawing.DrawingManager(config);
                 _this.drawingManager.addListener('overlaycomplete', function (evt) {
-                    Object.assign(evt, {
-                        path: evt.overlay.getPath().getArray().map(function (x) { return { latitude: x.lat(), longitude: x.lng() }; }),
-                        encode: _this.encodePath(evt.overlay.getPath())
-                    });
+                    if (evt.type.toUpperCase() == 'POLYGON' || evt.type.toUpperCase() == 'POLYLINE') {
+                        Object.assign(evt, {
+                            path: evt.overlay.getPath().getArray().map(function (x) { return { latitude: x.lat(), longitude: x.lng() }; }),
+                            encode: _this.encodePath(evt.overlay.getPath())
+                        });
+                    }
                     dispatchEvent(events_1.Events.MAPOVERLAYCOMPLETE, evt, _this.element);
                 });
                 return Promise.resolve();
