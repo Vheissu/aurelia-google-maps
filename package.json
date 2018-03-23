@@ -112,6 +112,13 @@
     "typescript": "^2.7.1"
   },
   "aurelia": {
+    "import": {
+      "dependencies":{
+        "name": "aurelia-google-maps",
+        "path": "../node_modules/aurelia-google-maps/dist/amd",
+        "main": "index"
+      }
+    },
     "build": {
       "resources": [
         "aurelia-google-maps/google-maps"
