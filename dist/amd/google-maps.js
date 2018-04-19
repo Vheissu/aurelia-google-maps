@@ -89,7 +89,9 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 marker.setMap(null);
             });
             this._renderedMarkers = [];
-            this.markerClustering.renderClusters(this.map, []);
+            if (this.markerClustering) {
+                this.markerClustering.clearMarkers();
+            }
         };
         GoogleMaps.prototype.attached = function () {
             var _this = this;
@@ -201,8 +203,6 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                     }
                     _this._renderedMarkers.push(createdMarker);
                     dispatchEvent(events_1.Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
-                }).then(function () {
-                    _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
                 });
             });
         };
@@ -277,15 +277,18 @@ define(["require", "exports", "aurelia-dependency-injection", "aurelia-templatin
                 .subscribe(function (splices) { _this.markerCollectionChange(splices); });
             if (!newValue.length)
                 return;
+            var markerPromises = [];
             this._mapPromise.then(function () {
-                var markerPromises = newValue.map(function (marker) {
+                markerPromises = newValue.map(function (marker) {
                     return _this.renderMarker(marker);
                 });
-                return Promise.all(markerPromises);
-            }).then(function () {
-                _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
-                _this.taskQueue.queueTask(function () {
-                    _this.zoomToMarkerBounds();
+                return markerPromises;
+            }).then(function (p) {
+                Promise.all(p).then(function () {
+                    _this.taskQueue.queueTask(function () {
+                        _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
+                        _this.zoomToMarkerBounds();
+                    });
                 });
             });
         };
