@@ -4,6 +4,7 @@ import { Configure } from './configure';
 @inject(Configure)
 export class MarkerClustering {
     private config: Configure;
+    private markerClusterer: any;
 
     constructor(config) {
         this.config = config;
@@ -11,6 +12,12 @@ export class MarkerClustering {
 
     isEnabled() {
         return this.config.get('markerCluster') && this.config.get('markerCluster').enable;
+    }
+
+    clearMarkers(){
+        if (this.markerClusterer){
+            this.markerClusterer.clearMarkers();
+        }
     }
 
     loadScript() {
@@ -30,6 +37,6 @@ export class MarkerClustering {
             return;
         }
 
-        new (<any>window).MarkerClusterer(map, markers, this.config.get('markerCluster'));
+        this.markerClusterer = new (<any>window).MarkerClusterer(map, markers, this.config.get('markerCluster'));
     }
 }

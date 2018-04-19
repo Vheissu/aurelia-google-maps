@@ -3,3 +3,5 @@ _BACKUP/
 dist/test/
 .DS_Store
 .idea
+package-lock.json
+dist/*/marker-clustering*
