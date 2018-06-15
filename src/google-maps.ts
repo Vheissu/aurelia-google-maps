@@ -131,7 +131,10 @@ export class GoogleMaps {
         });
 
         this._renderedMarkers = [];
-        this.markerClustering.renderClusters(this.map, []);
+
+        if (this.markerClustering){
+            this.markerClustering.clearMarkers();
+        }
     }
 
     attached() {
@@ -301,8 +304,6 @@ export class GoogleMaps {
 
                 // Send up and event to let the parent know a new marker has been rendered
                 dispatchEvent(Events.MARKERRENDERED, { createdMarker, marker }, this.element);
-            }).then(() => {
-                this.markerClustering.renderClusters(this.map, this._renderedMarkers);
             });
         });
     }
@@ -395,23 +396,29 @@ export class GoogleMaps {
         if (!newValue.length) return;
 
         // Render all markers again
+        let markerPromises = [];
+
         this._mapPromise.then(() => {
-            let markerPromises = newValue.map(marker => {
+            markerPromises = newValue.map(marker => {
                 return this.renderMarker(marker);
             });
-
-            // Wait until all of the renderMarker calls have been resolved
-            return Promise.all(markerPromises);
-        }).then(() => {
-            this.markerClustering.renderClusters(this.map, this._renderedMarkers);
-
+            return markerPromises;
+        }).then( (p) => {        
             /**
-             * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
-             * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+             * Wait for all of the promises to resolve for rendering markers
              */
-            this.taskQueue.queueTask(() => {
-                this.zoomToMarkerBounds();
-            });
+            Promise.all(p).then(() =>
+            {
+                /**
+                 * We queue up a task to update the bounds, because in the case of multiple bound properties changing all at once,
+                 * we need to let Aurelia handle updating the other properties before we actually trigger a re-render of the map
+                 */
+                this.taskQueue.queueTask(() =>
+                {
+                    this.markerClustering.renderClusters(this.map, this._renderedMarkers);
+                    this.zoomToMarkerBounds();
+                });
+            })
         });
     }
 
