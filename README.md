@@ -212,7 +212,7 @@ All the config and styling options can be found [here](https://github.com/google
 Allows usage of Google Maps' Drawing API to add Markers, Polylines, Polygons, Rectangles and Circles to the map instance. To allow this, simply set the defaults as below:
 
 ``` html
-<google-map draw-enable.bind="true" draw-mode="polygon"></google-map>
+<google-map draw-enabled.bind="true" draw-mode="polygon"></google-map>
 ```
 
 The `draw-mode` can take the same values as defined [here](https://developers.google.com/maps/documentation/javascript/reference#OverlayType)
