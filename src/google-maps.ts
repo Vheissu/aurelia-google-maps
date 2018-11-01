@@ -101,18 +101,18 @@ export class GoogleMaps {
          * Events which the element listens to
          */
         this.element.addEventListener(Events.START_MARKER_HIGHLIGHT, (data: any) => {
-                let marker: any = self._renderedMarkers[data.index];
+                let marker: any = self._renderedMarkers[data.detail.index];
                 marker.setIcon(marker.custom.altIcon);
                 marker.setZIndex((<any>window).google.maps.Marker.MAX_ZINDEX + 1);
         });
 
         this.element.addEventListener(Events.STOP_MARKER_HIGHLIGHT, (data: any) => {
-            let marker: any = self._renderedMarkers[data.index];
+            let marker: any = self._renderedMarkers[data.detail.index];
             marker.setIcon(marker.custom.defaultIcon);
         });
 
         this.element.addEventListener(Events.PAN_TO_MARKER, (data: any) => {
-            self.map.panTo(self._renderedMarkers[data.index].position);
+            self.map.panTo(self._renderedMarkers[data.detail.index].position);
             self.map.setZoom(17);
         });
 
