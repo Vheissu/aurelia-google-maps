@@ -1,6 +1,7 @@
 export interface ConfigInterface {
     apiScript: string;
     apiKey: string;
+    clientId?: string,
     apiLibraries: string;
     options: any;
     markerCluster: {enable: boolean, src?: string, imagePath?: string, imageExtension?: string}
@@ -13,6 +14,7 @@ export class Configure {
         this._config = {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
+            clientId: '',
             apiLibraries: '',
             region: '',
             language: '',

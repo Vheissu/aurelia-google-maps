@@ -82,8 +82,8 @@ export class GoogleMaps {
             logger.error('No API script is defined.');
         }
 
-        if (!config.get('apiKey') && config.get('apiKey') !== false) {
-            logger.error('No API key has been specified.');
+        if ((!config.get('apiKey') && config.get('apiKey') !== false) || (!config.get('clientId') && config.get('clientId') !== false)) {
+            logger.error('No API key or client ID has been specified.');
         }
 
         this.markerClustering.loadScript();
