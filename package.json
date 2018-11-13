@@ -1,6 +1,6 @@
 {
   "name": "aurelia-google-maps",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "A plugin for working with Google Maps within Aurelia",
   "keywords": [
     "aurelia",
@@ -57,24 +57,24 @@
       "dist": "dist/amd"
     },
     "peerDependencies": {
-      "aurelia-binding": "^1.6.0",
-      "aurelia-dependency-injection": "^1.3.2",
+      "aurelia-binding": "^2.1.6",
+      "aurelia-dependency-injection": "^1.4.1",
       "aurelia-event-aggregator": "^1.0.1",
-      "aurelia-framework": "^1.1.5",
-      "aurelia-logging": "^1.4.0",
-      "aurelia-pal": "^1.5.0",
-      "aurelia-task-queue": "^1.2.1",
-      "aurelia-templating": "^1.7.0"
+      "aurelia-framework": "^1.3.0",
+      "aurelia-logging": "^1.5.0",
+      "aurelia-pal": "^1.8.0",
+      "aurelia-task-queue": "^1.3.1",
+      "aurelia-templating": "^1.10.1"
     },
     "dependencies": {
-      "aurelia-binding": "^1.6.0",
-      "aurelia-dependency-injection": "^1.3.2",
+      "aurelia-binding": "^2.1.6",
+      "aurelia-dependency-injection": "^1.4.1",
       "aurelia-event-aggregator": "^1.0.1",
-      "aurelia-framework": "^1.1.5",
-      "aurelia-logging": "^1.4.0",
-      "aurelia-pal": "^1.5.0",
-      "aurelia-task-queue": "^1.2.1",
-      "aurelia-templating": "^1.7.0"
+      "aurelia-framework": "^1.3.0",
+      "aurelia-logging": "^1.5.0",
+      "aurelia-pal": "^1.8.0",
+      "aurelia-task-queue": "^1.3.1",
+      "aurelia-templating": "^1.10.1"
     },
     "devDependencies": {}
   },
