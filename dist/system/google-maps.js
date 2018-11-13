@@ -1,12 +1,15 @@
 System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-task-queue", "aurelia-binding", "aurelia-logging", "./configure", "./google-maps-api", "./marker-clustering", "./events"], function (exports_1, context_1) {
     "use strict";
-    var __assign = (this && this.__assign) || Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
+    var __assign = (this && this.__assign) || function () {
+        __assign = Object.assign || function(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                    t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
     };
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -17,6 +20,7 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
+    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_logging_1, configure_1, google_maps_api_1, marker_clustering_1, events_1, logger, GoogleMaps;
     var __moduleName = context_1 && context_1.id;
     function dispatchEvent(name, detail, target, bubbles) {
         if (bubbles === void 0) { bubbles = true; }
@@ -30,7 +34,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
         }
         target.dispatchEvent(changeEvent);
     }
-    var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_logging_1, configure_1, google_maps_api_1, marker_clustering_1, events_1, logger, GoogleMaps;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -97,8 +100,8 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                     if (!config.get('apiScript')) {
                         logger.error('No API script is defined.');
                     }
-                    if (!config.get('apiKey') && config.get('apiKey') !== false) {
-                        logger.error('No API key has been specified.');
+                    if ((!config.get('apiKey') && config.get('apiKey') !== false) || (!config.get('clientId') && config.get('clientId') !== false)) {
+                        logger.error('No API key or client ID has been specified.');
                     }
                     this.markerClustering.loadScript();
                     this._scriptPromise = this.googleMapsApi.getMapsInstance();
@@ -109,16 +112,16 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         });
                     });
                     this.element.addEventListener(events_1.Events.START_MARKER_HIGHLIGHT, function (data) {
-                        var marker = self._renderedMarkers[data.index];
+                        var marker = self._renderedMarkers[data.detail.index];
                         marker.setIcon(marker.custom.altIcon);
                         marker.setZIndex(window.google.maps.Marker.MAX_ZINDEX + 1);
                     });
                     this.element.addEventListener(events_1.Events.STOP_MARKER_HIGHLIGHT, function (data) {
-                        var marker = self._renderedMarkers[data.index];
+                        var marker = self._renderedMarkers[data.detail.index];
                         marker.setIcon(marker.custom.defaultIcon);
                     });
                     this.element.addEventListener(events_1.Events.PAN_TO_MARKER, function (data) {
-                        self.map.panTo(self._renderedMarkers[data.index].position);
+                        self.map.panTo(self._renderedMarkers[data.detail.index].position);
                         self.map.setZoom(17);
                     });
                     this.element.addEventListener(events_1.Events.CLEAR_MARKERS, function () {
@@ -133,7 +136,9 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         marker.setMap(null);
                     });
                     this._renderedMarkers = [];
-                    this.markerClustering.renderClusters(this.map, []);
+                    if (this.markerClustering) {
+                        this.markerClustering.clearMarkers();
+                    }
                 };
                 GoogleMaps.prototype.attached = function () {
                     var _this = this;
@@ -245,8 +250,6 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                             }
                             _this._renderedMarkers.push(createdMarker);
                             dispatchEvent(events_1.Events.MARKERRENDERED, { createdMarker: createdMarker, marker: marker }, _this.element);
-                        }).then(function () {
-                            _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
                         });
                     });
                 };
@@ -321,15 +324,18 @@ System.register(["aurelia-dependency-injection", "aurelia-templating", "aurelia-
                         .subscribe(function (splices) { _this.markerCollectionChange(splices); });
                     if (!newValue.length)
                         return;
+                    var markerPromises = [];
                     this._mapPromise.then(function () {
-                        var markerPromises = newValue.map(function (marker) {
+                        markerPromises = newValue.map(function (marker) {
                             return _this.renderMarker(marker);
                         });
-                        return Promise.all(markerPromises);
-                    }).then(function () {
-                        _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
-                        _this.taskQueue.queueTask(function () {
-                            _this.zoomToMarkerBounds();
+                        return markerPromises;
+                    }).then(function (p) {
+                        Promise.all(p).then(function () {
+                            _this.taskQueue.queueTask(function () {
+                                _this.markerClustering.renderClusters(_this.map, _this._renderedMarkers);
+                                _this.zoomToMarkerBounds();
+                            });
                         });
                     });
                 };

@@ -1,7 +1,7 @@
 System.register([], function (exports_1, context_1) {
     "use strict";
-    var __moduleName = context_1 && context_1.id;
     var Configure;
+    var __moduleName = context_1 && context_1.id;
     return {
         setters: [],
         execute: function () {
@@ -10,6 +10,7 @@ System.register([], function (exports_1, context_1) {
                     this._config = {
                         apiScript: 'https://maps.googleapis.com/maps/api/js',
                         apiKey: '',
+                        clientId: '',
                         apiLibraries: '',
                         region: '',
                         language: '',

@@ -1,5 +1,6 @@
 System.register(["aurelia-pal", "./configure", "./google-maps", "./google-maps-api"], function (exports_1, context_1) {
     "use strict";
+    var aurelia_pal_1, configure_1, google_maps_1, google_maps_api_1;
     var __moduleName = context_1 && context_1.id;
     function configure(aurelia, configCallback) {
         var instance = aurelia.container.get(configure_1.Configure);
@@ -12,7 +13,6 @@ System.register(["aurelia-pal", "./configure", "./google-maps", "./google-maps-a
         ]);
     }
     exports_1("configure", configure);
-    var aurelia_pal_1, configure_1, google_maps_1, google_maps_api_1;
     return {
         setters: [
             function (aurelia_pal_1_1) {

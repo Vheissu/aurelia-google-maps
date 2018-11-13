@@ -23,6 +23,7 @@ define(["require", "exports", "aurelia-dependency-injection", "./configure"], fu
                 var script_1 = document.createElement('script');
                 var params = [
                     this.config.get('apiKey') ? "key=" + this.config.get('apiKey') + "&" : '',
+                    this.config.get('clientId') ? "clientId=" + this.config.get('clientId') : '',
                     this.config.get('apiLibraries') ? "libraries=" + this.config.get('apiLibraries') : '',
                     this.config.get('language') ? "language=" + this.config.get('language') : '',
                     this.config.get('region') ? "region=" + this.config.get('region') : '',

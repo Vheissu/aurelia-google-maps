@@ -5,6 +5,7 @@ var Configure = (function () {
         this._config = {
             apiScript: 'https://maps.googleapis.com/maps/api/js',
             apiKey: '',
+            clientId: '',
             apiLibraries: '',
             region: '',
             language: '',

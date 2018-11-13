@@ -1,6 +1,7 @@
 export interface ConfigInterface {
     apiScript: string;
     apiKey: string;
+    clientId?: string;
     apiLibraries: string;
     options: any;
     markerCluster: {

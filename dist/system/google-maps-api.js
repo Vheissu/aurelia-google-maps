@@ -9,8 +9,8 @@ System.register(["aurelia-dependency-injection", "./configure"], function (expor
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var __moduleName = context_1 && context_1.id;
     var aurelia_dependency_injection_1, configure_1, GoogleMapsAPI;
+    var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (aurelia_dependency_injection_1_1) {
@@ -34,6 +34,7 @@ System.register(["aurelia-dependency-injection", "./configure"], function (expor
                         var script_1 = document.createElement('script');
                         var params = [
                             this.config.get('apiKey') ? "key=" + this.config.get('apiKey') + "&" : '',
+                            this.config.get('clientId') ? "clientId=" + this.config.get('clientId') : '',
                             this.config.get('apiLibraries') ? "libraries=" + this.config.get('apiLibraries') : '',
                             this.config.get('language') ? "language=" + this.config.get('language') : '',
                             this.config.get('region') ? "region=" + this.config.get('region') : '',
