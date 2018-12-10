@@ -82,7 +82,7 @@ export class GoogleMaps {
             logger.error('No API script is defined.');
         }
 
-        if ((!config.get('apiKey') && config.get('apiKey') !== false) || (!config.get('client') && config.get('client') !== false)) {
+        if ((!config.get('apiKey') && config.get('apiKey') !== false) && (!config.get('client') && config.get('client') !== false)) {
             logger.error('No API key or client ID has been specified.');
         }
 
