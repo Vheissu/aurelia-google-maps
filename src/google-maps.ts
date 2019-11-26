@@ -376,16 +376,10 @@ export class GoogleMaps {
     markersChanged(newValue: Marker[]) {
         // If there was a previous subscription
         if (this._markersSubscription !== null) {
+            this.clearMarkers();
+
             // Dispose of the subscription
             this._markersSubscription.dispose();
-
-            // Remove all the currently rendered markers
-            for (let marker of this._renderedMarkers) {
-                marker.setMap(null);
-            }
-
-            // And empty the renderMarkers collection
-            this._renderedMarkers = [];
         }
 
         // Add the subscription to markers
