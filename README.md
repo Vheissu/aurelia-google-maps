@@ -1,4 +1,4 @@
-# aurelia-google-maps
+# aurelia-google-maps (for Aurelia 1)
 
 [![Join the chat at https://gitter.im/Vheissu/aurelia-google-maps](https://badges.gitter.im/Vheissu/aurelia-google-maps.svg)](https://gitter.im/Vheissu/aurelia-google-maps?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A highly configurable custom element for use in your Aurelia applications for
