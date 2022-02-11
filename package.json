@@ -100,7 +100,7 @@
     "copyfiles": "^2.1.0",
     "cross-env": "^5.2.0",
     "jasmine-core": "^3.3.0",
-    "karma": "^3.1.1",
+    "karma": "^6.3.14",
     "karma-chrome-launcher": "^2.2.0",
     "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.2",
