@@ -1,22 +1,20 @@
-var Events = (function () {
-    function Events() {
-    }
-    Events.BOUNDSCHANGED = "bounds-change";
-    Events.MAPCLICK = 'map-click';
-    Events.MAPOVERLAYCOMPLETE = 'map-overlay-complete';
-    Events.MARKERRENDERED = 'marker-render';
-    Events.MARKERCLICK = 'marker-click';
-    Events.MARKERMOUSEOVER = 'marker-mouse-over';
-    Events.MARKERMOUSEOUT = 'marker-mouse-out';
-    Events.POLYGONCLICK = 'polygon-click';
-    Events.POLYGONRENDERED = 'polygon-render';
-    Events.INFOWINDOWSHOW = 'info-window-show';
-    Events.INFOWINDOWCLOSE = 'info-window-close';
-    Events.START_MARKER_HIGHLIGHT = 'start-marker-highlight';
-    Events.STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
-    Events.PAN_TO_MARKER = 'pan-to-marker';
-    Events.CLEAR_MARKERS = 'clear-markers';
-    return Events;
-}());
-export { Events };
+export class Events {
+    // Dispatches
+    static BOUNDSCHANGED = `bounds-change`;
+    static MAPCLICK = 'map-click';
+    static MAPOVERLAYCOMPLETE = 'map-overlay-complete';
+    static MARKERRENDERED = 'marker-render';
+    static MARKERCLICK = 'marker-click';
+    static MARKERMOUSEOVER = 'marker-mouse-over';
+    static MARKERMOUSEOUT = 'marker-mouse-out';
+    static POLYGONCLICK = 'polygon-click';
+    static POLYGONRENDERED = 'polygon-render';
+    static INFOWINDOWSHOW = 'info-window-show';
+    static INFOWINDOWCLOSE = 'info-window-close';
+    // Listens
+    static START_MARKER_HIGHLIGHT = 'start-marker-highlight';
+    static STOP_MARKER_HIGHLIGHT = 'stop-marker-highlight';
+    static PAN_TO_MARKER = 'pan-to-marker';
+    static CLEAR_MARKERS = 'clear-markers';
+}
 //# sourceMappingURL=events.js.map

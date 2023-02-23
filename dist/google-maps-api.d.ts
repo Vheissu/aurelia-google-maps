@@ -1,6 +1,6 @@
 export declare class GoogleMapsAPI {
-    _scriptPromise: any;
+    _scriptPromise: Promise<void>;
     private config;
     constructor(config: any);
-    getMapsInstance(): any;
+    getMapsInstance(): false | Promise<void>;
 }

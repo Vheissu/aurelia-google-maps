@@ -1,12 +1,14 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Configure = (function () {
-        function Configure() {
+    exports.Configure = void 0;
+    class Configure {
+        _config;
+        constructor() {
             this._config = {
                 apiScript: 'https://maps.googleapis.com/maps/api/js',
                 apiKey: '',
-                clientId: '',
+                client: '',
                 apiLibraries: '',
                 region: '',
                 language: '',
@@ -19,20 +21,19 @@ define(["require", "exports"], function (require, exports) {
                 }
             };
         }
-        Configure.prototype.options = function (obj) {
+        options(obj) {
             Object.assign(this._config, obj, {
                 markerCluster: Object.assign({}, this._config.markerCluster, obj.markerCluster)
             });
-        };
-        Configure.prototype.get = function (key) {
+        }
+        get(key) {
             return this._config[key];
-        };
-        Configure.prototype.set = function (key, val) {
+        }
+        set(key, val) {
             this._config[key] = val;
             return this._config[key];
-        };
-        return Configure;
-    }());
+        }
+    }
     exports.Configure = Configure;
 });
 //# sourceMappingURL=configure.js.map

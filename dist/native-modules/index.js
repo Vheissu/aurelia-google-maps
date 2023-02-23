@@ -3,8 +3,9 @@ import { Configure } from './configure';
 import { GoogleMaps } from './google-maps';
 import { GoogleMapsAPI } from './google-maps-api';
 export function configure(aurelia, configCallback) {
-    var instance = aurelia.container.get(Configure);
-    DOM.injectStyles("google-map { display: block; height: 350px; }");
+    let instance = aurelia.container.get(Configure);
+    DOM.injectStyles(`google-map { display: block; height: 350px; }`);
+    // Do we have a callback function?
     if (configCallback !== undefined && typeof (configCallback) === 'function') {
         configCallback(instance);
     }

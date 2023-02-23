@@ -9,38 +9,39 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { inject } from 'aurelia-dependency-injection';
 import { Configure } from './configure';
-var MarkerClustering = (function () {
-    function MarkerClustering(config) {
+let MarkerClustering = class MarkerClustering {
+    config;
+    markerClusterer;
+    constructor(config) {
         this.config = config;
     }
-    MarkerClustering.prototype.isEnabled = function () {
+    isEnabled() {
         return this.config.get('markerCluster') && this.config.get('markerCluster').enable;
-    };
-    MarkerClustering.prototype.clearMarkers = function () {
+    }
+    clearMarkers() {
         if (this.markerClusterer) {
             this.markerClusterer.clearMarkers();
         }
-    };
-    MarkerClustering.prototype.loadScript = function () {
+    }
+    loadScript() {
         if (!this.isEnabled()) {
             return;
         }
-        var script = document.createElement('script');
+        let script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = this.config.get('markerCluster').src;
         document.body.appendChild(script);
-    };
-    MarkerClustering.prototype.renderClusters = function (map, markers) {
+    }
+    renderClusters(map, markers) {
         if (!this.isEnabled()) {
             return;
         }
         this.markerClusterer = new window.MarkerClusterer(map, markers, this.config.get('markerCluster'));
-    };
-    MarkerClustering = __decorate([
-        inject(Configure),
-        __metadata("design:paramtypes", [Object])
-    ], MarkerClustering);
-    return MarkerClustering;
-}());
+    }
+};
+MarkerClustering = __decorate([
+    inject(Configure),
+    __metadata("design:paramtypes", [Object])
+], MarkerClustering);
 export { MarkerClustering };
 //# sourceMappingURL=marker-clustering.js.map

@@ -9,51 +9,53 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { inject } from 'aurelia-dependency-injection';
 import { Configure } from './configure';
-var GoogleMapsAPI = (function () {
-    function GoogleMapsAPI(config) {
-        this._scriptPromise = null;
+let GoogleMapsAPI = class GoogleMapsAPI {
+    _scriptPromise = null;
+    config;
+    constructor(config) {
         this.config = config;
     }
-    GoogleMapsAPI.prototype.getMapsInstance = function () {
+    getMapsInstance() {
         if (this._scriptPromise !== null) {
             return this._scriptPromise;
         }
         if (window.google === undefined || window.google.maps === undefined) {
-            var script_1 = document.createElement('script');
-            var params = [
-                this.config.get('apiKey') ? "key=" + this.config.get('apiKey') + "&" : '',
-                this.config.get('clientId') ? "clientId=" + this.config.get('clientId') : '',
-                this.config.get('apiLibraries') ? "libraries=" + this.config.get('apiLibraries') : '',
-                this.config.get('language') ? "language=" + this.config.get('language') : '',
-                this.config.get('region') ? "region=" + this.config.get('region') : '',
+            // google has not been defined yet
+            let script = document.createElement('script');
+            let params = [
+                this.config.get('apiKey') ? `key=${this.config.get('apiKey')}&` : '',
+                this.config.get('client') ? `client=${this.config.get('client')}` : '',
+                this.config.get('apiLibraries') ? `libraries=${this.config.get('apiLibraries')}` : '',
+                this.config.get('language') ? `language=${this.config.get('language')}` : '',
+                this.config.get('region') ? `region=${this.config.get('region')}` : '',
                 'callback=aureliaGoogleMapsCallback',
             ];
-            script_1.type = 'text/javascript';
-            script_1.async = true;
-            script_1.defer = true;
-            script_1.src = this.config.get('apiScript') + "?" + params.join('&');
-            document.body.appendChild(script_1);
-            this._scriptPromise = new Promise(function (resolve, reject) {
-                window.aureliaGoogleMapsCallback = function () {
+            script.type = 'text/javascript';
+            script.async = true;
+            script.defer = true;
+            script.src = `${this.config.get('apiScript')}?${params.join('&')}`;
+            document.body.appendChild(script);
+            this._scriptPromise = new Promise((resolve, reject) => {
+                window.aureliaGoogleMapsCallback = () => {
                     resolve();
                 };
-                script_1.onerror = function (error) {
+                script.onerror = error => {
                     reject(error);
                 };
             });
             return this._scriptPromise;
         }
         if (window.google && window.google.maps) {
-            this._scriptPromise = new Promise(function (resolve) { resolve(); });
+            // google has been defined already, so return an immediately resolved Promise that has scope
+            this._scriptPromise = new Promise(resolve => { resolve(); });
             return this._scriptPromise;
         }
         return false;
-    };
-    GoogleMapsAPI = __decorate([
-        inject(Configure),
-        __metadata("design:paramtypes", [Object])
-    ], GoogleMapsAPI);
-    return GoogleMapsAPI;
-}());
+    }
+};
+GoogleMapsAPI = __decorate([
+    inject(Configure),
+    __metadata("design:paramtypes", [Object])
+], GoogleMapsAPI);
 export { GoogleMapsAPI };
 //# sourceMappingURL=google-maps-api.js.map

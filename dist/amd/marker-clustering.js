@@ -10,39 +10,41 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 define(["require", "exports", "aurelia-dependency-injection", "./configure"], function (require, exports, aurelia_dependency_injection_1, configure_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var MarkerClustering = (function () {
-        function MarkerClustering(config) {
+    exports.MarkerClustering = void 0;
+    let MarkerClustering = class MarkerClustering {
+        config;
+        markerClusterer;
+        constructor(config) {
             this.config = config;
         }
-        MarkerClustering.prototype.isEnabled = function () {
+        isEnabled() {
             return this.config.get('markerCluster') && this.config.get('markerCluster').enable;
-        };
-        MarkerClustering.prototype.clearMarkers = function () {
+        }
+        clearMarkers() {
             if (this.markerClusterer) {
                 this.markerClusterer.clearMarkers();
             }
-        };
-        MarkerClustering.prototype.loadScript = function () {
+        }
+        loadScript() {
             if (!this.isEnabled()) {
                 return;
             }
-            var script = document.createElement('script');
+            let script = document.createElement('script');
             script.type = 'text/javascript';
             script.src = this.config.get('markerCluster').src;
             document.body.appendChild(script);
-        };
-        MarkerClustering.prototype.renderClusters = function (map, markers) {
+        }
+        renderClusters(map, markers) {
             if (!this.isEnabled()) {
                 return;
             }
             this.markerClusterer = new window.MarkerClusterer(map, markers, this.config.get('markerCluster'));
-        };
-        MarkerClustering = __decorate([
-            aurelia_dependency_injection_1.inject(configure_1.Configure),
-            __metadata("design:paramtypes", [Object])
-        ], MarkerClustering);
-        return MarkerClustering;
-    }());
+        }
+    };
+    MarkerClustering = __decorate([
+        (0, aurelia_dependency_injection_1.inject)(configure_1.Configure),
+        __metadata("design:paramtypes", [Object])
+    ], MarkerClustering);
     exports.MarkerClustering = MarkerClustering;
 });
 //# sourceMappingURL=marker-clustering.js.map
