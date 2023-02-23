@@ -16,9 +16,9 @@ export class GoogleMapsAPI {
             return this._scriptPromise;
         }
 
-        if ((<any>window).google === undefined || (<any>window).google.maps === undefined) {
+        if (globalThis.google === undefined || globalThis.google.maps === undefined) {
             // google has not been defined yet
-            let script = document.createElement('script');
+            let script = globalThis.document.createElement('script');
 
             let params = [
                 this.config.get('apiKey') ? `key=${this.config.get('apiKey')}&` : '',
@@ -33,10 +33,10 @@ export class GoogleMapsAPI {
             script.async = true;
             script.defer = true;
             script.src = `${this.config.get('apiScript')}?${params.join('&')}`;
-            document.body.appendChild(script);
+            globalThis.document.body.appendChild(script);
 
             this._scriptPromise = new Promise((resolve, reject) => {
-                (<any>window).aureliaGoogleMapsCallback = () => {
+                globalThis.aureliaGoogleMapsCallback = () => {
                     resolve();
                 };
                 script.onerror = error => {
@@ -48,7 +48,7 @@ export class GoogleMapsAPI {
             return this._scriptPromise;
         }
 
-        if ((<any>window).google && (<any>window).google.maps) {
+        if (globalThis.google && globalThis.google.maps) {
             // google has been defined already, so return an immediately resolved Promise that has scope
             this._scriptPromise = new Promise(resolve => { resolve(); });
 

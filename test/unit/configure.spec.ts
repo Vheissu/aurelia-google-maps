@@ -35,6 +35,21 @@ describe('configure', () => {
         expect(sut.get('test-option')).toEqual('test value123');
     });
 
+    it('set a new option using set', () => {
+        expect(sut.get('test-option')).toBeUndefined();
+
+        sut.set('test-option', 'test value123');
+
+        expect(sut.get('test-option')).toEqual('test value123');
+    });
+
+    it('override default option using set', () => {
+        expect(sut.get('apiScript')).toEqual('https://maps.googleapis.com/maps/api/js');
+
+        sut.set('apiScript', 'http://facebook.com/123');
+
+        expect(sut.get('apiScript')).toEqual('http://facebook.com/123');
+    });
 
     it('override default option using options', () => {
         expect(sut.get('apiScript')).toEqual('https://maps.googleapis.com/maps/api/js');

@@ -41,4 +41,16 @@ describe('index', () => {
         ]);
     });
 
+    it('configure function calls injectStyles', () => {
+        configure(mockFrameWorkConfiguration);
+
+        expect(DOM.injectStyles).toHaveBeenCalled();
+    });
+
+    it('configure function calls injectStyles with correct styles', () => {
+        configure(mockFrameWorkConfiguration);
+
+        expect(DOM.injectStyles).toHaveBeenCalledWith('google-map { display: block; height: 350px; }');
+    });
+
 })
