@@ -1,6 +1,11 @@
+import 'reflect-metadata';
 import { configure } from '../../src/index';
 import { Configure } from '../../src/configure';
 import { FrameworkConfiguration } from 'aurelia-framework';
+import { DOM } from 'aurelia-pal';
+
+// Mock DOM injectStyles from aurelia-pal
+DOM.injectStyles = jest.fn();
 
 let mockFrameWorkConfiguration = {
     container: {
@@ -15,28 +20,20 @@ let mockFrameWorkConfiguration = {
 
 describe('index', () => {
 
-    it('test passes', () => {
-        expect(true);
-    });
-
     it('configure function is returned', () => {
         expect(typeof configure).toBe('function');
     });
 
     it('configure options callback', () => {
-        let configureCallback = function (instance: any) {
-            return instance;
-        }
+        let configureCallback = jest.fn();
 
-        let configureCallbackTest = jasmine.createSpy('configureCallback', configureCallback);
+        configure(mockFrameWorkConfiguration, configureCallback);
 
-        configure(mockFrameWorkConfiguration, configureCallbackTest);
-
-        expect(configureCallbackTest).toHaveBeenCalledWith(Configure);
+        expect(configureCallback).toHaveBeenCalledWith(Configure);
     });
 
     it('plugin registers globalResources', () => {
-        spyOn(mockFrameWorkConfiguration, 'globalResources');
+        jest.spyOn(mockFrameWorkConfiguration, 'globalResources');
         configure(mockFrameWorkConfiguration);
 
         expect(mockFrameWorkConfiguration.globalResources).toHaveBeenCalledWith([

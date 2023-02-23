@@ -9,6 +9,7 @@ import { GoogleMapsAPI } from './google-maps-api';
 import { MarkerClustering } from './marker-clustering';
 
 import { Events } from './events';
+import { DOM } from 'aurelia-framework';
 
 const logger = getLogger('aurelia-google-maps');
 
@@ -27,7 +28,7 @@ export interface Marker {
 
 @noView()
 @customElement('google-map')
-@inject(Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI, MarkerClustering)
+@inject(DOM.Element, TaskQueue, Configure, BindingEngine, GoogleMapsAPI, MarkerClustering)
 export class GoogleMaps {
     private element: Element;
     private taskQueue: TaskQueue;

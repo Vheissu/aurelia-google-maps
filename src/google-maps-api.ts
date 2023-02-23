@@ -3,7 +3,7 @@ import { Configure } from './configure';
 
 @inject(Configure)
 export class GoogleMapsAPI {
-    _scriptPromise = null;
+    _scriptPromise: Promise<void> = null;
     private config;
 
 

@@ -1,0 +1,36 @@
+{
+    "verbose": false,
+    "transform": {
+        "^.+\\.tsx?$": [
+            "ts-jest",
+            {
+                "isolatedModules": true,
+                "ignoreCoverageForDecorators": true,
+                "ignoreCoverageForAllDecorators": true,
+                "diagnostics": false
+            }
+        ],
+        "^.+\\.html?$": "jest-html-loader"
+    },
+    "testRegex": ".*(\\.test|\\.spec)\\.(jsx?|tsx?)",
+    "testPathIgnorePatterns": ["build", "dist", "sample"],
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"],
+    "moduleNameMapper": {
+        "^.+\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub"
+    },
+    "roots": ["<rootDir>/src", "<rootDir>/test"],
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+        "/node_modules/",
+        "package.json",
+        "style-mock.js",
+        "file-mock.js",
+        "wallaby.js",
+        "/dist/",
+        ".*\\.d\\.ts",
+        "/test/"
+    ],
+    "setupFiles": ["<rootDir>/test/jest.setup.ts"],
+    "modulePaths": ["<rootDir>/src", "<rootDir>/node_modules"],
+    "coverageReporters": ["json", "html", "text", "lcov", "clover"]
+}

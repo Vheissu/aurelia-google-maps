@@ -1,29 +1,21 @@
 {
-  "compilerOptions": {
-    "module": "amd",
-    "moduleResolution": "node",
-    "target": "es5",
-    "allowSyntheticDefaultImports": true,
-    "outDir": "dist/test",
-    "sourceMap": true,
-    "declaration": true,
-    "stripInternal": true,
-    "noImplicitAny": false,
-    "removeComments": true,
-    "noEmitOnError": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "preserveConstEnums": true,
-    "lib": ["es2017", "dom"]
-  },
-  "exclude": [
-    ".vscode",
-    "node_modules",
-    "dist",
-    "examples"
-  ],
-  "compileOnSave": false,
-  "atom": {
-    "rewriteTsconfig": false
-  }
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "baseUrl": "src",
+        "declaration": true,
+        "declarationDir": "./dist",
+        "outDir": "./dist",
+        "lib": ["esnext", "dom"],
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["./src/**/*.ts", "./types/**/*.d.ts"]
 }
